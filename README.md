@@ -24,7 +24,7 @@ Kein Element kann ohne die anderen beiden gedacht werden.
 | Datei | Inhalt |
 |---|---|
 | `KONTEXT.md` | Aktueller Arbeitsstand, Entscheidungen, offene Punkte – wird jede Session aktualisiert |
-| `patientenpfad_arbeitsdokument_v3.md` | Vollständiges Arbeitsdokument (9 Kapitel) |
+| `patientenpfad_arbeitsdokument.md` | Vollständiges Arbeitsdokument (9 Kapitel) |
 | `patientenpfad_interaktiv.html` | Interaktive Prozesskarte mit Filter nach Phase und Datenraum |
 
 ---
@@ -53,6 +53,14 @@ Kein Element kann ohne die anderen beiden gedacht werden.
   - `Widget: Druckansicht ergänzt`
   - `Prozessmodell: Pflegeschritte präzisiert`
   - `KONTEXT: Offene Punkte nach Session aktualisiert`
+
+---
+
+## Dokumente konvertieren
+
+Das Arbeitsdokument liegt als Markdown vor und kann mit [Pandoc](https://pandoc.org) in andere Formate (Word, PDF, HTML u.a.) konvertiert werden. Installationshinweise für alle Betriebssysteme finden sich auf [pandoc.org](https://pandoc.org/installing.html).
+
+Generierte Dateien (`.docx`, `.pdf`) werden nicht ins Repository eingecheckt.
 
 ---
 
