@@ -1,0 +1,14 @@
+# IDE & Tools
+.vscode/
+.claude/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Temporäre Dateien
+*.tmp
+*.bak
+
+# Generierte Dateien (bei Bedarf neu erstellen)
+*.pdf

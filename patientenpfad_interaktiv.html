@@ -1,0 +1,121 @@
+
+<style>
+.phase-tab { padding: 8px 16px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+.phase-tab.active { color: var(--color-text-primary); border-color: var(--color-border-primary); background: var(--color-background-secondary); }
+.dr-toggle { padding: 4px 10px; border-radius: 20px; border: 0.5px solid transparent; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; opacity: 0.5; }
+.dr-toggle.active { opacity: 1; }
+.dr-portal { background: #E6F1FB; color: #0C447C; border-color: #185FA5; }
+.dr-versorgung { background: #E1F5EE; color: #085041; border-color: #0F6E56; }
+.dr-epa { background: #EEEDFE; color: #3C3489; border-color: #534AB7; }
+.dr-ehds { background: #FAECE7; color: #712B13; border-color: #993C1D; }
+.prozess-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; }
+.prozess-card:hover { border-color: var(--color-border-primary); }
+.prozess-card.dimmed { opacity: 0.25; pointer-events: none; }
+.phase-vor { border-left: 3px solid #1D9E75; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
+.phase-im { border-left: 3px solid #534AB7; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
+.phase-nach { border-left: 3px solid #993C1D; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
+.dr-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+.detail-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; margin-top: 8px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+</style>
+
+<h2 class="sr-only">Interaktive Patientenpfad-Prozesskarte mit Filteroptionen nach Phase und Datenraum</h2>
+
+<div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+  <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
+  <button class="phase-tab" onclick="setPhase('vor')">Vor dem Krankenhaus</button>
+  <button class="phase-tab" onclick="setPhase('im')">Im Krankenhaus</button>
+  <button class="phase-tab" onclick="setPhase('nach')">Nach dem Krankenhaus</button>
+</div>
+
+<div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+  <span style="font-size:12px; color:var(--color-text-tertiary);">Datenraum filtern:</span>
+  <button class="dr-toggle dr-portal active" data-dr="portal" onclick="toggleDR('portal')">Portal</button>
+  <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
+  <button class="dr-toggle dr-epa active" data-dr="epa" onclick="toggleDR('epa')">ePA</button>
+  <button class="dr-toggle dr-ehds active" data-dr="ehds" onclick="toggleDR('ehds')">EHDS</button>
+</div>
+
+<div id="karten" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;"></div>
+
+<script>
+const data = [
+  { phase:'vor', titel:'Termin anfragen / buchen', akteur:'Patient, Verwaltung', objekt:'Terminanfrage / Terminbestätigung', op:'E', dr:['portal','versorgung'], detail:'Terminvereinbarung für ambulante Vorstellung oder stationäre Aufnahme. Das Portal ist die primäre Schnittstelle – der Patient löst den Prozess aus.' },
+  { phase:'vor', titel:'Überweisung / Einweisung bereitstellen', akteur:'Niedergelassener Arzt, Patient', objekt:'Überweisung / Einweisung', op:'E', dr:['versorgung','epa'], detail:'Die Überweisung wird im Kontext des Krankenhauses erstmalig bereitgestellt. Heute oft noch als Papier oder PDF – ein klassischer Medienbruch.' },
+  { phase:'vor', titel:'Stammdaten erfassen / aktualisieren', akteur:'Patient, Verwaltung', objekt:'Patientenstammdaten', op:'E, V', dr:['portal','versorgung'], detail:'Kontaktdaten und Versicherungsdaten werden erfasst oder aktualisiert. Datenobjekt kann sowohl neu entstehen als auch verändert werden.' },
+  { phase:'vor', titel:'Vorbefunde bereitstellen', akteur:'Patient, Niedergelassener Arzt', objekt:'Vorbefunde / Fremdbefunde', op:'E', dr:['portal','versorgung','epa'], detail:'Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs.' },
+  { phase:'vor', titel:'Anamnesebogen ausfüllen', akteur:'Patient', objekt:'Anamnese', op:'E', dr:['portal','versorgung','epa'], detail:'Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext.' },
+  { phase:'vor', titel:'Einwilligungen erteilen', akteur:'Patient', objekt:'Einwilligungserklärung, Widerspruch', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung.' },
+  { phase:'im', titel:'Digitaler Check-in', akteur:'Patient, Verwaltung', objekt:'Check-in Bestätigung', op:'E', dr:['portal','versorgung'], detail:'Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung.' },
+  { phase:'im', titel:'Administrative Aufnahme', akteur:'Verwaltung', objekt:'Patientenfall / Fallakte', op:'E', dr:['versorgung'], detail:'Fallanlage im KIS. Zentrales Datenobjekt für den gesamten stationären Aufenthalt.' },
+  { phase:'im', titel:'Pflegeassessment', akteur:'Pflege', objekt:'Pflegeassessment', op:'E', dr:['versorgung'], detail:'Erfassung des pflegerischen Bedarfs bei Aufnahme – Mobilität, Ernährung, Risikoscreening. Eigenständiges Datenobjekt der Pflege.' },
+  { phase:'im', titel:'Durchführung diagnostischer Maßnahmen', akteur:'Arzt, Pflege', objekt:'Untersuchungsergebnisse / Befunde', op:'E', dr:['versorgung','epa','ehds'], detail:'Untersuchungen und Diagnostik. Erzeugt medizinische Kerndaten – sollten strukturiert vorliegen für optimale Weiterverarbeitung.' },
+  { phase:'im', titel:'Dokumentation medizinischer Ergebnisse', akteur:'Arzt', objekt:'Diagnose / Befunddokumentation', op:'E, V', dr:['versorgung','epa','ehds'], detail:'Befunde und Diagnosen werden dokumentiert. Zentrales Datenobjekt – wird laufend verändert und ergänzt.' },
+  { phase:'im', titel:'Pflegedokumentation', akteur:'Pflege', objekt:'Pflegedokumentation / Vitalwerte', op:'E, V', dr:['versorgung','epa'], detail:'Laufende Dokumentation von Pflegemaßnahmen, Vitalwerten und Verlauf. Wird kontinuierlich ergänzt.' },
+  { phase:'im', titel:'Bereitstellung Informationen im Portal', akteur:'Arzt, Verwaltung', objekt:'Laborwerte / Befunde im Portal', op:'E', dr:['portal','versorgung'], detail:'Ausgewählte Informationen werden dem Patienten im Portal bereitgestellt – z.B. Laborwerte. Strukturierte Daten ermöglichen eine sinnvolle Darstellung.' },
+  { phase:'im', titel:'Kommunikation mit Behandlungsteam', akteur:'Patient, Arzt, Pflege', objekt:'Nachricht / Rückfrage', op:'E', dr:['portal','versorgung','epa'], detail:'Nachrichten und Rückfragen – unabhängig vom Übertragungsweg (Portal, TI-Messenger oder andere Kanäle).' },
+  { phase:'im', titel:'Entlassungsvorbereitung', akteur:'Arzt, Verwaltung, Sozialdienst', objekt:'Entlassungsplan', op:'E', dr:['versorgung','epa'], detail:'Organisation der Entlassung. Auslöser für mehrere nachgelagerte Prozesse – Pflegeüberleitung, AHB, Nachsorgetermin.' },
+  { phase:'im', titel:'Pflegerische Entlassungsplanung', akteur:'Pflege, Sozialdienst', objekt:'Pflegerischer Überleitungsbogen', op:'E', dr:['versorgung','epa'], detail:'Pflegerische Bedarfserfassung und Weitergabe. Eigenständiges Datenobjekt – intern für die Planung.' },
+  { phase:'im', titel:'Pflegeüberleitung', akteur:'Sozialdienst, Pflege', objekt:'Pflegeüberleitungsdokument', op:'E', dr:['versorgung','epa'], detail:'Bedarfserfassung und Organisation der pflegerischen Weiterversorgung. Das Überleitungsdokument geht an die nachversorgende Einrichtung.' },
+  { phase:'im', titel:'AHB / Reha beantragen', akteur:'Arzt, Sozialdienst', objekt:'AHB / Reha-Antrag', op:'E', dr:['versorgung','epa'], detail:'Antragstellung und Weiterleitung an Kostenträger. Erzeugt ein eigenständiges Datenobjekt mit Weiterleitung an externe Akteure.' },
+  { phase:'nach', titel:'Bereitstellung Entlassdokumente', akteur:'Arzt, Verwaltung', objekt:'Arztbrief / Entlassbericht', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF.' },
+  { phase:'nach', titel:'Bereitstellung Medikationsplan', akteur:'Arzt', objekt:'Medikationsplan', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.' },
+  { phase:'nach', titel:'Bereitstellung Dokumente für ePA', akteur:'Arzt, Verwaltung', objekt:'Strukturierte Datenobjekte in der ePA', op:'E', dr:['epa','ehds'], detail:'Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.' },
+  { phase:'nach', titel:'Nachsorgetermin vereinbaren', akteur:'Patient, Verwaltung', objekt:'Nachsorgetermin', op:'E', dr:['portal','versorgung'], detail:'Terminplanung nach Entlassung. Portal als primäre Schnittstelle für den Patienten.' },
+  { phase:'nach', titel:'Digitale Verlaufserfassung', akteur:'Patient', objekt:'Verlaufsdokumentation / PROMs', op:'E', dr:['portal','versorgung','epa'], detail:'Fragebögen und PROMs nach Entlassung. Patient als aktiver Datenerzeuger – strukturierte Rückmeldungen ermöglichen Automatisierung.' },
+  { phase:'nach', titel:'Kommunikation mit Klinik', akteur:'Patient, Arzt', objekt:'Nachricht / Rückfrage', op:'E, V', dr:['portal','versorgung','epa'], detail:'Rückfragen nach Entlassung – unabhängig vom Übertragungsweg.' },
+  { phase:'nach', titel:'Abschluss der Behandlung', akteur:'Arzt, Verwaltung', objekt:'Abschlussdokumentation / Fallabschluss', op:'E', dr:['versorgung','epa'], detail:'Behandlungsfall wird abgeschlossen. Finales Datenobjekt des Patientenpfads.' },
+];
+
+const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
+const drLabel = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
+const phaseLabel = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
+const phaseBorder = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
+
+let activePhase = 'alle';
+let activeDR = new Set(['portal','versorgung','epa','ehds']);
+let openCard = null;
+
+function setPhase(p) {
+  activePhase = p;
+  document.querySelectorAll('.phase-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['alle','vor','im','nach'][i] === p);
+  });
+  render();
+}
+
+function toggleDR(dr) {
+  if(activeDR.has(dr)) { activeDR.delete(dr); } else { activeDR.add(dr); }
+  document.querySelector(`[data-dr="${dr}"]`).classList.toggle('active', activeDR.has(dr));
+  render();
+}
+
+function toggleDetail(idx) {
+  openCard = openCard === idx ? null : idx;
+  render();
+}
+
+function render() {
+  const container = document.getElementById('karten');
+  const filtered = data.filter(d => {
+    if(activePhase !== 'alle' && d.phase !== activePhase) return false;
+    return true;
+  });
+  container.innerHTML = filtered.map((d, i) => {
+    const idx = data.indexOf(d);
+    const hasDR = d.dr.some(r => activeDR.has(r));
+    const badges = d.dr.map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`).join('');
+    const isOpen = openCard === idx;
+    const detail = isOpen ? `<div class="detail-box">${d.detail}<br><br><button style="margin-top:8px;" onclick="event.stopPropagation(); sendPrompt('Erkläre den Prozessschritt ${d.titel} im Detail und nenne relevante Standards')">Details &amp; Standards ↗</button></div>` : '';
+    return `<div class="prozess-card ${phaseBorder[d.phase]} ${hasDR ? '' : 'dimmed'}" onclick="toggleDetail(${idx})">
+      <div style="font-size:11px; color:var(--color-text-tertiary); margin-bottom:4px;">${phaseLabel[d.phase]}</div>
+      <div style="font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:6px;">${d.titel}</div>
+      <div style="font-size:12px; color:var(--color-text-secondary); margin-bottom:8px;">${d.akteur}</div>
+      <div style="font-size:12px; color:var(--color-text-tertiary); margin-bottom:10px;">${d.objekt} <span style="opacity:0.6;">(${d.op})</span></div>
+      <div>${badges}</div>
+      ${detail}
+    </div>`;
+  }).join('');
+}
+
+render();
+</script>
