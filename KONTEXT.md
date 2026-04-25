@@ -107,7 +107,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Aufgabe | Wer | Status |
 |---|---|---|
 | `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
-| HTML-Widget weiter verbessern | Claude | In Arbeit (siehe Requirements) |
+| HTML-Widget weiter verbessern | Claude | In Arbeit – Kernfunktionen erledigt (siehe Requirements) |
 | PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Offen |
 
 ---
@@ -143,6 +143,8 @@ Ziel: Eine interaktive, pflegbare Prozesslandkarte, die in der Arbeitsgruppe gen
 | R3.2 | HTML-Datei bindet Datendatei ein: `<script src="patientenpfad_data.js">` | Hoch | Erledigt |
 | R3.3 | Phasengrenzen im `data`-Array durch Kommentare markieren | Mittel | Erledigt |
 | R3.4 | Migrationspfad zu Web-Server + JSON offen halten (spätere Phase) | – | Entschieden |
+| R3.5 | `meta`-Objekt in `data.js` für pflegbare Auswahllisten (domaenen, akteure, datenobjekte, rechtsgrundlagen) | Hoch | Erledigt |
+| R3.6 | `patientenpfad_editor.html` – separater Editor mit Meta-Verwaltung und Export | Hoch | Erledigt |
 
 **Architekturentscheidung – Migrationspfad:**
 
