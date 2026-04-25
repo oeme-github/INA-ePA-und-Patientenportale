@@ -111,7 +111,9 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 |---|---|---|
 | `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
 | HTML-Widget weiter verbessern | Claude | In Arbeit – Kernfunktionen erledigt (siehe Requirements) |
-| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Offen |
+| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| PR #3 (Widget v2) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| PR #4 (Freitextsuche) mergen | oeme-github | Offen |
 
 ---
 
