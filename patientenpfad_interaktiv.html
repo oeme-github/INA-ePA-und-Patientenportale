@@ -6,107 +6,166 @@
   <title>Patientenpfad – Interaktive Prozesskarte</title>
   <style>
     :root {
-      --color-text-primary: #111827;
-      --color-text-secondary: #374151;
-      --color-text-tertiary: #6B7280;
-      --color-background-primary: #ffffff;
-      --color-background-secondary: #F9FAFB;
-      --color-border-primary: #9CA3AF;
-      --color-border-secondary: #D1D5DB;
-      --color-border-tertiary: #E5E7EB;
-      --border-radius-md: 6px;
-      --border-radius-lg: 10px;
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+
+      --phase-vor:  #059669;
+      --phase-im:   #4F46E5;
+      --phase-nach: #B45309;
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #F3F4F6;
-      color: var(--color-text-primary);
-      margin: 0;
-      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text-1);
+      min-height: 100vh;
     }
 
-    h1 {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0 0 4px 0;
+    /* ── Header ── */
+    .page-header {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px;
+    }
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .page-header p {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-top: 3px;
     }
 
-    .subtitle {
-      font-size: 13px;
-      color: var(--color-text-tertiary);
-      margin: 0 0 24px 0;
-    }
-
+    /* ── Toolbar ── */
     .toolbar {
-      background: var(--color-background-primary);
-      border: 1px solid var(--color-border-tertiary);
-      border-radius: var(--border-radius-lg);
-      padding: 14px 16px;
-      margin-bottom: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 12px 24px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
-    .toolbar-row {
+    .filter-row {
       display: flex;
+      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      align-items: center;
     }
 
-    .toolbar-label {
-      font-size: 12px;
-      color: var(--color-text-tertiary);
-      white-space: nowrap;
+    .filter-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      min-width: 110px;
     }
 
+    /* Phase-Tabs */
     .phase-tab {
-      padding: 6px 14px;
-      border: 1px solid var(--color-border-secondary);
-      border-radius: var(--border-radius-md);
+      padding: 5px 13px;
+      border: 1px solid var(--c-border-2);
+      border-radius: var(--r-sm);
       background: transparent;
-      color: var(--color-text-secondary);
+      color: var(--c-text-3);
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
-      transition: all 0.15s;
-    }
-    .phase-tab.active {
-      color: var(--color-text-primary);
-      border-color: var(--color-border-primary);
-      background: var(--color-background-secondary);
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .phase-tab:hover:not(.active) {
-      border-color: var(--color-border-primary);
+      border-color: var(--c-border-3);
+      color: var(--c-text-2);
+    }
+    .phase-tab.active {
+      background: var(--c-text-1);
+      border-color: var(--c-text-1);
+      color: #fff;
+    }
+    .phase-tab .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
+    /* Datenraum-Toggles */
     .dr-toggle {
-      padding: 4px 12px;
+      padding: 4px 11px;
       border-radius: 20px;
       border: 1px solid transparent;
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.15s;
-      opacity: 0.4;
+      transition: opacity 0.12s;
+      opacity: 0.35;
     }
     .dr-toggle.active { opacity: 1; }
-    .dr-portal    { background: #E6F1FB; color: #0C447C; border-color: #185FA5; }
-    .dr-versorgung{ background: #E1F5EE; color: #085041; border-color: #0F6E56; }
-    .dr-epa       { background: #EEEDFE; color: #3C3489; border-color: #534AB7; }
-    .dr-ehds      { background: #FAECE7; color: #712B13; border-color: #993C1D; }
+    .dr-portal     { background: #DBEAFE; color: #1E40AF; border-color: #3B82F6; }
+    .dr-versorgung { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+    .dr-epa        { background: #EDE9FE; color: #4C1D95; border-color: #7C3AED; }
+    .dr-ehds       { background: #FEE2E2; color: #7F1D1D; border-color: #EF4444; }
+
+    /* Rechtsgrundlagen-Toggles */
+    .law-toggle {
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-3);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      opacity: 0.45;
+    }
+    .law-toggle.active {
+      background: #F0FDF4;
+      border-color: #4ADE80;
+      color: #14532D;
+      opacity: 1;
+    }
+    .law-toggle:hover:not(.active) {
+      border-color: var(--c-border-3);
+      color: var(--c-text-2);
+      opacity: 0.8;
+    }
+
+    /* ── Hauptbereich ── */
+    .main {
+      padding: 20px 24px;
+    }
 
     .counter {
       font-size: 12px;
-      color: var(--color-text-tertiary);
-      margin-bottom: 12px;
+      color: var(--c-text-3);
+      margin-bottom: 14px;
     }
-    .counter strong { color: var(--color-text-secondary); }
+    .counter strong { color: var(--c-text-2); font-weight: 600; }
 
+    /* ── Karten-Grid ── */
     #karten {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -114,46 +173,86 @@
     }
 
     .prozess-card {
-      background: var(--color-background-primary);
-      border: 1px solid var(--color-border-tertiary);
-      border-radius: var(--border-radius-lg);
+      background: var(--c-surface);
+      border: 1px solid var(--c-border-1);
+      border-radius: var(--r-lg);
       padding: 14px 16px;
       cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.12s, box-shadow 0.12s, opacity 0.15s;
+      position: relative;
     }
-    .prozess-card:hover { border-color: var(--color-border-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-    .prozess-card.dimmed { opacity: 0.2; pointer-events: none; }
+    .prozess-card:hover {
+      border-color: var(--c-border-3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .prozess-card.dimmed {
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .prozess-card.open {
+      border-color: var(--c-border-3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
 
-    .phase-vor  { border-left: 3px solid #1D9E75; }
-    .phase-im   { border-left: 3px solid #534AB7; }
-    .phase-nach { border-left: 3px solid #993C1D; }
+    .phase-vor  { border-left: 3px solid var(--phase-vor); }
+    .phase-im   { border-left: 3px solid var(--phase-im); }
+    .phase-nach { border-left: 3px solid var(--phase-nach); }
 
     .card-meta {
-      font-size: 11px;
-      color: var(--color-text-tertiary);
-      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .card-phase-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .phase-vor  .card-phase-label { color: var(--phase-vor); }
+    .phase-im   .card-phase-label { color: var(--phase-im); }
+    .phase-nach .card-phase-label { color: var(--phase-nach); }
+
+    .card-nr {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
     }
 
     .card-titel {
       font-size: 14px;
       font-weight: 600;
-      color: var(--color-text-primary);
+      color: var(--c-text-1);
+      line-height: 1.35;
       margin-bottom: 5px;
     }
 
     .card-akteur {
       font-size: 12px;
-      color: var(--color-text-secondary);
-      margin-bottom: 4px;
+      color: var(--c-text-3);
+      margin-bottom: 3px;
     }
 
     .card-objekt {
       font-size: 12px;
-      color: var(--color-text-tertiary);
+      color: var(--c-text-3);
       margin-bottom: 10px;
     }
+    .card-op {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #F3F4F6;
+      color: var(--c-text-3);
+      border: 1px solid var(--c-border-2);
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
 
     .dr-badge {
       display: inline-block;
@@ -161,104 +260,140 @@
       border-radius: 20px;
       font-size: 11px;
       font-weight: 500;
-      margin-right: 4px;
-      margin-bottom: 2px;
     }
 
+    /* ── Detail-Box ── */
     .detail-box {
-      background: var(--color-background-secondary);
-      border-radius: var(--border-radius-md);
-      padding: 14px 16px;
-      margin-top: 10px;
+      margin-top: 12px;
+      border-top: 1px solid var(--c-border-1);
+      padding-top: 12px;
       font-size: 13px;
-      color: var(--color-text-secondary);
-      line-height: 1.6;
-      border: 1px solid var(--color-border-tertiary);
+      color: var(--c-text-2);
+      line-height: 1.65;
     }
 
     .detail-section {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--color-border-tertiary);
+      margin-top: 12px;
     }
-
     .detail-section-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--color-text-tertiary);
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.07em;
+      color: var(--c-text-4);
       margin-bottom: 6px;
     }
 
-    .gesetz-badge {
+    .domaene-chip {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      margin-right: 4px;
-      margin-bottom: 4px;
-      background: #F3F4F6;
-      color: #374151;
-      border: 1px solid #D1D5DB;
-    }
-
-    .domaene-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: var(--r-sm);
+      font-size: 12px;
       font-weight: 500;
       background: #FEF9C3;
       color: #713F12;
-      border: 1px solid #FDE047;
+      border: 1px solid #FDE68A;
     }
 
+    .gesetz-chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      background: #F0FDF4;
+      color: #14532D;
+      border: 1px solid #BBF7D0;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Print ── */
     @media print {
-      body { background: white; padding: 0; }
+      body { background: white; }
+      .page-header { position: static; box-shadow: none; }
       .toolbar { display: none; }
-      .prozess-card { break-inside: avoid; cursor: default; }
+      .main { padding: 12px 0; }
+      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; }
       .prozess-card.dimmed { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <h1>Patientenpfad – Interaktive Prozesskarte</h1>
-  <p class="subtitle">Akteur × Prozess → Datenobjekt &nbsp;·&nbsp; 25 Prozessschritte in 3 Phasen</p>
+  <div class="page-header">
+    <h1>Patientenpfad – Interaktive Prozesskarte</h1>
+    <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume</p>
+  </div>
 
   <div class="toolbar">
-    <div class="toolbar-row">
-      <span class="toolbar-label">Phase:</span>
+    <div class="filter-row">
+      <span class="filter-label">Phase</span>
       <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
-      <button class="phase-tab" onclick="setPhase('vor')">Vor dem Krankenhaus</button>
-      <button class="phase-tab" onclick="setPhase('im')">Im Krankenhaus</button>
-      <button class="phase-tab" onclick="setPhase('nach')">Nach dem Krankenhaus</button>
+      <button class="phase-tab" onclick="setPhase('vor')">
+        <span class="dot" style="background:var(--phase-vor)"></span>Vor dem Krankenhaus
+      </button>
+      <button class="phase-tab" onclick="setPhase('im')">
+        <span class="dot" style="background:var(--phase-im)"></span>Im Krankenhaus
+      </button>
+      <button class="phase-tab" onclick="setPhase('nach')">
+        <span class="dot" style="background:var(--phase-nach)"></span>Nach dem Krankenhaus
+      </button>
     </div>
-    <div class="toolbar-row">
-      <span class="toolbar-label">Datenraum:</span>
-      <button class="dr-toggle dr-portal active"     data-dr="portal"     onclick="toggleDR('portal')">Portal</button>
+    <div class="filter-row">
+      <span class="filter-label">Datenraum</span>
+      <button class="dr-toggle dr-portal     active" data-dr="portal"     onclick="toggleDR('portal')">Portal</button>
       <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
-      <button class="dr-toggle dr-epa active"        data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
-      <button class="dr-toggle dr-ehds active"       data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
+      <button class="dr-toggle dr-epa        active" data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
+      <button class="dr-toggle dr-ehds       active" data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
+    </div>
+    <div class="filter-row" id="law-filter-row">
+      <span class="filter-label">Rechtsgrundlage</span>
+      <!-- dynamisch befüllt -->
     </div>
   </div>
 
-  <div class="counter" id="counter"></div>
-  <div id="karten"></div>
+  <div class="main">
+    <div class="counter" id="counter"></div>
+    <div id="karten"></div>
+  </div>
 
   <script src="patientenpfad_data.js"></script>
   <script>
+    // ── Konfiguration ────────────────────────────────────────────────
     const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
     const drLabel      = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
     const phaseLabel   = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
     const phaseBorder  = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
 
+    // ── Gesetzesgruppe aus einem Eintrag extrahieren ─────────────────
+    function getLawGroup(gesetz) {
+      return gesetz.split(/\s+(?:§|Art\.|Abs\.)/)[0].trim();
+    }
+
+    // ── Alle Gesetzesgruppen aus den Daten ermitteln ─────────────────
+    const allLawGroups = [...new Set(
+      data.flatMap(d => (d.gesetze || []).map(getLawGroup))
+    )].sort();
+
+    // ── Filter-State ─────────────────────────────────────────────────
     let activePhase = 'alle';
     let activeDR    = new Set(['portal','versorgung','epa','ehds']);
+    let activeLaws  = new Set(allLawGroups);
     let openCard    = null;
 
+    // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
+    const lawRow = document.getElementById('law-filter-row');
+    allLawGroups.forEach(group => {
+      const btn = document.createElement('button');
+      btn.className = 'law-toggle active';
+      btn.dataset.law = group;
+      btn.textContent = group;
+      btn.onclick = () => toggleLaw(group);
+      lawRow.appendChild(btn);
+    });
+
+    // ── Event-Handler ────────────────────────────────────────────────
     function setPhase(p) {
       activePhase = p;
       document.querySelectorAll('.phase-tab').forEach((t, i) => {
@@ -273,38 +408,53 @@
       render();
     }
 
+    function toggleLaw(group) {
+      activeLaws.has(group) ? activeLaws.delete(group) : activeLaws.add(group);
+      document.querySelector(`[data-law="${CSS.escape(group)}"]`).classList.toggle('active', activeLaws.has(group));
+      render();
+    }
+
     function toggleDetail(nr) {
       openCard = openCard === nr ? null : nr;
       render();
     }
 
+    // ── Render ───────────────────────────────────────────────────────
     function render() {
-      const filtered = data.filter(d => {
-        if (activePhase !== 'alle' && d.phase !== activePhase) return false;
-        return true;
-      });
+      const filtered = data.filter(d =>
+        activePhase === 'alle' || d.phase === activePhase
+      );
 
-      const visible = filtered.filter(d => d.dr.some(r => activeDR.has(r)));
+      const visible = filtered.filter(d =>
+        d.dr.some(r => activeDR.has(r)) &&
+        (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+      );
 
       document.getElementById('counter').innerHTML =
         `<strong>${visible.length} von ${data.length}</strong> Prozessschritten sichtbar`;
 
       document.getElementById('karten').innerHTML = filtered.map(d => {
         const hasDR  = d.dr.some(r => activeDR.has(r));
-        const badges = d.dr.map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`).join('');
+        const hasLaw = !d.gesetze || d.gesetze.length === 0
+          || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+        const dimmed = !hasDR || !hasLaw;
         const isOpen = openCard === d.nr;
 
-        let detail = '';
+        const drBadges = d.dr
+          .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
+          .join('');
+
+        let detailHtml = '';
         if (isOpen) {
-          const gesetze = d.gesetze && d.gesetze.length
-            ? d.gesetze.map(g => `<span class="gesetz-badge">${g}</span>`).join('')
-            : '<span style="color:var(--color-text-tertiary);font-size:12px;">–</span>';
-
           const domaene = d.domäne
-            ? `<span class="domaene-badge">${d.domäne}</span>`
-            : '<span style="color:var(--color-text-tertiary);font-size:12px;">–</span>';
+            ? `<span class="domaene-chip">${d.domäne}</span>`
+            : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
 
-          detail = `
+          const gesetze = (d.gesetze || []).length
+            ? d.gesetze.map(g => `<span class="gesetz-chip">${g}</span>`).join('')
+            : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+          detailHtml = `
             <div class="detail-box">
               <div>${d.detail}</div>
               <div class="detail-section">
@@ -312,24 +462,26 @@
                 ${domaene}
               </div>
               <div class="detail-section">
-                <div class="detail-section-label">Rechtsgrundlagen (Entwurf)</div>
-                ${gesetze}
+                <div class="detail-section-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
+                <div>${gesetze}</div>
               </div>
             </div>`;
         }
 
         return `
-          <div class="prozess-card ${phaseBorder[d.phase]} ${hasDR ? '' : 'dimmed'}"
+          <div class="prozess-card ${phaseBorder[d.phase]} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
                onclick="toggleDetail(${d.nr})">
             <div class="card-meta">
-              <span>${phaseLabel[d.phase]}</span>
-              <span>#${d.nr}</span>
+              <span class="card-phase-label">${phaseLabel[d.phase]}</span>
+              <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
             </div>
             <div class="card-titel">${d.titel}</div>
             <div class="card-akteur">${d.akteur}</div>
-            <div class="card-objekt">${d.objekt} <span style="opacity:0.6;">(${d.op})</span></div>
-            <div>${badges}</div>
-            ${detail}
+            <div class="card-objekt">
+              ${d.objekt}<span class="card-op">${d.op}</span>
+            </div>
+            <div class="card-badges">${drBadges}</div>
+            ${detailHtml}
           </div>`;
       }).join('');
     }
