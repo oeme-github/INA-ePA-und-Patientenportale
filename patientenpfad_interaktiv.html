@@ -377,6 +377,21 @@
     }
     .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
 
+    /* ── Print-Filterzeile ── */
+    .print-filter-summary {
+      display: none;
+    }
+    @media print {
+      .print-filter-summary {
+        display: block;
+        font-size: 11px;
+        color: #555;
+        padding: 6px 0 10px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
+    }
+
     /* ── Print ── */
     @media print {
       body { background: white; min-height: 0; }
@@ -398,6 +413,8 @@
     <h1>Patientenpfad – Interaktive Prozesskarte</h1>
     <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume &nbsp;&middot;&nbsp; <a href="https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1" target="_blank" style="color:inherit;opacity:0.6;text-decoration:none;">AK Patientenportale ↗</a></p>
   </div>
+
+  <div class="print-filter-summary" id="print-filter-summary"></div>
 
   <div class="toolbar">
     <div class="filter-row">
@@ -617,6 +634,23 @@
         `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
 
       document.getElementById('karten').innerHTML = sectionsHtml;
+
+      // Print-Filterzeile aktualisieren
+      const phaseText  = activePhase === 'alle' ? 'Alle Phasen' : phaseLabel[activePhase];
+      const drText     = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
+      const lawText    = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
+      const searchText = searchTerm ? `Suche: „${searchTerm}"` : null;
+      const dateText   = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+      const parts = [
+        `Phase: ${phaseText}`,
+        `Datenräume: ${drText}`,
+        `Rechtsgrundlagen: ${lawText}`,
+        searchText
+      ].filter(Boolean).join(' · ');
+
+      document.getElementById('print-filter-summary').innerHTML =
+        `${parts}<br><span style="opacity:0.7">Exportiert: ${dateText} · ${totalVisible} von ${data.length} Prozessschritten</span>`;
     }
 
     render();
