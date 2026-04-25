@@ -466,6 +466,7 @@
     let activeLaws  = new Set(allLawGroups);
     let openCard    = null;
     let searchTerm  = '';
+    let printMode   = false;
 
     // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
     const lawRow = document.getElementById('law-filter-row');
@@ -532,7 +533,7 @@
       const hasLaw = !d.gesetze || d.gesetze.length === 0
         || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
       const dimmed = !hasDR || !hasLaw;
-      const isOpen = openCard === d.nr;
+      const isOpen = openCard === d.nr || printMode;
 
       const drBadges = d.dr
         .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
@@ -632,6 +633,16 @@
     }
 
     function exportPDF() {
+      window.onbeforeprint = () => {
+        printMode = true;
+        render();
+      };
+      window.onafterprint = () => {
+        printMode = false;
+        render();
+        window.onbeforeprint = null;
+        window.onafterprint = null;
+      };
       window.print();
     }
 
