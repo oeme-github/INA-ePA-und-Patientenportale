@@ -330,6 +330,29 @@
       margin-bottom: 4px;
     }
 
+    /* ── Suche ── */
+    .search-input {
+      flex: 1;
+      max-width: 340px;
+      padding: 5px 10px;
+      border: 1px solid var(--c-border-2);
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--c-text-1);
+      background: var(--c-surface);
+      transition: border-color 0.12s;
+    }
+    .search-input:focus { outline: none; border-color: var(--c-border-3); }
+    .search-input::placeholder { color: var(--c-text-4); }
+
+    mark {
+      background: #FEF08A;
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
     /* ── Print ── */
     @media print {
       body { background: white; }
@@ -373,6 +396,12 @@
       <span class="filter-label">Rechtsgrundlage</span>
       <!-- dynamisch befüllt -->
     </div>
+    <div class="filter-row">
+      <span class="filter-label">Suche</span>
+      <input class="search-input" type="search" id="search-input"
+             placeholder="Titel, Akteur, Datenobjekt, Beschreibung …"
+             oninput="setSearch(this.value)">
+    </div>
   </div>
 
   <div class="main">
@@ -403,6 +432,7 @@
     let activeDR    = new Set(['portal','versorgung','epa','ehds']);
     let activeLaws  = new Set(allLawGroups);
     let openCard    = null;
+    let searchTerm  = '';
 
     // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
     const lawRow = document.getElementById('law-filter-row');
@@ -441,6 +471,28 @@
       render();
     }
 
+    function setSearch(val) {
+      searchTerm = val.trim();
+      render();
+    }
+
+    function highlight(text, term) {
+      if (!term) return text;
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+    }
+
+    function matchesSearch(d) {
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      return (
+        d.titel.toLowerCase().includes(q) ||
+        d.akteur.join(', ').toLowerCase().includes(q) ||
+        d.objekt.join(' · ').toLowerCase().includes(q) ||
+        d.detail.toLowerCase().includes(q)
+      );
+    }
+
     // ── Karte als HTML ───────────────────────────────────────────────
     function renderCard(d) {
       const hasDR  = d.dr.some(r => activeDR.has(r));
@@ -465,7 +517,7 @@
 
         detailHtml = `
           <div class="detail-box">
-            <div>${d.detail}</div>
+            <div>${highlight(d.detail, searchTerm)}</div>
             <div class="detail-section">
               <div class="detail-section-label">Informationsdomäne</div>
               ${domaene}
@@ -483,10 +535,10 @@
           <div class="card-meta">
             <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
           </div>
-          <div class="card-titel">${d.titel}</div>
-          <div class="card-akteur">${d.akteur.join(', ')}</div>
+          <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
+          <div class="card-akteur">${highlight(d.akteur.join(', '), searchTerm)}</div>
           <div class="card-objekt">
-            ${d.objekt.join(' · ')}<span class="card-op">${d.op}</span>
+            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${d.op}</span>
           </div>
           <div class="card-badges">${drBadges}</div>
           ${detailHtml}
@@ -502,7 +554,9 @@
       let totalVisible = 0;
 
       const sectionsHtml = phases.map(phase => {
-        const phaseDaten = data.filter(d => d.phase === phase);
+        const phaseDaten = data
+          .filter(d => d.phase === phase)
+          .filter(matchesSearch);
         const visibleCount = phaseDaten.filter(d =>
           d.dr.some(r => activeDR.has(r)) &&
           (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
