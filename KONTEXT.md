@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
-| `patientenpfad_interaktiv.html` | v2 | 2026-04-25 | Design, Phasen-Header, 4 Filterebenen |
+| `patientenpfad_interaktiv.html` | v3 | 2026-04-25 | Freitextsuche mit Highlighting ergänzt |
 | `patientenpfad_editor.html` | v1 | 2026-04-25 | Neu: Formular-Editor mit Meta-Verwaltung und Export |
 | `patientenpfad_data.js` | v2 | 2026-04-25 | meta-Objekt, akteur/objekt/gesetze als Arrays |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
@@ -111,7 +111,9 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 |---|---|---|
 | `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
 | HTML-Widget weiter verbessern | Claude | In Arbeit – Kernfunktionen erledigt (siehe Requirements) |
-| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Offen |
+| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| PR #3 (Widget v2) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| PR #4 (Freitextsuche) mergen | oeme-github | Offen |
 
 ---
 
@@ -133,7 +135,7 @@ Ziel: Eine interaktive, pflegbare Prozesslandkarte, die in der Arbeitsgruppe gen
 | ID | Anforderung | Priorität | Status |
 |---|---|---|---|
 | R2.1 | Zähler anzeigen: „X von 25 Prozessschritten sichtbar" | Hoch | Erledigt |
-| R2.2 | Freitextsuche über Titel, Akteur, Objekt | Mittel | Offen |
+| R2.2 | Freitextsuche über Titel, Akteur, Objekt | Mittel | Erledigt (mit Highlighting) |
 | R2.3 | `sendPrompt()`-Button entfernen – toter Platzhalter | Hoch | Erledigt |
 | R2.4 | Detailkarte: `nr`, `domäne`, `standards` und `gesetze` anzeigen, sobald befüllt | Mittel | Erledigt |
 | R2.5 | Druckansicht / Export (alle sichtbaren Karten als strukturierte Übersicht) | Niedrig | Offen |
@@ -194,7 +196,9 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 
 ## Technische Hinweise (für Claude Code)
 
-- Alle 25 Prozessschritte sind im `data`-Array in `patientenpfad_interaktiv.html` definiert
-- Jeder Eintrag hat: `phase`, `titel`, `akteur`, `objekt`, `op`, `dr` (Datenräume), `detail`
+- Daten liegen in `patientenpfad_data.js` — nicht in der HTML-Datei
+- `meta`-Objekt enthält pflegbare Auswahllisten: `domaenen`, `akteure`, `datenobjekte`, `rechtsgrundlagen`
+- `data`-Array: 25 Einträge mit `nr`, `phase`, `titel`, `akteur[]`, `objekt[]`, `op`, `dr[]`, `domäne`, `gesetze[]`, `detail`
 - Die vier Datenräume sind: `portal`, `versorgung`, `epa`, `ehds`
-- `sendPrompt()` ist ein Claude.ai-Platzhalter – in Claude Code durch eigene Logik ersetzen
+- Viewer und Editor laden `patientenpfad_data.js` per `<script src="...">`
+- Suche im Viewer: kombiniert mit allen Filtern, Highlighting via `<mark>`-Tags
