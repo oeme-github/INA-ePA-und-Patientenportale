@@ -330,6 +330,21 @@
       margin-bottom: 4px;
     }
 
+    .struktur-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .struktur-strukturiert   { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .struktur-teilstrukturiert { background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; }
+    .struktur-unstrukturiert { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
+
     .standard-chip {
       display: inline-block;
       padding: 3px 9px;
@@ -606,7 +621,7 @@
           <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
           <div class="card-akteur">${highlight(d.akteur.join(', '), searchTerm)}</div>
           <div class="card-objekt">
-            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${d.op}</span>
+            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${d.op}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
           </div>
           <div class="card-badges">${drBadges}</div>
           ${detailHtml}
