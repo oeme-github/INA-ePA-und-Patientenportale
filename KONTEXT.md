@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
-| `patientenpfad_interaktiv.html` | v6 | 2026-04-25 | Standards-Filter, Alle aufklappen/zuklappen |
+| `patientenpfad_interaktiv.html` | v7 | 2026-04-25 | Struktur-Filter, alle Features komplett |
 | `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
 | `patientenpfad_data.js` | v3 | 2026-04-25 | meta.standards (32 Einträge + KIM), struktur-Feld alle 25 Schritte |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
@@ -119,7 +119,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | PR #5 (AK Patientenportale) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #6 (Export PDF/CSV/JSON) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #7 (Standards + Struktur-Kennzeichen) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
-| PR #8 (Standards-Filter + Auf-/Zuklappen) mergen | oeme-github | Offen |
+| PR #8 (Standards-Filter + Auf-/Zuklappen + Struktur-Filter) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 
 ---
 
