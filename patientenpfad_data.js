@@ -69,6 +69,7 @@ const meta = {
     "gematik ePA-Spezifikation",
     "gematik TI-Messenger",
     "gematik VSDM",
+    "KIM (Kommunikation im Medizinwesen)",
     "HL7 CDA R2",
     "HL7 FHIR R4 (Appointment)",
     "HL7 FHIR R4 (CarePlan)",
@@ -340,7 +341,7 @@ const data = [
     dr: ["portal", "versorgung", "epa"],
     domäne: "Kommunikation",
     gesetze: ["DSGVO Art. 9", "StGB § 203 (Schweigepflicht)", "TKG"],
-    standards: ["gematik TI-Messenger", "HL7 FHIR R4 (Communication)"],
+    standards: ["gematik TI-Messenger", "KIM (Kommunikation im Medizinwesen)", "HL7 FHIR R4 (Communication)"],
     struktur: "unstrukturiert",
     detail: "Nachrichten und Rückfragen – unabhängig vom Übertragungsweg (Portal, TI-Messenger oder andere Kanäle)."
   },
@@ -483,7 +484,7 @@ const data = [
     dr: ["portal", "versorgung", "epa"],
     domäne: "Kommunikation",
     gesetze: ["DSGVO Art. 9", "StGB § 203 (Schweigepflicht)", "TKG"],
-    standards: ["gematik TI-Messenger", "HL7 FHIR R4 (Communication)"],
+    standards: ["gematik TI-Messenger", "KIM (Kommunikation im Medizinwesen)", "HL7 FHIR R4 (Communication)"],
     struktur: "unstrukturiert",
     detail: "Rückfragen nach Entlassung – unabhängig vom Übertragungsweg."
   },
