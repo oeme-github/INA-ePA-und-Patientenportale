@@ -484,9 +484,9 @@
             <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
           </div>
           <div class="card-titel">${d.titel}</div>
-          <div class="card-akteur">${d.akteur}</div>
+          <div class="card-akteur">${d.akteur.join(', ')}</div>
           <div class="card-objekt">
-            ${d.objekt}<span class="card-op">${d.op}</span>
+            ${d.objekt.join(' · ')}<span class="card-op">${d.op}</span>
           </div>
           <div class="card-badges">${drBadges}</div>
           ${detailHtml}
