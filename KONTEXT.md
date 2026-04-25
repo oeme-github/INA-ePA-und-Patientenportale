@@ -8,11 +8,14 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
-| `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Initialer Stand, Dateiname bereinigt |
-| `patientenpfad_interaktiv.html` | v1 | 2026-04-24 | Initialer Stand |
-| `.github/CODEOWNERS` | – | 2026-04-25 | Neu angelegt |
+| `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
+| `patientenpfad_interaktiv.html` | v2 | 2026-04-25 | Design, Phasen-Header, 4 Filterebenen |
+| `patientenpfad_editor.html` | v1 | 2026-04-25 | Neu: Formular-Editor mit Meta-Verwaltung und Export |
+| `patientenpfad_data.js` | v2 | 2026-04-25 | meta-Objekt, akteur/objekt/gesetze als Arrays |
+| `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
+| `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `KONTEXT.md` | – | 2026-04-25 | Lebendes Dokument, kein Versionsschema |
-| `README.md` | – | 2026-04-24 | Lebendes Dokument, kein Versionsschema |
+| `README.md` | – | 2026-04-25 | Grundprinzip 3 korrigiert |
 
 ---
 

@@ -25,7 +25,42 @@ Kein Element kann ohne die anderen beiden gedacht werden.
 |---|---|
 | `KONTEXT.md` | Aktueller Arbeitsstand, Entscheidungen, offene Punkte – wird jede Session aktualisiert |
 | `patientenpfad_arbeitsdokument.md` | Vollständiges Arbeitsdokument (9 Kapitel) |
-| `patientenpfad_interaktiv.html` | Interaktive Prozesskarte mit Filter nach Phase und Datenraum |
+| `patientenpfad_data.js` | Daten und Konfiguration – Quelle der Wahrheit für Viewer und Editor |
+| `patientenpfad_interaktiv.html` | Interaktive Prozesskarte – Viewer mit Filter nach Phase, Datenraum und Rechtsgrundlage |
+| `patientenpfad_editor.html` | Daten-Editor – Prozessschritte und Auswahllisten pflegen, Daten exportieren |
+
+---
+
+## Arbeitsweise mit dem Widget
+
+### Daten pflegen
+
+1. `patientenpfad_editor.html` im Browser öffnen — lädt `patientenpfad_data.js` aus demselben Ordner
+2. Prozessschritte bearbeiten, hinzufügen oder löschen
+3. Auswahllisten (Domänen, Akteure, Datenobjekte, Rechtsgrundlagen) über „Auswahllisten verwalten" pflegen
+4. „data.js exportieren" — lädt die aktualisierte Datei herunter
+5. Heruntergeladene Datei ersetzt die bestehende `patientenpfad_data.js`
+6. Änderung committen und per Pull Request in `main` mergen
+
+### Datenstruktur (`patientenpfad_data.js`)
+
+Die Datei enthält zwei Objekte:
+
+```js
+const meta = {
+  domaenen:        [...],  // 14 Informationsdomänen
+  akteure:         [...],  // Prozessbeteiligte
+  datenobjekte:    [...],  // Erzeugte / veränderte Objekte
+  rechtsgrundlagen:[...]   // Gesetzliche Grundlagen (Entwurf)
+};
+
+const data = [
+  { nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], detail },
+  ...
+];
+```
+
+Viewer und Editor laden diese Datei per `<script src="patientenpfad_data.js">` — kein Server erforderlich, keine externen Abhängigkeiten.
 
 ---
 

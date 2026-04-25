@@ -13,3 +13,7 @@ Thumbs.db
 # Generierte Dateien (bei Bedarf neu erstellen)
 *.pdf
 *.docx
+
+# Backup-Dateien (lokale Arbeitskopien)
+*_org.js
+*_backup.js
