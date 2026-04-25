@@ -68,6 +68,9 @@ Wenn eine Aufgabe am Session-Ende noch nicht abgeschlossen ist, trotzdem committ
 `WIP: Bereich – kurze Beschreibung was fehlt`
 So geht kein Stand verloren. WIP-Commits beim nächsten Start fertigstellen und squashen.
 
+**Vor jedem Branch-Wechsel: `git status` prüfen.**
+Nie `git checkout` oder `git switch` ausführen, bevor sichergestellt ist, dass keine uncommitted Changes vorhanden sind. Falls doch: erst committen oder stashen.
+
 Siehe README.md für vollständige Team-Konventionen.
 
 ---
