@@ -40,7 +40,7 @@ Siehe README.md für vollständige Team-Konventionen.
 Die vier Grundprinzipien (siehe README.md) gelten auch für technische Entscheidungen:
 - Prozess vor Daten vor System
 - Keine führenden Systeme
-- Datenobjekte statt Datenflüsse
+- Datenobjekte vor Datenflüsse
 - Strukturierte Daten vor Dokumenten
 
 ---

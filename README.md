@@ -14,7 +14,7 @@ Kein Element kann ohne die anderen beiden gedacht werden.
 
 1. **Prozess vor Daten vor System** – Systeme sind Werkzeuge, keine Ausgangspunkte
 2. **Keine führenden Systeme** – Daten gehören dem Prozess und dem Patienten
-3. **Datenobjekte statt Datenflüsse** – Was wird wann von wem erzeugt, verändert oder gelöscht?
+3. **Datenobjekte vor Datenflüsse** – Was wird wann von wem erzeugt, verändert oder gelöscht?
 4. **Strukturierte Daten vor Dokumenten** – Maschinenlesbarkeit ist das Ziel
 
 ---

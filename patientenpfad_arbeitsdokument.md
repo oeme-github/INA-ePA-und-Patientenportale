@@ -31,7 +31,7 @@ Systeme unterstützen Prozesse. Prozesse werden von Akteuren ausgeführt und erz
 **Keine führenden Systeme.**
 Es gibt keine primären oder sekundären Systeme. Daten gehören dem Prozess – und letztlich dem Patienten. Systemgrenzen sind kein strukturgebendes Element.
 
-**Datenobjekte statt Datenflüsse.**
+**Datenobjekte vor Datenflüsse.**
 Im Fokus stehen nicht Schnittstellen zwischen Systemen, sondern Datenobjekte: Was wird wann von wem erzeugt, verändert oder gelöscht?
 
 **Strukturierte Daten vor Dokumenten.**
