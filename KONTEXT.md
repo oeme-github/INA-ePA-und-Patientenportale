@@ -91,6 +91,15 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 
 ---
 
+## Geplante Aufgaben
+
+| Aufgabe | Wer | Status |
+|---|---|---|
+| `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
+| HTML-Widget weiter verbessern | Claude | Offen |
+
+---
+
 ## Offene Punkte & nächste Schritte
 
 ### Im Dokument
