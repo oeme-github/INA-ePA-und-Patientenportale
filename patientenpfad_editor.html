@@ -190,7 +190,8 @@
       { key: 'domaenen',        label: 'Informationsdomänen' },
       { key: 'akteure',         label: 'Akteure' },
       { key: 'datenobjekte',    label: 'Datenobjekte' },
-      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' }
+      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' },
+      { key: 'standards',       label: 'Standards' }
     ];
 
     function renderMeta() {
@@ -274,6 +275,15 @@
               <label class="form-label">Operation (E / V / G)</label>
               <input class="form-input" type="text" id="f-op" value="${item.op||''}" placeholder="z.B. E, V">
             </div>
+            <div class="form-field">
+              <label class="form-label">Struktur (Ist-Zustand)</label>
+              <select class="form-select" id="f-struktur">
+                <option value="">– bitte wählen –</option>
+                <option value="strukturiert"     ${item.struktur==='strukturiert'?'selected':''}>Strukturiert</option>
+                <option value="teilstrukturiert" ${item.struktur==='teilstrukturiert'?'selected':''}>Teilstrukturiert</option>
+                <option value="unstrukturiert"   ${item.struktur==='unstrukturiert'?'selected':''}>Unstrukturiert</option>
+              </select>
+            </div>
             <div class="form-field full">
               <label class="form-label">Titel</label>
               <input class="form-input" type="text" id="f-titel" value="${item.titel||''}" placeholder="Titel des Prozessschritts">
@@ -304,6 +314,12 @@
               <label class="form-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></label>
               <div class="check-group scrollable" id="f-gesetze">
                 ${renderCheckGroup('gesetze', metaCopy.rechtsgrundlagen, item.gesetze, false)}
+              </div>
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Standards <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></label>
+              <div class="check-group scrollable" id="f-standards">
+                ${renderCheckGroup('standards', metaCopy.standards||[], item.standards||[], false)}
               </div>
             </div>
             <div class="form-field full">
@@ -342,7 +358,9 @@
         op:       document.getElementById('f-op').value.trim(),
         dr:       getChecked('dr'),
         'domäne': document.getElementById('f-domaene').value,
-        gesetze:  getChecked('gesetze'),
+        gesetze:   getChecked('gesetze'),
+        standards: getChecked('standards'),
+        struktur:  document.getElementById('f-struktur').value,
         detail:   document.getElementById('f-detail').value.trim(),
       };
       editIdx = null;
