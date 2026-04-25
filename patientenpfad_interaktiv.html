@@ -353,14 +353,42 @@
       padding: 0 1px;
     }
 
+    /* ── Export-Bereich ── */
+    .export-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .export-bar .counter {
+      margin-bottom: 0;
+      flex: 1;
+    }
+    .btn-export {
+      padding: 5px 12px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-2);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
+
     /* ── Print ── */
     @media print {
       body { background: white; }
-      .page-header { position: static; box-shadow: none; }
-      .toolbar { display: none; }
-      .main { padding: 12px 0; }
-      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; }
+      .page-header { position: static; box-shadow: none; border-bottom: 1px solid #ccc; }
+      .toolbar, .export-bar { display: none; }
+      .main { padding: 16px 0; }
+      .phase-section { break-inside: avoid; }
+      .phase-section-header { box-shadow: none; }
+      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; border: 1px solid #ddd; }
       .prozess-card.dimmed { display: none; }
+      .detail-box { display: block !important; border-top: 1px solid #eee; padding-top: 10px; margin-top: 8px; }
+      mark { background: none; font-weight: 600; }
     }
   </style>
 </head>
@@ -405,7 +433,12 @@
   </div>
 
   <div class="main">
-    <div class="counter" id="counter"></div>
+    <div class="export-bar">
+      <div class="counter" id="counter"></div>
+      <button class="btn-export" onclick="exportPDF()" title="Druckansicht öffnen">↓ PDF</button>
+      <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
+      <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
+    </div>
     <div id="karten"></div>
   </div>
 
@@ -586,6 +619,56 @@
     }
 
     render();
+
+    // ── Export-Funktionen ────────────────────────────────────────────
+
+    function getVisibleData() {
+      return data.filter(d =>
+        (activePhase === 'alle' || d.phase === activePhase) &&
+        matchesSearch(d) &&
+        d.dr.some(r => activeDR.has(r)) &&
+        (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+      );
+    }
+
+    function exportPDF() {
+      window.print();
+    }
+
+    function exportCSV() {
+      const visible = getVisibleData();
+      const cols = ['nr','phase','titel','akteur','objekt','op','dr','domäne','gesetze','detail'];
+      const header = cols.join(';');
+      const rows = visible.map(d => [
+        d.nr,
+        d.phase,
+        `"${d.titel}"`,
+        `"${d.akteur.join(', ')}"`,
+        `"${d.objekt.join(', ')}"`,
+        d.op,
+        `"${d.dr.join(', ')}"`,
+        `"${d.domäne || ''}"`,
+        `"${(d.gesetze || []).join(', ')}"`,
+        `"${d.detail.replace(/"/g, '""')}"`
+      ].join(';'));
+
+      const csv = '﻿' + [header, ...rows].join('\r\n');
+      download('patientenpfad_export.csv', csv, 'text/csv;charset=utf-8');
+    }
+
+    function exportJSON() {
+      const visible = getVisibleData();
+      const json = JSON.stringify(visible, null, 2);
+      download('patientenpfad_export.json', json, 'application/json');
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
