@@ -330,6 +330,19 @@
       margin-bottom: 4px;
     }
 
+    .standard-chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
     /* ── Suche ── */
     .search-input {
       flex: 1;
@@ -576,6 +589,10 @@
             <div class="detail-section">
               <div class="detail-section-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
               <div>${gesetze}</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-section-label">Standards <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
+              <div>${(d.standards||[]).length ? d.standards.map(s=>`<span class="standard-chip">${highlight(s,searchTerm)}</span>`).join('') : '<span style="color:var(--c-text-4);font-size:12px;">–</span>'}</div>
             </div>
           </div>`;
       }

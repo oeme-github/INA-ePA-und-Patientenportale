@@ -190,7 +190,8 @@
       { key: 'domaenen',        label: 'Informationsdomänen' },
       { key: 'akteure',         label: 'Akteure' },
       { key: 'datenobjekte',    label: 'Datenobjekte' },
-      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' }
+      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' },
+      { key: 'standards',       label: 'Standards' }
     ];
 
     function renderMeta() {
@@ -307,6 +308,12 @@
               </div>
             </div>
             <div class="form-field full">
+              <label class="form-label">Standards <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></label>
+              <div class="check-group scrollable" id="f-standards">
+                ${renderCheckGroup('standards', metaCopy.standards||[], item.standards||[], false)}
+              </div>
+            </div>
+            <div class="form-field full">
               <label class="form-label">Beschreibung</label>
               <textarea class="form-textarea" id="f-detail" placeholder="Kurze Beschreibung des Prozessschritts">${item.detail||''}</textarea>
             </div>
@@ -342,7 +349,8 @@
         op:       document.getElementById('f-op').value.trim(),
         dr:       getChecked('dr'),
         'domäne': document.getElementById('f-domaene').value,
-        gesetze:  getChecked('gesetze'),
+        gesetze:   getChecked('gesetze'),
+        standards: getChecked('standards'),
         detail:   document.getElementById('f-detail').value.trim(),
       };
       editIdx = null;
