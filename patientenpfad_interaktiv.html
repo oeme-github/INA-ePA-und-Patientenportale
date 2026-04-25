@@ -405,6 +405,22 @@
     }
     .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
 
+    /* ── Struktur-Toggles ── */
+    .str-toggle {
+      padding: 4px 11px;
+      border-radius: 20px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.12s;
+      opacity: 0.35;
+    }
+    .str-toggle.active { opacity: 1; }
+    .str-strukturiert     { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+    .str-teilstrukturiert { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
+    .str-unstrukturiert   { background: #FEE2E2; color: #7F1D1D; border-color: #FCA5A5; }
+
     /* ── Standard-Toggles ── */
     .std-toggle {
       padding: 4px 10px;
@@ -490,6 +506,12 @@
       <span class="filter-label">Rechtsgrundlage</span>
       <!-- dynamisch befüllt -->
     </div>
+    <div class="filter-row">
+      <span class="filter-label">Struktur</span>
+      <button class="str-toggle str-strukturiert     active" data-str="strukturiert"     onclick="toggleStruktur('strukturiert')">Strukturiert</button>
+      <button class="str-toggle str-teilstrukturiert active" data-str="teilstrukturiert" onclick="toggleStruktur('teilstrukturiert')">Teilstrukturiert</button>
+      <button class="str-toggle str-unstrukturiert   active" data-str="unstrukturiert"   onclick="toggleStruktur('unstrukturiert')">Unstrukturiert</button>
+    </div>
     <div class="filter-row" id="std-filter-row">
       <span class="filter-label">Standard</span>
       <!-- dynamisch befüllt -->
@@ -551,6 +573,7 @@
     let activeDR        = new Set(['portal','versorgung','epa','ehds']);
     let activeLaws      = new Set(allLawGroups);
     let activeStandards = new Set(allStandardGroups);
+    let activeStruktur  = new Set(['strukturiert','teilstrukturiert','unstrukturiert']);
     let openCard        = null;
     let searchTerm      = '';
     let printMode       = false;
@@ -598,6 +621,12 @@
       render();
     }
 
+    function toggleStruktur(val) {
+      activeStruktur.has(val) ? activeStruktur.delete(val) : activeStruktur.add(val);
+      document.querySelector(`[data-str="${val}"]`).classList.toggle('active', activeStruktur.has(val));
+      render();
+    }
+
     function toggleStandard(group) {
       activeStandards.has(group) ? activeStandards.delete(group) : activeStandards.add(group);
       document.querySelector(`[data-std="${CSS.escape(group)}"]`).classList.toggle('active', activeStandards.has(group));
@@ -642,10 +671,11 @@
 
     // ── Karte als HTML ───────────────────────────────────────────────
     function renderCard(d) {
-      const hasDR       = d.dr.some(r => activeDR.has(r));
-      const hasLaw      = !d.gesetze   || d.gesetze.length   === 0 || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
-      const hasStandard = !d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)));
-      const dimmed = !hasDR || !hasLaw || !hasStandard;
+      const hasDR        = d.dr.some(r => activeDR.has(r));
+      const hasLaw       = !d.gesetze   || d.gesetze.length   === 0 || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+      const hasStandard  = !d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)));
+      const hasStruktur  = !d.struktur  || activeStruktur.has(d.struktur);
+      const dimmed = !hasDR || !hasLaw || !hasStandard || !hasStruktur;
       const isOpen = openCard === d.nr || printMode || expandAll;
 
       const drBadges = d.dr
@@ -711,7 +741,8 @@
         const visibleCount = phaseDaten.filter(d =>
           d.dr.some(r => activeDR.has(r)) &&
           (d.gesetze   || []).some(g => activeLaws.has(getLawGroup(g))) &&
-          (!d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s))))
+          (!d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)))) &&
+          (!d.struktur  || activeStruktur.has(d.struktur))
         ).length;
         totalVisible += visibleCount;
 
@@ -741,6 +772,7 @@
       const drText       = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
       const lawText      = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
       const stdText      = activeStandards.size === allStandardGroups.length ? null : `Standards: ${[...activeStandards].join(', ')}`;
+      const strText      = activeStruktur.size === 3 ? null : `Struktur: ${[...activeStruktur].join(', ')}`;
       const searchText   = searchTerm ? `Suche: „${searchTerm}"` : null;
       const dateText   = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
 
@@ -748,6 +780,7 @@
         `Phase: ${phaseText}`,
         `Datenräume: ${drText}`,
         `Rechtsgrundlagen: ${lawText}`,
+        strText,
         stdText,
         searchText
       ].filter(Boolean).join(' · ');
