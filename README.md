@@ -1,6 +1,6 @@
-# INA-Arbeitskreis: Patientenpfad & Datenstandards
+# AK Patientenportale – Patientenpfad & Datenstandards
 
-Arbeitskreis der gematik ([ina.gematik.de](https://ina.gematik.de)) zur Standardisierung des Datenaustauschs zwischen einrichtungsspezifischen Patientenportalen, Primärsystemen (KIS/PVS) und der elektronischen Patientenakte (ePA).
+**[AK Patientenportale](https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1)** im Rahmen der INA der gematik — Standardisierung des Datenaustauschs zwischen einrichtungsspezifischen Patientenportalen, Primärsystemen (KIS/PVS) und der elektronischen Patientenakte (ePA).
 
 ## Leitformel
 

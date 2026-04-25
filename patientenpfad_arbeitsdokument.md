@@ -7,9 +7,9 @@
 
 ## 1. Einführung des Vorgehens
 
-Ziel des Arbeitskreises ist die Entwicklung eines Plans, wie der Datenaustausch zwischen einrichtungsspezifischen Patientenportalen, einrichtungsspezifischen Primärsystemen und der bundesweiten ePA künftig standardisiert stattfinden sollte – inklusive der Aufnahme von Impulsen aus dem Ausland.
+Ziel des **AK Patientenportale** ([ina.gematik.de](https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1)) ist die Entwicklung eines Plans, wie der Datenaustausch zwischen einrichtungsspezifischen Patientenportalen, einrichtungsspezifischen Primärsystemen und der bundesweiten ePA künftig standardisiert stattfinden sollte – inklusive der Aufnahme von Impulsen aus dem Ausland.
 
-Im Rahmen des Arbeitskreises wurde eine Unterarbeitsgruppe gegründet, die sich mit dem Patientenpfad und den Prozessen vor, im und nach dem Krankenhaus beschäftigt.
+Im Rahmen des AK wurde eine Unterarbeitsgruppe gegründet, die sich mit dem Patientenpfad und den Prozessen vor, im und nach dem Krankenhaus beschäftigt.
 
 Der gewählte Ansatz folgt bewusst dieser Reihenfolge:
 
