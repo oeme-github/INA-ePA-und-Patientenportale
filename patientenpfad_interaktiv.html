@@ -353,14 +353,57 @@
       padding: 0 1px;
     }
 
+    /* ── Export-Bereich ── */
+    .export-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .export-bar .counter {
+      margin-bottom: 0;
+      flex: 1;
+    }
+    .btn-export {
+      padding: 5px 12px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-2);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
+
+    /* ── Print-Filterzeile ── */
+    .print-filter-summary {
+      display: none;
+    }
+    @media print {
+      .print-filter-summary {
+        display: block;
+        font-size: 11px;
+        color: #555;
+        padding: 6px 0 10px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
+    }
+
     /* ── Print ── */
     @media print {
-      body { background: white; }
-      .page-header { position: static; box-shadow: none; }
-      .toolbar { display: none; }
-      .main { padding: 12px 0; }
-      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; }
+      body { background: white; min-height: 0; }
+      .page-header { position: static; box-shadow: none; border-bottom: 1px solid #ccc; padding: 8px 16px; }
+      .toolbar, .export-bar { display: none !important; }
+      .main { padding: 12px 0 0; }
+      .phase-section { break-inside: auto; }
+      .phase-section-header { box-shadow: none; break-after: avoid; }
+      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; border: 1px solid #ddd; }
       .prozess-card.dimmed { display: none; }
+      .detail-box { display: block !important; border-top: 1px solid #eee; padding-top: 10px; margin-top: 8px; }
+      mark { background: none; font-weight: 600; }
     }
   </style>
 </head>
@@ -370,6 +413,8 @@
     <h1>Patientenpfad – Interaktive Prozesskarte</h1>
     <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume &nbsp;&middot;&nbsp; <a href="https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1" target="_blank" style="color:inherit;opacity:0.6;text-decoration:none;">AK Patientenportale ↗</a></p>
   </div>
+
+  <div class="print-filter-summary" id="print-filter-summary"></div>
 
   <div class="toolbar">
     <div class="filter-row">
@@ -405,7 +450,12 @@
   </div>
 
   <div class="main">
-    <div class="counter" id="counter"></div>
+    <div class="export-bar">
+      <div class="counter" id="counter"></div>
+      <button class="btn-export" onclick="exportPDF()" title="Druckansicht öffnen">↓ PDF</button>
+      <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
+      <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
+    </div>
     <div id="karten"></div>
   </div>
 
@@ -433,6 +483,7 @@
     let activeLaws  = new Set(allLawGroups);
     let openCard    = null;
     let searchTerm  = '';
+    let printMode   = false;
 
     // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
     const lawRow = document.getElementById('law-filter-row');
@@ -499,7 +550,7 @@
       const hasLaw = !d.gesetze || d.gesetze.length === 0
         || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
       const dimmed = !hasDR || !hasLaw;
-      const isOpen = openCard === d.nr;
+      const isOpen = openCard === d.nr || printMode;
 
       const drBadges = d.dr
         .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
@@ -583,9 +634,86 @@
         `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
 
       document.getElementById('karten').innerHTML = sectionsHtml;
+
+      // Print-Filterzeile aktualisieren
+      const phaseText  = activePhase === 'alle' ? 'Alle Phasen' : phaseLabel[activePhase];
+      const drText     = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
+      const lawText    = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
+      const searchText = searchTerm ? `Suche: „${searchTerm}"` : null;
+      const dateText   = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+      const parts = [
+        `Phase: ${phaseText}`,
+        `Datenräume: ${drText}`,
+        `Rechtsgrundlagen: ${lawText}`,
+        searchText
+      ].filter(Boolean).join(' · ');
+
+      document.getElementById('print-filter-summary').innerHTML =
+        `${parts}<br><span style="opacity:0.7">Exportiert: ${dateText} · ${totalVisible} von ${data.length} Prozessschritten</span>`;
     }
 
     render();
+
+    // ── Export-Funktionen ────────────────────────────────────────────
+
+    function getVisibleData() {
+      return data.filter(d =>
+        (activePhase === 'alle' || d.phase === activePhase) &&
+        matchesSearch(d) &&
+        d.dr.some(r => activeDR.has(r)) &&
+        (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+      );
+    }
+
+    function exportPDF() {
+      window.onbeforeprint = () => {
+        printMode = true;
+        render();
+      };
+      window.onafterprint = () => {
+        printMode = false;
+        render();
+        window.onbeforeprint = null;
+        window.onafterprint = null;
+      };
+      window.print();
+    }
+
+    function exportCSV() {
+      const visible = getVisibleData();
+      const cols = ['nr','phase','titel','akteur','objekt','op','dr','domäne','gesetze','detail'];
+      const header = cols.join(';');
+      const rows = visible.map(d => [
+        d.nr,
+        d.phase,
+        `"${d.titel}"`,
+        `"${d.akteur.join(', ')}"`,
+        `"${d.objekt.join(', ')}"`,
+        d.op,
+        `"${d.dr.join(', ')}"`,
+        `"${d.domäne || ''}"`,
+        `"${(d.gesetze || []).join(', ')}"`,
+        `"${d.detail.replace(/"/g, '""')}"`
+      ].join(';'));
+
+      const csv = '﻿' + [header, ...rows].join('\r\n');
+      download('patientenpfad_export.csv', csv, 'text/csv;charset=utf-8');
+    }
+
+    function exportJSON() {
+      const visible = getVisibleData();
+      const json = JSON.stringify(visible, null, 2);
+      download('patientenpfad_export.json', json, 'application/json');
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>

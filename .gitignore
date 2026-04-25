@@ -17,3 +17,7 @@ Thumbs.db
 # Backup-Dateien (lokale Arbeitskopien)
 *_org.js
 *_backup.js
+
+# Export-Dateien (generiert durch den Viewer)
+*_export.csv
+*_export.json
