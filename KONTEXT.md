@@ -10,7 +10,8 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Initialer Stand, Dateiname bereinigt |
 | `patientenpfad_interaktiv.html` | v1 | 2026-04-24 | Initialer Stand |
-| `KONTEXT.md` | – | 2026-04-24 | Lebendes Dokument, kein Versionsschema |
+| `.github/CODEOWNERS` | – | 2026-04-25 | Neu angelegt |
+| `KONTEXT.md` | – | 2026-04-25 | Lebendes Dokument, kein Versionsschema |
 | `README.md` | – | 2026-04-24 | Lebendes Dokument, kein Versionsschema |
 
 ---
@@ -63,6 +64,16 @@ Diese Formel ist der gemeinsame Anker der Gruppe. Kein Element kann ohne die and
 
 ---
 
+## GitHub-Konfiguration
+
+### Ruleset (Branch-Schutz für `main`)
+- Kein "Required approvals" (würde zweite Person erfordern)
+- Stattdessen: **"Require review from Code Owners"** aktiviert
+- Code Owners: `@oeme-github` und `@msusky` (`.github/CODEOWNERS`)
+- `*.docx` ist in `.gitignore` — Word-Exporte werden nicht eingecheckt
+
+---
+
 ## Wichtige inhaltliche Entscheidungen
 
 ### Zum Begriff „Datenobjekt"
@@ -97,6 +108,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 |---|---|---|
 | `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
 | HTML-Widget weiter verbessern | Claude | Offen |
+| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Offen |
 
 ---
 
