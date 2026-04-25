@@ -8,10 +8,14 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
-| `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Initialer Stand, Dateiname bereinigt |
-| `patientenpfad_interaktiv.html` | v1 | 2026-04-24 | Initialer Stand |
-| `KONTEXT.md` | – | 2026-04-24 | Lebendes Dokument, kein Versionsschema |
-| `README.md` | – | 2026-04-24 | Lebendes Dokument, kein Versionsschema |
+| `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
+| `patientenpfad_interaktiv.html` | v2 | 2026-04-25 | Design, Phasen-Header, 4 Filterebenen |
+| `patientenpfad_editor.html` | v1 | 2026-04-25 | Neu: Formular-Editor mit Meta-Verwaltung und Export |
+| `patientenpfad_data.js` | v2 | 2026-04-25 | meta-Objekt, akteur/objekt/gesetze als Arrays |
+| `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
+| `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
+| `KONTEXT.md` | – | 2026-04-25 | Lebendes Dokument, kein Versionsschema |
+| `README.md` | – | 2026-04-25 | Grundprinzip 3 korrigiert |
 
 ---
 
@@ -43,7 +47,7 @@ Diese Formel ist der gemeinsame Anker der Gruppe. Kein Element kann ohne die and
 ### Vier Grundprinzipien
 1. **Prozess vor Daten vor System** – Systeme sind Werkzeuge, keine Ausgangspunkte
 2. **Keine führenden Systeme** – Daten gehören dem Prozess und dem Patienten
-3. **Datenobjekte statt Datenflüsse** – Was wird wann von wem erzeugt, verändert oder gelöscht?
+3. **Datenobjekte vor Datenflüsse** – Was wird wann von wem erzeugt, verändert oder gelöscht?
 4. **Strukturierte Daten vor Dokumenten** – Maschinenlesbarkeit ist das Ziel; die menschenlesbare Darstellung ist Aufgabe der Systeme
 
 ### Erarbeitete Dokumente
@@ -60,6 +64,16 @@ Diese Formel ist der gemeinsame Anker der Gruppe. Kein Element kann ohne die and
 7. Verteilung der Informationsdomänen über Datenräume (Matrix)
 8. Systemebene (Ist-Analyse mit 2 Beispielen + Anforderungen A1-A3)
 9. Ausblick (Ziel + nächste Schritte)
+
+---
+
+## GitHub-Konfiguration
+
+### Ruleset (Branch-Schutz für `main`)
+- Kein "Required approvals" (würde zweite Person erfordern)
+- Stattdessen: **"Require review from Code Owners"** aktiviert
+- Code Owners: `@oeme-github` und `@msusky` (`.github/CODEOWNERS`)
+- `*.docx` ist in `.gitignore` — Word-Exporte werden nicht eingecheckt
 
 ---
 
@@ -96,7 +110,71 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Aufgabe | Wer | Status |
 |---|---|---|
 | `patientenpfad_arbeitsdokument.md` als Word-Datei bereitstellen | Du | Erledigt (lokal per Pandoc generiert, nicht eingecheckt) |
-| HTML-Widget weiter verbessern | Claude | Offen |
+| HTML-Widget weiter verbessern | Claude | In Arbeit – Kernfunktionen erledigt (siehe Requirements) |
+| PR #2 (CODEOWNERS + .gitignore) mergen | oeme-github | Offen |
+
+---
+
+## Requirements: HTML-Widget (`patientenpfad_interaktiv.html`)
+
+Ziel: Eine interaktive, pflegbare Prozesslandkarte, die in der Arbeitsgruppe genutzt und weiterentwickelt werden kann.
+
+### R1 – Datenstruktur erweitern
+
+| ID | Anforderung | Priorität | Status |
+|---|---|---|---|
+| R1.1 | Laufende Nummer `nr` (1–25) pro Prozessschritt ergänzen | Hoch | Erledigt |
+| R1.2 | Feld `domäne` ergänzen – Zuordnung zu einer der 14 Informationsdomänen (Kap. 5) | Hoch | Erledigt |
+| R1.3 | Feld `standards` ergänzen – zunächst leer, später mit FHIR/IHE/HL7 befüllen | Mittel | Offen |
+| R1.4 | Feld `gesetze` ergänzen – Zuordnung relevanter Rechtsgrundlagen pro Schritt (z.B. DSGVO Art. 9, SGB V § 291a, PatDatSchG, KHZG) | Hoch | Erledigt (Entwurf – Review durch AG) |
+
+### R2 – Benutzeroberfläche verbessern
+
+| ID | Anforderung | Priorität | Status |
+|---|---|---|---|
+| R2.1 | Zähler anzeigen: „X von 25 Prozessschritten sichtbar" | Hoch | Erledigt |
+| R2.2 | Freitextsuche über Titel, Akteur, Objekt | Mittel | Offen |
+| R2.3 | `sendPrompt()`-Button entfernen – toter Platzhalter | Hoch | Erledigt |
+| R2.4 | Detailkarte: `nr`, `domäne`, `standards` und `gesetze` anzeigen, sobald befüllt | Mittel | Erledigt |
+| R2.5 | Druckansicht / Export (alle sichtbaren Karten als strukturierte Übersicht) | Niedrig | Offen |
+
+### R3 – Pflegbarkeit & Architektur
+
+| ID | Anforderung | Priorität | Status |
+|---|---|---|---|
+| R3.1 | Daten in separate Datei `patientenpfad_data.js` auslagern (`const data = [...]`) | Hoch | Erledigt |
+| R3.2 | HTML-Datei bindet Datendatei ein: `<script src="patientenpfad_data.js">` | Hoch | Erledigt |
+| R3.3 | Phasengrenzen im `data`-Array durch Kommentare markieren | Mittel | Erledigt |
+| R3.4 | Migrationspfad zu Web-Server + JSON offen halten (spätere Phase) | – | Entschieden |
+| R3.5 | `meta`-Objekt in `data.js` für pflegbare Auswahllisten (domaenen, akteure, datenobjekte, rechtsgrundlagen) | Hoch | Erledigt |
+| R3.6 | `patientenpfad_editor.html` – separater Editor mit Meta-Verwaltung und Export | Hoch | Erledigt |
+
+**Architekturentscheidung – Migrationspfad:**
+
+```
+Phase 1 (jetzt):   patientenpfad_data.js   →  const data = [{...}]
+Phase 2 (später):  patientenpfad_data.json →  [{...}]  (JS-Wrapper fällt weg)
+```
+
+Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf einen Webserver mit JSON ist damit eine spätere, isolierte Änderung.
+
+### R4 – Export
+
+| ID | Anforderung | Priorität | Status |
+|---|---|---|---|
+| R4.1 | PDF-Export via Browser-Druckdialog (optimiertes Drucklayout) | Mittel | Offen |
+| R4.2 | CSV-Export der sichtbaren/gefilterten Prozessschritte | Mittel | Offen |
+| R4.3 | JSON-Export des vollständigen `data`-Arrays | Niedrig | Offen |
+
+### Reihenfolge der Umsetzung
+
+1. R3.1 + R3.2 + R3.3 — Datentrennung: `data.js` auslagern
+2. R1.1 + R1.2 + R1.4 — Datenstruktur mit `nr`, `domäne` und `gesetze` befüllen
+3. R2.3 — `sendPrompt()` entfernen
+4. R2.1 + R2.4 — Zähler und erweiterte Detailkarte (inkl. Domäne, Rechtsgrundlagen)
+5. R1.3 + R2.2 — Standards-Feld, Freitextsuche
+6. R4.1 + R4.2 + R4.3 — Export (PDF, CSV, JSON)
+7. R3.4 — Migration zu Web-Server + JSON (eigene spätere Session)
 
 ---
 
@@ -106,12 +184,6 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
 - Lebenszyklus von Datenobjekten wurde diskutiert, aber bewusst ausgeklammert – kann später ergänzt werden
 - Die Matrix (Kap. 7) soll in der Gruppe weiter diskutiert und verfeinert werden
-
-### Am HTML-Widget
-- Verbesserung der Lesbarkeit und des Designs
-- Weitere Interaktivität
-- Export-Funktion oder Druckansicht
-- Weitere Detailkarten pro Phase
 
 ### Inhaltlich
 - Standards prüfen: FHIR, IHE, HL7 – welche erfüllen die Anforderungen A1-A3?

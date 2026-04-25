@@ -1,121 +1,537 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Interaktive Prozesskarte</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
 
-<style>
-.phase-tab { padding: 8px 16px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
-.phase-tab.active { color: var(--color-text-primary); border-color: var(--color-border-primary); background: var(--color-background-secondary); }
-.dr-toggle { padding: 4px 10px; border-radius: 20px; border: 0.5px solid transparent; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; opacity: 0.5; }
-.dr-toggle.active { opacity: 1; }
-.dr-portal { background: #E6F1FB; color: #0C447C; border-color: #185FA5; }
-.dr-versorgung { background: #E1F5EE; color: #085041; border-color: #0F6E56; }
-.dr-epa { background: #EEEDFE; color: #3C3489; border-color: #534AB7; }
-.dr-ehds { background: #FAECE7; color: #712B13; border-color: #993C1D; }
-.prozess-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; }
-.prozess-card:hover { border-color: var(--color-border-primary); }
-.prozess-card.dimmed { opacity: 0.25; pointer-events: none; }
-.phase-vor { border-left: 3px solid #1D9E75; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
-.phase-im { border-left: 3px solid #534AB7; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
-.phase-nach { border-left: 3px solid #993C1D; border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0; }
-.dr-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; margin-right: 4px; }
-.detail-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; margin-top: 8px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
-</style>
+      --phase-vor:  #059669;
+      --phase-im:   #4F46E5;
+      --phase-nach: #B45309;
+    }
 
-<h2 class="sr-only">Interaktive Patientenpfad-Prozesskarte mit Filteroptionen nach Phase und Datenraum</h2>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-  <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
-  <button class="phase-tab" onclick="setPhase('vor')">Vor dem Krankenhaus</button>
-  <button class="phase-tab" onclick="setPhase('im')">Im Krankenhaus</button>
-  <button class="phase-tab" onclick="setPhase('nach')">Nach dem Krankenhaus</button>
-</div>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text-1);
+      min-height: 100vh;
+    }
 
-<div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
-  <span style="font-size:12px; color:var(--color-text-tertiary);">Datenraum filtern:</span>
-  <button class="dr-toggle dr-portal active" data-dr="portal" onclick="toggleDR('portal')">Portal</button>
-  <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
-  <button class="dr-toggle dr-epa active" data-dr="epa" onclick="toggleDR('epa')">ePA</button>
-  <button class="dr-toggle dr-ehds active" data-dr="ehds" onclick="toggleDR('ehds')">EHDS</button>
-</div>
+    /* ── Header ── */
+    .page-header {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px;
+    }
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .page-header p {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-top: 3px;
+    }
 
-<div id="karten" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;"></div>
+    /* ── Toolbar ── */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
 
-<script>
-const data = [
-  { phase:'vor', titel:'Termin anfragen / buchen', akteur:'Patient, Verwaltung', objekt:'Terminanfrage / Terminbestätigung', op:'E', dr:['portal','versorgung'], detail:'Terminvereinbarung für ambulante Vorstellung oder stationäre Aufnahme. Das Portal ist die primäre Schnittstelle – der Patient löst den Prozess aus.' },
-  { phase:'vor', titel:'Überweisung / Einweisung bereitstellen', akteur:'Niedergelassener Arzt, Patient', objekt:'Überweisung / Einweisung', op:'E', dr:['versorgung','epa'], detail:'Die Überweisung wird im Kontext des Krankenhauses erstmalig bereitgestellt. Heute oft noch als Papier oder PDF – ein klassischer Medienbruch.' },
-  { phase:'vor', titel:'Stammdaten erfassen / aktualisieren', akteur:'Patient, Verwaltung', objekt:'Patientenstammdaten', op:'E, V', dr:['portal','versorgung'], detail:'Kontaktdaten und Versicherungsdaten werden erfasst oder aktualisiert. Datenobjekt kann sowohl neu entstehen als auch verändert werden.' },
-  { phase:'vor', titel:'Vorbefunde bereitstellen', akteur:'Patient, Niedergelassener Arzt', objekt:'Vorbefunde / Fremdbefunde', op:'E', dr:['portal','versorgung','epa'], detail:'Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs.' },
-  { phase:'vor', titel:'Anamnesebogen ausfüllen', akteur:'Patient', objekt:'Anamnese', op:'E', dr:['portal','versorgung','epa'], detail:'Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext.' },
-  { phase:'vor', titel:'Einwilligungen erteilen', akteur:'Patient', objekt:'Einwilligungserklärung, Widerspruch', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung.' },
-  { phase:'im', titel:'Digitaler Check-in', akteur:'Patient, Verwaltung', objekt:'Check-in Bestätigung', op:'E', dr:['portal','versorgung'], detail:'Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung.' },
-  { phase:'im', titel:'Administrative Aufnahme', akteur:'Verwaltung', objekt:'Patientenfall / Fallakte', op:'E', dr:['versorgung'], detail:'Fallanlage im KIS. Zentrales Datenobjekt für den gesamten stationären Aufenthalt.' },
-  { phase:'im', titel:'Pflegeassessment', akteur:'Pflege', objekt:'Pflegeassessment', op:'E', dr:['versorgung'], detail:'Erfassung des pflegerischen Bedarfs bei Aufnahme – Mobilität, Ernährung, Risikoscreening. Eigenständiges Datenobjekt der Pflege.' },
-  { phase:'im', titel:'Durchführung diagnostischer Maßnahmen', akteur:'Arzt, Pflege', objekt:'Untersuchungsergebnisse / Befunde', op:'E', dr:['versorgung','epa','ehds'], detail:'Untersuchungen und Diagnostik. Erzeugt medizinische Kerndaten – sollten strukturiert vorliegen für optimale Weiterverarbeitung.' },
-  { phase:'im', titel:'Dokumentation medizinischer Ergebnisse', akteur:'Arzt', objekt:'Diagnose / Befunddokumentation', op:'E, V', dr:['versorgung','epa','ehds'], detail:'Befunde und Diagnosen werden dokumentiert. Zentrales Datenobjekt – wird laufend verändert und ergänzt.' },
-  { phase:'im', titel:'Pflegedokumentation', akteur:'Pflege', objekt:'Pflegedokumentation / Vitalwerte', op:'E, V', dr:['versorgung','epa'], detail:'Laufende Dokumentation von Pflegemaßnahmen, Vitalwerten und Verlauf. Wird kontinuierlich ergänzt.' },
-  { phase:'im', titel:'Bereitstellung Informationen im Portal', akteur:'Arzt, Verwaltung', objekt:'Laborwerte / Befunde im Portal', op:'E', dr:['portal','versorgung'], detail:'Ausgewählte Informationen werden dem Patienten im Portal bereitgestellt – z.B. Laborwerte. Strukturierte Daten ermöglichen eine sinnvolle Darstellung.' },
-  { phase:'im', titel:'Kommunikation mit Behandlungsteam', akteur:'Patient, Arzt, Pflege', objekt:'Nachricht / Rückfrage', op:'E', dr:['portal','versorgung','epa'], detail:'Nachrichten und Rückfragen – unabhängig vom Übertragungsweg (Portal, TI-Messenger oder andere Kanäle).' },
-  { phase:'im', titel:'Entlassungsvorbereitung', akteur:'Arzt, Verwaltung, Sozialdienst', objekt:'Entlassungsplan', op:'E', dr:['versorgung','epa'], detail:'Organisation der Entlassung. Auslöser für mehrere nachgelagerte Prozesse – Pflegeüberleitung, AHB, Nachsorgetermin.' },
-  { phase:'im', titel:'Pflegerische Entlassungsplanung', akteur:'Pflege, Sozialdienst', objekt:'Pflegerischer Überleitungsbogen', op:'E', dr:['versorgung','epa'], detail:'Pflegerische Bedarfserfassung und Weitergabe. Eigenständiges Datenobjekt – intern für die Planung.' },
-  { phase:'im', titel:'Pflegeüberleitung', akteur:'Sozialdienst, Pflege', objekt:'Pflegeüberleitungsdokument', op:'E', dr:['versorgung','epa'], detail:'Bedarfserfassung und Organisation der pflegerischen Weiterversorgung. Das Überleitungsdokument geht an die nachversorgende Einrichtung.' },
-  { phase:'im', titel:'AHB / Reha beantragen', akteur:'Arzt, Sozialdienst', objekt:'AHB / Reha-Antrag', op:'E', dr:['versorgung','epa'], detail:'Antragstellung und Weiterleitung an Kostenträger. Erzeugt ein eigenständiges Datenobjekt mit Weiterleitung an externe Akteure.' },
-  { phase:'nach', titel:'Bereitstellung Entlassdokumente', akteur:'Arzt, Verwaltung', objekt:'Arztbrief / Entlassbericht', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF.' },
-  { phase:'nach', titel:'Bereitstellung Medikationsplan', akteur:'Arzt', objekt:'Medikationsplan', op:'E', dr:['portal','versorgung','epa','ehds'], detail:'Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.' },
-  { phase:'nach', titel:'Bereitstellung Dokumente für ePA', akteur:'Arzt, Verwaltung', objekt:'Strukturierte Datenobjekte in der ePA', op:'E', dr:['epa','ehds'], detail:'Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.' },
-  { phase:'nach', titel:'Nachsorgetermin vereinbaren', akteur:'Patient, Verwaltung', objekt:'Nachsorgetermin', op:'E', dr:['portal','versorgung'], detail:'Terminplanung nach Entlassung. Portal als primäre Schnittstelle für den Patienten.' },
-  { phase:'nach', titel:'Digitale Verlaufserfassung', akteur:'Patient', objekt:'Verlaufsdokumentation / PROMs', op:'E', dr:['portal','versorgung','epa'], detail:'Fragebögen und PROMs nach Entlassung. Patient als aktiver Datenerzeuger – strukturierte Rückmeldungen ermöglichen Automatisierung.' },
-  { phase:'nach', titel:'Kommunikation mit Klinik', akteur:'Patient, Arzt', objekt:'Nachricht / Rückfrage', op:'E, V', dr:['portal','versorgung','epa'], detail:'Rückfragen nach Entlassung – unabhängig vom Übertragungsweg.' },
-  { phase:'nach', titel:'Abschluss der Behandlung', akteur:'Arzt, Verwaltung', objekt:'Abschlussdokumentation / Fallabschluss', op:'E', dr:['versorgung','epa'], detail:'Behandlungsfall wird abgeschlossen. Finales Datenobjekt des Patientenpfads.' },
-];
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
-const drLabel = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
-const phaseLabel = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
-const phaseBorder = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
+    .filter-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      min-width: 110px;
+    }
 
-let activePhase = 'alle';
-let activeDR = new Set(['portal','versorgung','epa','ehds']);
-let openCard = null;
+    /* Phase-Tabs */
+    .phase-tab {
+      padding: 5px 13px;
+      border: 1px solid var(--c-border-2);
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--c-text-3);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .phase-tab:hover:not(.active) {
+      border-color: var(--c-border-3);
+      color: var(--c-text-2);
+    }
+    .phase-tab.active {
+      background: var(--c-text-1);
+      border-color: var(--c-text-1);
+      color: #fff;
+    }
+    .phase-tab .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
-function setPhase(p) {
-  activePhase = p;
-  document.querySelectorAll('.phase-tab').forEach((t,i) => {
-    t.classList.toggle('active', ['alle','vor','im','nach'][i] === p);
-  });
-  render();
-}
+    /* Datenraum-Toggles */
+    .dr-toggle {
+      padding: 4px 11px;
+      border-radius: 20px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.12s;
+      opacity: 0.35;
+    }
+    .dr-toggle.active { opacity: 1; }
+    .dr-portal     { background: #DBEAFE; color: #1E40AF; border-color: #3B82F6; }
+    .dr-versorgung { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+    .dr-epa        { background: #EDE9FE; color: #4C1D95; border-color: #7C3AED; }
+    .dr-ehds       { background: #FEE2E2; color: #7F1D1D; border-color: #EF4444; }
 
-function toggleDR(dr) {
-  if(activeDR.has(dr)) { activeDR.delete(dr); } else { activeDR.add(dr); }
-  document.querySelector(`[data-dr="${dr}"]`).classList.toggle('active', activeDR.has(dr));
-  render();
-}
+    /* Rechtsgrundlagen-Toggles */
+    .law-toggle {
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-3);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      opacity: 0.45;
+    }
+    .law-toggle.active {
+      background: #F0FDF4;
+      border-color: #4ADE80;
+      color: #14532D;
+      opacity: 1;
+    }
+    .law-toggle:hover:not(.active) {
+      border-color: var(--c-border-3);
+      color: var(--c-text-2);
+      opacity: 0.8;
+    }
 
-function toggleDetail(idx) {
-  openCard = openCard === idx ? null : idx;
-  render();
-}
+    /* ── Hauptbereich ── */
+    .main {
+      padding: 20px 24px;
+    }
 
-function render() {
-  const container = document.getElementById('karten');
-  const filtered = data.filter(d => {
-    if(activePhase !== 'alle' && d.phase !== activePhase) return false;
-    return true;
-  });
-  container.innerHTML = filtered.map((d, i) => {
-    const idx = data.indexOf(d);
-    const hasDR = d.dr.some(r => activeDR.has(r));
-    const badges = d.dr.map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`).join('');
-    const isOpen = openCard === idx;
-    const detail = isOpen ? `<div class="detail-box">${d.detail}<br><br><button style="margin-top:8px;" onclick="event.stopPropagation(); sendPrompt('Erkläre den Prozessschritt ${d.titel} im Detail und nenne relevante Standards')">Details &amp; Standards ↗</button></div>` : '';
-    return `<div class="prozess-card ${phaseBorder[d.phase]} ${hasDR ? '' : 'dimmed'}" onclick="toggleDetail(${idx})">
-      <div style="font-size:11px; color:var(--color-text-tertiary); margin-bottom:4px;">${phaseLabel[d.phase]}</div>
-      <div style="font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:6px;">${d.titel}</div>
-      <div style="font-size:12px; color:var(--color-text-secondary); margin-bottom:8px;">${d.akteur}</div>
-      <div style="font-size:12px; color:var(--color-text-tertiary); margin-bottom:10px;">${d.objekt} <span style="opacity:0.6;">(${d.op})</span></div>
-      <div>${badges}</div>
-      ${detail}
-    </div>`;
-  }).join('');
-}
+    .counter {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-bottom: 14px;
+    }
+    .counter strong { color: var(--c-text-2); font-weight: 600; }
 
-render();
-</script>
+    /* ── Phasen-Abschnitte ── */
+    .phase-section { margin-bottom: 32px; }
+
+    .phase-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+      border-left: 4px solid transparent;
+    }
+    .phase-section-header.phase-vor  { background: #F0FDF4; border-color: var(--phase-vor); }
+    .phase-section-header.phase-im   { background: #F5F3FF; border-color: var(--phase-im); }
+    .phase-section-header.phase-nach { background: #FFFBEB; border-color: var(--phase-nach); }
+
+    .phase-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .phase-section-header.phase-vor  .phase-section-title { color: #065F46; }
+    .phase-section-header.phase-im   .phase-section-title { color: #3730A3; }
+    .phase-section-header.phase-nach .phase-section-title { color: #78350F; }
+
+    .phase-section-count {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--c-text-4);
+    }
+
+    /* ── Karten-Grid ── */
+    .phase-section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+
+    .prozess-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border-1);
+      border-radius: var(--r-lg);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color 0.12s, box-shadow 0.12s, opacity 0.15s;
+      position: relative;
+    }
+    .prozess-card:hover {
+      border-color: var(--c-border-3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .prozess-card.dimmed {
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .prozess-card.open {
+      border-color: var(--c-border-3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .phase-vor  { border-left: 3px solid var(--phase-vor); }
+    .phase-im   { border-left: 3px solid var(--phase-im); }
+    .phase-nach { border-left: 3px solid var(--phase-nach); }
+
+    .card-meta {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 6px;
+    }
+
+    .card-nr {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
+    }
+
+    .card-titel {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--c-text-1);
+      line-height: 1.35;
+      margin-bottom: 5px;
+    }
+
+    .card-akteur {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-bottom: 3px;
+    }
+
+    .card-objekt {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-bottom: 10px;
+    }
+    .card-op {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #F3F4F6;
+      color: var(--c-text-3);
+      border: 1px solid var(--c-border-2);
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .dr-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* ── Detail-Box ── */
+    .detail-box {
+      margin-top: 12px;
+      border-top: 1px solid var(--c-border-1);
+      padding-top: 12px;
+      font-size: 13px;
+      color: var(--c-text-2);
+      line-height: 1.65;
+    }
+
+    .detail-section {
+      margin-top: 12px;
+    }
+    .detail-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--c-text-4);
+      margin-bottom: 6px;
+    }
+
+    .domaene-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      font-weight: 500;
+      background: #FEF9C3;
+      color: #713F12;
+      border: 1px solid #FDE68A;
+    }
+
+    .gesetz-chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      background: #F0FDF4;
+      color: #14532D;
+      border: 1px solid #BBF7D0;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; }
+      .page-header { position: static; box-shadow: none; }
+      .toolbar { display: none; }
+      .main { padding: 12px 0; }
+      .prozess-card { break-inside: avoid; cursor: default; box-shadow: none; }
+      .prozess-card.dimmed { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Patientenpfad – Interaktive Prozesskarte</h1>
+    <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="filter-row">
+      <span class="filter-label">Phase</span>
+      <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
+      <button class="phase-tab" onclick="setPhase('vor')">
+        <span class="dot" style="background:var(--phase-vor)"></span>Vor dem Krankenhaus
+      </button>
+      <button class="phase-tab" onclick="setPhase('im')">
+        <span class="dot" style="background:var(--phase-im)"></span>Im Krankenhaus
+      </button>
+      <button class="phase-tab" onclick="setPhase('nach')">
+        <span class="dot" style="background:var(--phase-nach)"></span>Nach dem Krankenhaus
+      </button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Datenraum</span>
+      <button class="dr-toggle dr-portal     active" data-dr="portal"     onclick="toggleDR('portal')">Portal</button>
+      <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
+      <button class="dr-toggle dr-epa        active" data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
+      <button class="dr-toggle dr-ehds       active" data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
+    </div>
+    <div class="filter-row" id="law-filter-row">
+      <span class="filter-label">Rechtsgrundlage</span>
+      <!-- dynamisch befüllt -->
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="counter" id="counter"></div>
+    <div id="karten"></div>
+  </div>
+
+  <script src="patientenpfad_data.js"></script>
+  <script>
+    // ── Konfiguration ────────────────────────────────────────────────
+    const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
+    const drLabel      = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
+    const phaseLabel   = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
+    const phaseBorder  = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
+
+    // ── Gesetzesgruppe aus einem Eintrag extrahieren ─────────────────
+    function getLawGroup(gesetz) {
+      return gesetz.split(/\s+(?:§|Art\.|Abs\.)/)[0].trim();
+    }
+
+    // ── Alle Gesetzesgruppen aus den Daten ermitteln ─────────────────
+    const allLawGroups = [...new Set(
+      data.flatMap(d => (d.gesetze || []).map(getLawGroup))
+    )].sort();
+
+    // ── Filter-State ─────────────────────────────────────────────────
+    let activePhase = 'alle';
+    let activeDR    = new Set(['portal','versorgung','epa','ehds']);
+    let activeLaws  = new Set(allLawGroups);
+    let openCard    = null;
+
+    // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
+    const lawRow = document.getElementById('law-filter-row');
+    allLawGroups.forEach(group => {
+      const btn = document.createElement('button');
+      btn.className = 'law-toggle active';
+      btn.dataset.law = group;
+      btn.textContent = group;
+      btn.onclick = () => toggleLaw(group);
+      lawRow.appendChild(btn);
+    });
+
+    // ── Event-Handler ────────────────────────────────────────────────
+    function setPhase(p) {
+      activePhase = p;
+      document.querySelectorAll('.phase-tab').forEach((t, i) => {
+        t.classList.toggle('active', ['alle','vor','im','nach'][i] === p);
+      });
+      render();
+    }
+
+    function toggleDR(dr) {
+      activeDR.has(dr) ? activeDR.delete(dr) : activeDR.add(dr);
+      document.querySelector(`[data-dr="${dr}"]`).classList.toggle('active', activeDR.has(dr));
+      render();
+    }
+
+    function toggleLaw(group) {
+      activeLaws.has(group) ? activeLaws.delete(group) : activeLaws.add(group);
+      document.querySelector(`[data-law="${CSS.escape(group)}"]`).classList.toggle('active', activeLaws.has(group));
+      render();
+    }
+
+    function toggleDetail(nr) {
+      openCard = openCard === nr ? null : nr;
+      render();
+    }
+
+    // ── Karte als HTML ───────────────────────────────────────────────
+    function renderCard(d) {
+      const hasDR  = d.dr.some(r => activeDR.has(r));
+      const hasLaw = !d.gesetze || d.gesetze.length === 0
+        || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+      const dimmed = !hasDR || !hasLaw;
+      const isOpen = openCard === d.nr;
+
+      const drBadges = d.dr
+        .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
+        .join('');
+
+      let detailHtml = '';
+      if (isOpen) {
+        const domaene = d.domäne
+          ? `<span class="domaene-chip">${d.domäne}</span>`
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+        const gesetze = (d.gesetze || []).length
+          ? d.gesetze.map(g => `<span class="gesetz-chip">${g}</span>`).join('')
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+        detailHtml = `
+          <div class="detail-box">
+            <div>${d.detail}</div>
+            <div class="detail-section">
+              <div class="detail-section-label">Informationsdomäne</div>
+              ${domaene}
+            </div>
+            <div class="detail-section">
+              <div class="detail-section-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
+              <div>${gesetze}</div>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="prozess-card ${phaseBorder[d.phase]} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
+             onclick="toggleDetail(${d.nr})">
+          <div class="card-meta">
+            <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
+          </div>
+          <div class="card-titel">${d.titel}</div>
+          <div class="card-akteur">${d.akteur.join(', ')}</div>
+          <div class="card-objekt">
+            ${d.objekt.join(' · ')}<span class="card-op">${d.op}</span>
+          </div>
+          <div class="card-badges">${drBadges}</div>
+          ${detailHtml}
+        </div>`;
+    }
+
+    // ── Render ───────────────────────────────────────────────────────
+    function render() {
+      const phases = activePhase === 'alle'
+        ? ['vor', 'im', 'nach']
+        : [activePhase];
+
+      let totalVisible = 0;
+
+      const sectionsHtml = phases.map(phase => {
+        const phaseDaten = data.filter(d => d.phase === phase);
+        const visibleCount = phaseDaten.filter(d =>
+          d.dr.some(r => activeDR.has(r)) &&
+          (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+        ).length;
+        totalVisible += visibleCount;
+
+        const countLabel = visibleCount === phaseDaten.length
+          ? `${phaseDaten.length} Schritte`
+          : `${visibleCount} von ${phaseDaten.length} Schritten sichtbar`;
+
+        return `
+          <div class="phase-section">
+            <div class="phase-section-header ${phaseBorder[phase]}">
+              <span class="phase-section-title">${phaseLabel[phase]}</span>
+              <span class="phase-section-count">${countLabel}</span>
+            </div>
+            <div class="phase-section-grid">
+              ${phaseDaten.map(renderCard).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('counter').innerHTML =
+        `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
+
+      document.getElementById('karten').innerHTML = sectionsHtml;
+    }
+
+    render();
+  </script>
+</body>
+</html>

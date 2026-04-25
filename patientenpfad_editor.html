@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Editor</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+      --phase-vor: #059669; --phase-im: #4F46E5; --phase-nach: #B45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--c-bg); color: var(--c-text-1); min-height: 100vh; }
+
+    /* ── Header ── */
+    .page-header { background: var(--c-surface); border-bottom: 1px solid var(--c-border-1); padding: 16px 24px 14px; }
+    .page-header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+    .page-header p  { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+
+    /* ── Action Bar ── */
+    .action-bar {
+      background: var(--c-surface); border-bottom: 1px solid var(--c-border-1);
+      padding: 10px 24px; display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .action-bar .counter { font-size: 12px; color: var(--c-text-3); margin-left: auto; }
+    .action-bar .counter strong { color: var(--c-text-2); font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn { padding: 6px 14px; border-radius: var(--r-sm); border: 1px solid var(--c-border-2); background: var(--c-surface); color: var(--c-text-2); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.12s; }
+    .btn:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
+    .btn-primary { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+    .btn-primary:hover { background: #374151; border-color: #374151; color: #fff; }
+    .btn-export { background: #F0FDF4; border-color: #4ADE80; color: #14532D; }
+    .btn-export:hover { background: #DCFCE7; }
+    .btn-danger { background: #FEF2F2; border-color: #FCA5A5; color: #991B1B; }
+    .btn-danger:hover { background: #FEE2E2; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-icon { padding: 4px 8px; font-size: 13px; min-width: 30px; text-align: center; }
+
+    /* ── Haupt-Layout ── */
+    .main { padding: 20px 24px; max-width: 960px; margin: 0 auto; }
+
+    .hint {
+      background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--r-md);
+      padding: 10px 14px; font-size: 12px; color: #78350F; margin-bottom: 16px;
+    }
+
+    /* ── Meta-Panel ── */
+    .meta-panel {
+      background: var(--c-surface); border: 1px solid var(--c-border-1);
+      border-radius: var(--r-lg); margin-bottom: 20px; overflow: hidden;
+    }
+    .meta-panel-header {
+      display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+      cursor: pointer; user-select: none; font-size: 13px; font-weight: 600;
+    }
+    .meta-panel-header:hover { background: var(--c-bg); }
+    .meta-panel-body { display: none; border-top: 1px solid var(--c-border-1); }
+    .meta-panel.open .meta-panel-body { display: block; }
+    .meta-panel.open .meta-chevron { transform: rotate(180deg); }
+    .meta-chevron { transition: transform 0.15s; color: var(--c-text-4); font-size: 12px; margin-left: auto; }
+
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .meta-list-section { padding: 16px; border-right: 1px solid var(--c-border-1); border-bottom: 1px solid var(--c-border-1); }
+    .meta-list-section:nth-child(2n) { border-right: none; }
+    .meta-list-section:nth-last-child(-n+2) { border-bottom: none; }
+    .meta-list-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-3); margin-bottom: 10px; }
+
+    .meta-items { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .meta-item {
+      display: flex; align-items: center; gap: 4px; padding: 3px 8px 3px 10px;
+      border-radius: 20px; background: var(--c-bg); border: 1px solid var(--c-border-2);
+      font-size: 12px; color: var(--c-text-2);
+    }
+    .meta-item-del { background: none; border: none; cursor: pointer; color: var(--c-text-4); font-size: 13px; line-height: 1; padding: 0 2px; }
+    .meta-item-del:hover { color: #991B1B; }
+    .meta-add-row { display: flex; gap: 6px; }
+    .meta-add-input { flex: 1; padding: 5px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; font-family: inherit; }
+    .meta-add-input:focus { outline: none; border-color: var(--c-border-3); }
+
+    /* ── Schritt-Liste ── */
+    .step-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .step-row { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); overflow: hidden; transition: border-color 0.12s; }
+    .step-row.editing { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .step-summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; }
+    .step-summary:hover { background: var(--c-bg); }
+    .step-row.editing .step-summary { background: var(--c-bg); }
+
+    .step-nr { font-size: 11px; font-weight: 700; color: var(--c-text-4); min-width: 28px; }
+    .phase-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 4px; min-width: 40px; text-align: center; }
+    .phase-badge-vor  { background: #D1FAE5; color: #065F46; }
+    .phase-badge-im   { background: #EDE9FE; color: #3730A3; }
+    .phase-badge-nach { background: #FEF3C7; color: #78350F; }
+    .step-titel  { font-size: 13px; font-weight: 500; color: var(--c-text-1); flex: 1; }
+    .step-akteur { font-size: 12px; color: var(--c-text-3); min-width: 160px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .step-actions { display: flex; gap: 4px; margin-left: auto; }
+
+    /* ── Edit-Formular ── */
+    .step-form { border-top: 1px solid var(--c-border-1); padding: 18px 20px; display: none; }
+    .step-row.editing .step-form { display: block; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11px; font-weight: 600; color: var(--c-text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-input, .form-select, .form-textarea { padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 13px; color: var(--c-text-1); background: var(--c-surface); font-family: inherit; transition: border-color 0.12s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--c-border-3); }
+    .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    /* Multi-Select Checkboxen */
+    .check-group { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; }
+    .check-group.scrollable { max-height: 160px; overflow-y: auto; padding: 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: #FAFAFA; }
+    .check-label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; cursor: pointer; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--c-border-2); user-select: none; background: var(--c-surface); color: var(--c-text-2); }
+    .check-label input { cursor: pointer; }
+    .check-label.portal     { background: #DBEAFE; color: #1E40AF; border-color: #3B82F6; }
+    .check-label.versorgung { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+    .check-label.epa        { background: #EDE9FE; color: #4C1D95; border-color: #7C3AED; }
+    .check-label.ehds       { background: #FEE2E2; color: #7F1D1D; border-color: #EF4444; }
+
+    /* Formular-Footer */
+    .form-footer { display: flex; gap: 8px; align-items: center; padding-top: 14px; border-top: 1px solid var(--c-border-1); margin-top: 6px; }
+    .form-footer .btn-danger { margin-left: auto; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Patientenpfad – Daten-Editor</h1>
+    <p>Änderungen werden erst nach dem Export wirksam · Exportierte <code>patientenpfad_data.js</code> ersetzen und committen</p>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="addStep()">+ Neuer Schritt</button>
+    <button class="btn btn-export" onclick="exportData()">↓ data.js exportieren</button>
+    <span class="counter" id="counter"></span>
+  </div>
+
+  <div class="main">
+    <div class="hint">
+      ⚠ Diese Datei und <code>patientenpfad_data.js</code> müssen im gleichen Ordner liegen.
+      Nach dem Export die heruntergeladene Datei mit der bestehenden ersetzen und ins Repository committen.
+    </div>
+
+    <!-- Meta-Verwaltung -->
+    <div class="meta-panel" id="meta-panel">
+      <div class="meta-panel-header" onclick="toggleMeta()">
+        <span>⚙ Auswahllisten verwalten</span>
+        <span style="font-size:12px;font-weight:400;color:var(--c-text-3);">Domänen · Akteure · Datenobjekte · Rechtsgrundlagen</span>
+        <span class="meta-chevron">▼</span>
+      </div>
+      <div class="meta-panel-body">
+        <div class="meta-grid" id="meta-grid"></div>
+      </div>
+    </div>
+
+    <!-- Schritt-Liste -->
+    <div class="step-list" id="step-list"></div>
+  </div>
+
+  <script src="patientenpfad_data.js"></script>
+  <script>
+    // ── Arbeitskopie ─────────────────────────────────────────────────
+    let items   = JSON.parse(JSON.stringify(data));
+    let metaCopy = JSON.parse(JSON.stringify(meta));
+    let editIdx = null;
+
+    const PHASEN       = ['vor', 'im', 'nach'];
+    const PHASEN_LABEL = { vor: 'Vor dem Krankenhaus', im: 'Im Krankenhaus', nach: 'Nach dem Krankenhaus' };
+    const DR_OPTIONEN  = ['portal', 'versorgung', 'epa', 'ehds'];
+    const DR_LABEL     = { portal: 'Portal', versorgung: 'Versorgung', epa: 'ePA', ehds: 'EHDS' };
+
+    // ── Meta-Panel ───────────────────────────────────────────────────
+    function toggleMeta() {
+      document.getElementById('meta-panel').classList.toggle('open');
+    }
+
+    const META_CONFIG = [
+      { key: 'domaenen',        label: 'Informationsdomänen' },
+      { key: 'akteure',         label: 'Akteure' },
+      { key: 'datenobjekte',    label: 'Datenobjekte' },
+      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' }
+    ];
+
+    function renderMeta() {
+      document.getElementById('meta-grid').innerHTML = META_CONFIG.map(cfg => `
+        <div class="meta-list-section">
+          <div class="meta-list-title">${cfg.label} (${metaCopy[cfg.key].length})</div>
+          <div class="meta-items" id="meta-items-${cfg.key}">
+            ${metaCopy[cfg.key].map((item, i) => `
+              <span class="meta-item">
+                ${item}
+                <button class="meta-item-del" onclick="delMetaItem('${cfg.key}', ${i})" title="Entfernen">×</button>
+              </span>`).join('')}
+          </div>
+          <div class="meta-add-row">
+            <input class="meta-add-input" id="meta-input-${cfg.key}" placeholder="Neu hinzufügen …" onkeydown="if(event.key==='Enter') addMetaItem('${cfg.key}')">
+            <button class="btn btn-sm" onclick="addMetaItem('${cfg.key}')">+</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function addMetaItem(key) {
+      const input = document.getElementById(`meta-input-${key}`);
+      const val = input.value.trim();
+      if (!val || metaCopy[key].includes(val)) { input.focus(); return; }
+      metaCopy[key].push(val);
+      metaCopy[key].sort();
+      input.value = '';
+      renderMeta();
+    }
+
+    function delMetaItem(key, idx) {
+      metaCopy[key].splice(idx, 1);
+      renderMeta();
+    }
+
+    // ── Schritt-Liste ────────────────────────────────────────────────
+    function render() {
+      document.getElementById('counter').innerHTML =
+        `<strong>${items.length}</strong> Schritte &nbsp;·&nbsp; ` +
+        PHASEN.map(p => `${items.filter(d => d.phase === p).length} ${PHASEN_LABEL[p].split(' ')[0]}`).join(' / ');
+
+      document.getElementById('step-list').innerHTML = items.map((item, idx) => `
+        <div class="step-row ${editIdx === idx ? 'editing' : ''}" id="row-${idx}">
+          <div class="step-summary" onclick="toggleEdit(${idx})">
+            <span class="step-nr">#${String(idx + 1).padStart(2,'0')}</span>
+            <span class="phase-badge phase-badge-${item.phase}">${item.phase}</span>
+            <span class="step-titel">${item.titel || '<em style="color:var(--c-text-4)">Kein Titel</em>'}</span>
+            <span class="step-akteur">${(item.akteur||[]).join(', ')}</span>
+            <div class="step-actions" onclick="event.stopPropagation()">
+              <button class="btn btn-sm btn-icon" onclick="moveStep(${idx},-1)" ${idx===0?'disabled':''}>↑</button>
+              <button class="btn btn-sm btn-icon" onclick="moveStep(${idx},1)"  ${idx===items.length-1?'disabled':''}>↓</button>
+            </div>
+          </div>
+          ${editIdx === idx ? renderForm(item, idx) : ''}
+        </div>`).join('');
+    }
+
+    function renderCheckGroup(name, options, selected, extraClass) {
+      return options.map(opt => `
+        <label class="check-label ${extraClass ? opt : ''}">
+          <input type="checkbox" name="${name}" value="${opt}" ${(selected||[]).includes(opt) ? 'checked' : ''}>
+          ${opt}
+        </label>`).join('');
+    }
+
+    function renderForm(item, idx) {
+      const domaeneOptions = ['', ...metaCopy.domaenen]
+        .map(d => `<option value="${d}" ${item.domäne===d?'selected':''}>${d||'– bitte wählen –'}</option>`)
+        .join('');
+
+      return `
+        <div class="step-form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label">Phase</label>
+              <select class="form-select" id="f-phase">
+                ${PHASEN.map(p => `<option value="${p}" ${item.phase===p?'selected':''}>${PHASEN_LABEL[p]}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Operation (E / V / G)</label>
+              <input class="form-input" type="text" id="f-op" value="${item.op||''}" placeholder="z.B. E, V">
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Titel</label>
+              <input class="form-input" type="text" id="f-titel" value="${item.titel||''}" placeholder="Titel des Prozessschritts">
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Akteure</label>
+              <div class="check-group" id="f-akteur">
+                ${renderCheckGroup('akteur', metaCopy.akteure, item.akteur, false)}
+              </div>
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Datenobjekte</label>
+              <div class="check-group scrollable" id="f-objekt">
+                ${renderCheckGroup('objekt', metaCopy.datenobjekte, item.objekt, false)}
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Datenräume</label>
+              <div class="check-group" id="f-dr">
+                ${renderCheckGroup('dr', DR_OPTIONEN, item.dr, true)}
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Informationsdomäne</label>
+              <select class="form-select" id="f-domaene">${domaeneOptions}</select>
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></label>
+              <div class="check-group scrollable" id="f-gesetze">
+                ${renderCheckGroup('gesetze', metaCopy.rechtsgrundlagen, item.gesetze, false)}
+              </div>
+            </div>
+            <div class="form-field full">
+              <label class="form-label">Beschreibung</label>
+              <textarea class="form-textarea" id="f-detail" placeholder="Kurze Beschreibung des Prozessschritts">${item.detail||''}</textarea>
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" onclick="saveStep(${idx})">Speichern</button>
+            <button class="btn" onclick="cancelEdit()">Abbrechen</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteStep(${idx})">Schritt löschen</button>
+          </div>
+        </div>`;
+    }
+
+    // ── Aktionen ─────────────────────────────────────────────────────
+    function toggleEdit(idx) {
+      editIdx = editIdx === idx ? null : idx;
+      render();
+      if (editIdx !== null)
+        document.getElementById(`row-${idx}`).scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    function cancelEdit() { editIdx = null; render(); }
+
+    function saveStep(idx) {
+      const getChecked = name =>
+        [...document.querySelectorAll(`[name="${name}"]:checked`)].map(el => el.value);
+
+      items[idx] = {
+        ...items[idx],
+        phase:    document.getElementById('f-phase').value,
+        titel:    document.getElementById('f-titel').value.trim(),
+        akteur:   getChecked('akteur'),
+        objekt:   getChecked('objekt'),
+        op:       document.getElementById('f-op').value.trim(),
+        dr:       getChecked('dr'),
+        'domäne': document.getElementById('f-domaene').value,
+        gesetze:  getChecked('gesetze'),
+        detail:   document.getElementById('f-detail').value.trim(),
+      };
+      editIdx = null;
+      render();
+    }
+
+    function deleteStep(idx) {
+      if (!confirm(`Schritt #${idx+1} „${items[idx].titel}" wirklich löschen?`)) return;
+      items.splice(idx, 1);
+      editIdx = null;
+      render();
+    }
+
+    function moveStep(idx, dir) {
+      const t = idx + dir;
+      if (t < 0 || t >= items.length) return;
+      [items[idx], items[t]] = [items[t], items[idx]];
+      if (editIdx === idx) editIdx = t;
+      render();
+    }
+
+    function addStep() {
+      items.push({ nr: items.length+1, phase:'vor', titel:'', akteur:[], objekt:[], op:'E', dr:[], 'domäne':'', gesetze:[], detail:'' });
+      editIdx = items.length - 1;
+      render();
+      document.getElementById(`row-${editIdx}`).scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    // ── Export ───────────────────────────────────────────────────────
+    function exportData() {
+      const today = new Date().toISOString().slice(0,10);
+
+      const fmtArr  = arr => arr.length === 0 ? '[]' : `[${arr.map(v => JSON.stringify(v)).join(', ')}]`;
+      const fmtMeta = (key) => {
+        const items = metaCopy[key];
+        const lines = items.map(v => `    ${JSON.stringify(v)}`).join(',\n');
+        return `  ${key}: [\n${lines}\n  ]`;
+      };
+
+      const metaStr = `const meta = {\n${META_CONFIG.map(c => fmtMeta(c.key)).join(',\n\n')}\n};`;
+
+      const dataLines = items.map((item, i) => {
+        const nr = i + 1;
+        return `  {\n    nr: ${nr},\n    phase: ${JSON.stringify(item.phase)},\n    titel: ${JSON.stringify(item.titel)},\n    akteur: ${fmtArr(item.akteur||[])},\n    objekt: ${fmtArr(item.objekt||[])},\n    op: ${JSON.stringify(item.op)},\n    dr: ${fmtArr(item.dr||[])},\n    domäne: ${JSON.stringify(item['domäne']||'')},\n    gesetze: ${fmtArr(item.gesetze||[])},\n    detail: ${JSON.stringify(item.detail)}\n  }`;
+      });
+
+      const content =
+`// Patientenpfad – Daten und Konfiguration
+//
+// Felder: nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], detail
+// phase:  'vor' | 'im' | 'nach'
+// op:     E = Erzeugt, V = Verändert, G = Gelöscht
+// Exportiert: ${today}
+
+// ── Konfiguration (pflegbar über den Editor) ──────────────────────────────────
+
+${metaStr}
+
+// ── Prozessschritte ───────────────────────────────────────────────────────────
+
+const data = [
+${dataLines.join(',\n')}
+];
+`;
+
+      const blob = new Blob([content], { type:'text/javascript' });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href: url, download: 'patientenpfad_data.js' });
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────
+    renderMeta();
+    render();
+  </script>
+</body>
+</html>
