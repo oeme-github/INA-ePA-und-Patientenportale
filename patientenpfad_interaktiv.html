@@ -165,8 +165,40 @@
     }
     .counter strong { color: var(--c-text-2); font-weight: 600; }
 
+    /* ── Phasen-Abschnitte ── */
+    .phase-section { margin-bottom: 32px; }
+
+    .phase-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+      border-left: 4px solid transparent;
+    }
+    .phase-section-header.phase-vor  { background: #F0FDF4; border-color: var(--phase-vor); }
+    .phase-section-header.phase-im   { background: #F5F3FF; border-color: var(--phase-im); }
+    .phase-section-header.phase-nach { background: #FFFBEB; border-color: var(--phase-nach); }
+
+    .phase-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .phase-section-header.phase-vor  .phase-section-title { color: #065F46; }
+    .phase-section-header.phase-im   .phase-section-title { color: #3730A3; }
+    .phase-section-header.phase-nach .phase-section-title { color: #78350F; }
+
+    .phase-section-count {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--c-text-4);
+    }
+
     /* ── Karten-Grid ── */
-    #karten {
+    .phase-section-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 12px;
@@ -200,19 +232,9 @@
 
     .card-meta {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: flex-end;
       margin-bottom: 6px;
     }
-    .card-phase-label {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .phase-vor  .card-phase-label { color: var(--phase-vor); }
-    .phase-im   .card-phase-label { color: var(--phase-im); }
-    .phase-nach .card-phase-label { color: var(--phase-nach); }
 
     .card-nr {
       font-size: 11px;
@@ -419,71 +441,94 @@
       render();
     }
 
+    // ── Karte als HTML ───────────────────────────────────────────────
+    function renderCard(d) {
+      const hasDR  = d.dr.some(r => activeDR.has(r));
+      const hasLaw = !d.gesetze || d.gesetze.length === 0
+        || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+      const dimmed = !hasDR || !hasLaw;
+      const isOpen = openCard === d.nr;
+
+      const drBadges = d.dr
+        .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
+        .join('');
+
+      let detailHtml = '';
+      if (isOpen) {
+        const domaene = d.domäne
+          ? `<span class="domaene-chip">${d.domäne}</span>`
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+        const gesetze = (d.gesetze || []).length
+          ? d.gesetze.map(g => `<span class="gesetz-chip">${g}</span>`).join('')
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+        detailHtml = `
+          <div class="detail-box">
+            <div>${d.detail}</div>
+            <div class="detail-section">
+              <div class="detail-section-label">Informationsdomäne</div>
+              ${domaene}
+            </div>
+            <div class="detail-section">
+              <div class="detail-section-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
+              <div>${gesetze}</div>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="prozess-card ${phaseBorder[d.phase]} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
+             onclick="toggleDetail(${d.nr})">
+          <div class="card-meta">
+            <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
+          </div>
+          <div class="card-titel">${d.titel}</div>
+          <div class="card-akteur">${d.akteur}</div>
+          <div class="card-objekt">
+            ${d.objekt}<span class="card-op">${d.op}</span>
+          </div>
+          <div class="card-badges">${drBadges}</div>
+          ${detailHtml}
+        </div>`;
+    }
+
     // ── Render ───────────────────────────────────────────────────────
     function render() {
-      const filtered = data.filter(d =>
-        activePhase === 'alle' || d.phase === activePhase
-      );
+      const phases = activePhase === 'alle'
+        ? ['vor', 'im', 'nach']
+        : [activePhase];
 
-      const visible = filtered.filter(d =>
-        d.dr.some(r => activeDR.has(r)) &&
-        (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
-      );
+      let totalVisible = 0;
 
-      document.getElementById('counter').innerHTML =
-        `<strong>${visible.length} von ${data.length}</strong> Prozessschritten sichtbar`;
+      const sectionsHtml = phases.map(phase => {
+        const phaseDaten = data.filter(d => d.phase === phase);
+        const visibleCount = phaseDaten.filter(d =>
+          d.dr.some(r => activeDR.has(r)) &&
+          (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+        ).length;
+        totalVisible += visibleCount;
 
-      document.getElementById('karten').innerHTML = filtered.map(d => {
-        const hasDR  = d.dr.some(r => activeDR.has(r));
-        const hasLaw = !d.gesetze || d.gesetze.length === 0
-          || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
-        const dimmed = !hasDR || !hasLaw;
-        const isOpen = openCard === d.nr;
-
-        const drBadges = d.dr
-          .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
-          .join('');
-
-        let detailHtml = '';
-        if (isOpen) {
-          const domaene = d.domäne
-            ? `<span class="domaene-chip">${d.domäne}</span>`
-            : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-
-          const gesetze = (d.gesetze || []).length
-            ? d.gesetze.map(g => `<span class="gesetz-chip">${g}</span>`).join('')
-            : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-
-          detailHtml = `
-            <div class="detail-box">
-              <div>${d.detail}</div>
-              <div class="detail-section">
-                <div class="detail-section-label">Informationsdomäne</div>
-                ${domaene}
-              </div>
-              <div class="detail-section">
-                <div class="detail-section-label">Rechtsgrundlagen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
-                <div>${gesetze}</div>
-              </div>
-            </div>`;
-        }
+        const countLabel = visibleCount === phaseDaten.length
+          ? `${phaseDaten.length} Schritte`
+          : `${visibleCount} von ${phaseDaten.length} Schritten sichtbar`;
 
         return `
-          <div class="prozess-card ${phaseBorder[d.phase]} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
-               onclick="toggleDetail(${d.nr})">
-            <div class="card-meta">
-              <span class="card-phase-label">${phaseLabel[d.phase]}</span>
-              <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
+          <div class="phase-section">
+            <div class="phase-section-header ${phaseBorder[phase]}">
+              <span class="phase-section-title">${phaseLabel[phase]}</span>
+              <span class="phase-section-count">${countLabel}</span>
             </div>
-            <div class="card-titel">${d.titel}</div>
-            <div class="card-akteur">${d.akteur}</div>
-            <div class="card-objekt">
-              ${d.objekt}<span class="card-op">${d.op}</span>
+            <div class="phase-section-grid">
+              ${phaseDaten.map(renderCard).join('')}
             </div>
-            <div class="card-badges">${drBadges}</div>
-            ${detailHtml}
           </div>`;
       }).join('');
+
+      document.getElementById('counter').innerHTML =
+        `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
+
+      document.getElementById('karten').innerHTML = sectionsHtml;
     }
 
     render();
