@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
-| `patientenpfad_interaktiv.html` | v6 | 2026-04-25 | Standards-Filter, Alle aufklappen/zuklappen |
+| `patientenpfad_interaktiv.html` | v7 | 2026-04-25 | Struktur-Filter ergänzt, alle Features komplett |
 | `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
 | `patientenpfad_data.js` | v3 | 2026-04-25 | meta.standards (32 Einträge + KIM), struktur-Feld alle 25 Schritte |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
@@ -119,7 +119,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | PR #5 (AK Patientenportale) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #6 (Export PDF/CSV/JSON) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #7 (Standards + Struktur-Kennzeichen) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
-| PR #8 (Standards-Filter + Auf-/Zuklappen) mergen | oeme-github | Offen |
+| PR #8 (Standards-Filter + Auf-/Zuklappen + Struktur-Filter) mergen | oeme-github | Offen |
 
 ---
 
@@ -183,6 +183,28 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 5. R1.3 + R2.2 — Standards-Feld, Freitextsuche
 6. R4.1 + R4.2 + R4.3 — Export (PDF, CSV, JSON)
 7. R3.4 — Migration zu Web-Server + JSON (eigene spätere Session)
+
+---
+
+## Feature-Stand Widget (Stand 2026-04-25)
+
+Das Widget ist für den AG-Einsatz bereit. Alle geplanten Features sind implementiert.
+
+### Viewer (`patientenpfad_interaktiv.html`)
+- 6 Filterebenen: Phase · Datenraum · Rechtsgrundlage · Struktur · Standards · Suche
+- Detailkarte: Domäne · Rechtsgrundlagen · Standards · Beschreibung
+- Struktur-Badge (grün/gelb/rot) direkt auf jeder Karte
+- Alle aufklappen / Alle zuklappen
+- Export: PDF (mit Filterzeile), CSV, JSON
+
+### Editor (`patientenpfad_editor.html`)
+- Formular für alle Felder inkl. Standards und Struktur
+- Meta-Verwaltung: Domänen · Akteure · Datenobjekte · Rechtsgrundlagen · Standards
+- Export generiert neue `patientenpfad_data.js`
+
+### Datenbasis (`patientenpfad_data.js`)
+- 25 Prozessschritte mit: nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], standards[], struktur, detail
+- Alle Felder sind Entwürfe — Review und Pflege durch die AG über den Editor
 
 ---
 
