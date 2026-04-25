@@ -9,9 +9,9 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
-| `patientenpfad_interaktiv.html` | v4 | 2026-04-25 | Export PDF/CSV/JSON, Filterzeile im Druck |
-| `patientenpfad_editor.html` | v1 | 2026-04-25 | Neu: Formular-Editor mit Meta-Verwaltung und Export |
-| `patientenpfad_data.js` | v2 | 2026-04-25 | meta-Objekt, akteur/objekt/gesetze als Arrays |
+| `patientenpfad_interaktiv.html` | v5 | 2026-04-25 | Standards + Struktur-Badge ergänzt |
+| `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
+| `patientenpfad_data.js` | v3 | 2026-04-25 | meta.standards (32 Einträge + KIM), struktur-Feld alle 25 Schritte |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `KONTEXT.md` | – | 2026-04-25 | Lebendes Dokument, kein Versionsschema |
@@ -117,7 +117,8 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | PR #3 (Widget v2) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #4 (Freitextsuche) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #5 (AK Patientenportale) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
-| PR #6 (Export PDF/CSV/JSON) mergen | oeme-github | Offen |
+| PR #6 (Export PDF/CSV/JSON) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| PR #7 (Standards + Struktur-Kennzeichen) mergen | oeme-github | Offen |
 
 ---
 
@@ -131,7 +132,7 @@ Ziel: Eine interaktive, pflegbare Prozesslandkarte, die in der Arbeitsgruppe gen
 |---|---|---|---|
 | R1.1 | Laufende Nummer `nr` (1–25) pro Prozessschritt ergänzen | Hoch | Erledigt |
 | R1.2 | Feld `domäne` ergänzen – Zuordnung zu einer der 14 Informationsdomänen (Kap. 5) | Hoch | Erledigt |
-| R1.3 | Feld `standards` ergänzen – zunächst leer, später mit FHIR/IHE/HL7 befüllen | Mittel | Offen |
+| R1.3 | Feld `standards` ergänzen – zunächst leer, später mit FHIR/IHE/HL7 befüllen | Mittel | Erledigt (Entwurf – Review durch AG) |
 | R1.4 | Feld `gesetze` ergänzen – Zuordnung relevanter Rechtsgrundlagen pro Schritt (z.B. DSGVO Art. 9, SGB V § 291a, PatDatSchG, KHZG) | Hoch | Erledigt (Entwurf – Review durch AG) |
 
 ### R2 – Benutzeroberfläche verbessern
