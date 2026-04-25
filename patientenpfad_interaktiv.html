@@ -405,6 +405,27 @@
     }
     .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
 
+    /* ── Standard-Toggles ── */
+    .std-toggle {
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-3);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      opacity: 0.45;
+    }
+    .std-toggle.active {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+      color: #1E40AF;
+      opacity: 1;
+    }
+    .std-toggle:hover:not(.active) { border-color: var(--c-border-3); color: var(--c-text-2); opacity: 0.8; }
+
     /* ── Print-Filterzeile ── */
     .print-filter-summary {
       display: none;
@@ -469,6 +490,10 @@
       <span class="filter-label">Rechtsgrundlage</span>
       <!-- dynamisch befüllt -->
     </div>
+    <div class="filter-row" id="std-filter-row">
+      <span class="filter-label">Standard</span>
+      <!-- dynamisch befüllt -->
+    </div>
     <div class="filter-row">
       <span class="filter-label">Suche</span>
       <input class="search-input" type="search" id="search-input"
@@ -480,6 +505,7 @@
   <div class="main">
     <div class="export-bar">
       <div class="counter" id="counter"></div>
+      <button class="btn-export" id="btn-expand" onclick="toggleExpandAll()">⊞ Alle aufklappen</button>
       <button class="btn-export" onclick="exportPDF()" title="Druckansicht öffnen">↓ PDF</button>
       <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
       <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
@@ -500,20 +526,37 @@
       return gesetz.split(/\s+(?:§|Art\.|Abs\.)/)[0].trim();
     }
 
-    // ── Alle Gesetzesgruppen aus den Daten ermitteln ─────────────────
+    // ── Standardgruppe aus einem Eintrag extrahieren ─────────────────
+    function getStandardGroup(s) {
+      if (s.startsWith('HL7 FHIR'))                          return 'HL7 FHIR';
+      if (s.startsWith('HL7'))                               return 'HL7';
+      if (s.startsWith('IHE'))                               return 'IHE';
+      if (s.startsWith('gematik'))                           return 'gematik';
+      if (s.startsWith('KBV') || s.startsWith('ISiK'))      return 'KBV / ISiK';
+      if (['SNOMED CT','LOINC','ICD-10-GM','OPS'].includes(s)) return 'Terminologien';
+      return 'Sonstige';
+    }
+
+    // ── Alle Gruppen aus den Daten ermitteln ─────────────────────────
     const allLawGroups = [...new Set(
       data.flatMap(d => (d.gesetze || []).map(getLawGroup))
     )].sort();
 
-    // ── Filter-State ─────────────────────────────────────────────────
-    let activePhase = 'alle';
-    let activeDR    = new Set(['portal','versorgung','epa','ehds']);
-    let activeLaws  = new Set(allLawGroups);
-    let openCard    = null;
-    let searchTerm  = '';
-    let printMode   = false;
+    const allStandardGroups = [...new Set(
+      data.flatMap(d => (d.standards || []).map(getStandardGroup))
+    )].sort();
 
-    // ── Law-Filter-Buttons dynamisch aufbauen ────────────────────────
+    // ── Filter-State ─────────────────────────────────────────────────
+    let activePhase     = 'alle';
+    let activeDR        = new Set(['portal','versorgung','epa','ehds']);
+    let activeLaws      = new Set(allLawGroups);
+    let activeStandards = new Set(allStandardGroups);
+    let openCard        = null;
+    let searchTerm      = '';
+    let printMode       = false;
+    let expandAll       = false;
+
+    // ── Filter-Buttons dynamisch aufbauen ────────────────────────────
     const lawRow = document.getElementById('law-filter-row');
     allLawGroups.forEach(group => {
       const btn = document.createElement('button');
@@ -522,6 +565,16 @@
       btn.textContent = group;
       btn.onclick = () => toggleLaw(group);
       lawRow.appendChild(btn);
+    });
+
+    const stdRow = document.getElementById('std-filter-row');
+    allStandardGroups.forEach(group => {
+      const btn = document.createElement('button');
+      btn.className = 'std-toggle active';
+      btn.dataset.std = group;
+      btn.textContent = group;
+      btn.onclick = () => toggleStandard(group);
+      stdRow.appendChild(btn);
     });
 
     // ── Event-Handler ────────────────────────────────────────────────
@@ -545,8 +598,23 @@
       render();
     }
 
+    function toggleStandard(group) {
+      activeStandards.has(group) ? activeStandards.delete(group) : activeStandards.add(group);
+      document.querySelector(`[data-std="${CSS.escape(group)}"]`).classList.toggle('active', activeStandards.has(group));
+      render();
+    }
+
     function toggleDetail(nr) {
-      openCard = openCard === nr ? null : nr;
+      expandAll = false;
+      openCard  = openCard === nr ? null : nr;
+      render();
+    }
+
+    function toggleExpandAll() {
+      expandAll = !expandAll;
+      openCard  = null;
+      const btn = document.getElementById('btn-expand');
+      btn.textContent = expandAll ? '⊟ Alle zuklappen' : '⊞ Alle aufklappen';
       render();
     }
 
@@ -574,11 +642,11 @@
 
     // ── Karte als HTML ───────────────────────────────────────────────
     function renderCard(d) {
-      const hasDR  = d.dr.some(r => activeDR.has(r));
-      const hasLaw = !d.gesetze || d.gesetze.length === 0
-        || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
-      const dimmed = !hasDR || !hasLaw;
-      const isOpen = openCard === d.nr || printMode;
+      const hasDR       = d.dr.some(r => activeDR.has(r));
+      const hasLaw      = !d.gesetze   || d.gesetze.length   === 0 || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+      const hasStandard = !d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)));
+      const dimmed = !hasDR || !hasLaw || !hasStandard;
+      const isOpen = openCard === d.nr || printMode || expandAll;
 
       const drBadges = d.dr
         .map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`)
@@ -642,7 +710,8 @@
           .filter(matchesSearch);
         const visibleCount = phaseDaten.filter(d =>
           d.dr.some(r => activeDR.has(r)) &&
-          (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
+          (d.gesetze   || []).some(g => activeLaws.has(getLawGroup(g))) &&
+          (!d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s))))
         ).length;
         totalVisible += visibleCount;
 
@@ -668,16 +737,18 @@
       document.getElementById('karten').innerHTML = sectionsHtml;
 
       // Print-Filterzeile aktualisieren
-      const phaseText  = activePhase === 'alle' ? 'Alle Phasen' : phaseLabel[activePhase];
-      const drText     = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
-      const lawText    = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
-      const searchText = searchTerm ? `Suche: „${searchTerm}"` : null;
+      const phaseText    = activePhase === 'alle' ? 'Alle Phasen' : phaseLabel[activePhase];
+      const drText       = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
+      const lawText      = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
+      const stdText      = activeStandards.size === allStandardGroups.length ? null : `Standards: ${[...activeStandards].join(', ')}`;
+      const searchText   = searchTerm ? `Suche: „${searchTerm}"` : null;
       const dateText   = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
 
       const parts = [
         `Phase: ${phaseText}`,
         `Datenräume: ${drText}`,
         `Rechtsgrundlagen: ${lawText}`,
+        stdText,
         searchText
       ].filter(Boolean).join(' · ');
 
