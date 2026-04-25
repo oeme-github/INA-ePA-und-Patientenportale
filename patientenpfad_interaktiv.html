@@ -405,6 +405,25 @@
     }
     .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
 
+    /* ── Struktur-Toggles ── */
+    .str-toggle {
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text-3);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      opacity: 0.45;
+    }
+    .str-toggle.active                          { opacity: 1; }
+    .str-toggle.active[data-str="strukturiert"]   { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
+    .str-toggle.active[data-str="teilstrukturiert"] { background: #FEF3C7; border-color: #FCD34D; color: #78350F; }
+    .str-toggle.active[data-str="unstrukturiert"] { background: #FEE2E2; border-color: #FCA5A5; color: #7F1D1D; }
+    .str-toggle:hover:not(.active) { border-color: var(--c-border-3); color: var(--c-text-2); opacity: 0.8; }
+
     /* ── Standard-Toggles ── */
     .std-toggle {
       padding: 4px 10px;
@@ -486,6 +505,10 @@
       <button class="dr-toggle dr-epa        active" data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
       <button class="dr-toggle dr-ehds       active" data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
     </div>
+    <div class="filter-row" id="str-filter-row">
+      <span class="filter-label">Struktur</span>
+      <!-- dynamisch befüllt -->
+    </div>
     <div class="filter-row" id="law-filter-row">
       <span class="filter-label">Rechtsgrundlage</span>
       <!-- dynamisch befüllt -->
@@ -547,16 +570,29 @@
     )].sort();
 
     // ── Filter-State ─────────────────────────────────────────────────
-    let activePhase     = 'alle';
-    let activeDR        = new Set(['portal','versorgung','epa','ehds']);
-    let activeLaws      = new Set(allLawGroups);
-    let activeStandards = new Set(allStandardGroups);
-    let openCard        = null;
-    let searchTerm      = '';
-    let printMode       = false;
-    let expandAll       = false;
+    const allStrukturen = ['strukturiert', 'teilstrukturiert', 'unstrukturiert'];
+
+    let activePhase      = 'alle';
+    let activeDR         = new Set(['portal','versorgung','epa','ehds']);
+    let activeStrukturen = new Set(allStrukturen);
+    let activeLaws       = new Set(allLawGroups);
+    let activeStandards  = new Set(allStandardGroups);
+    let openCard         = null;
+    let searchTerm       = '';
+    let printMode        = false;
+    let expandAll        = false;
 
     // ── Filter-Buttons dynamisch aufbauen ────────────────────────────
+    const strRow = document.getElementById('str-filter-row');
+    allStrukturen.forEach(val => {
+      const btn = document.createElement('button');
+      btn.className = 'str-toggle active';
+      btn.dataset.str = val;
+      btn.textContent = val;
+      btn.onclick = () => toggleStruktur(val);
+      strRow.appendChild(btn);
+    });
+
     const lawRow = document.getElementById('law-filter-row');
     allLawGroups.forEach(group => {
       const btn = document.createElement('button');
@@ -604,6 +640,12 @@
       render();
     }
 
+    function toggleStruktur(val) {
+      activeStrukturen.has(val) ? activeStrukturen.delete(val) : activeStrukturen.add(val);
+      document.querySelector(`[data-str="${val}"]`).classList.toggle('active', activeStrukturen.has(val));
+      render();
+    }
+
     function toggleDetail(nr) {
       expandAll = false;
       openCard  = openCard === nr ? null : nr;
@@ -642,10 +684,11 @@
 
     // ── Karte als HTML ───────────────────────────────────────────────
     function renderCard(d) {
-      const hasDR       = d.dr.some(r => activeDR.has(r));
-      const hasLaw      = !d.gesetze   || d.gesetze.length   === 0 || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
-      const hasStandard = !d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)));
-      const dimmed = !hasDR || !hasLaw || !hasStandard;
+      const hasDR        = d.dr.some(r => activeDR.has(r));
+      const hasStruktur  = !d.struktur || activeStrukturen.has(d.struktur);
+      const hasLaw       = !d.gesetze   || d.gesetze.length   === 0 || d.gesetze.some(g => activeLaws.has(getLawGroup(g)));
+      const hasStandard  = !d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s)));
+      const dimmed = !hasDR || !hasStruktur || !hasLaw || !hasStandard;
       const isOpen = openCard === d.nr || printMode || expandAll;
 
       const drBadges = d.dr
@@ -710,6 +753,7 @@
           .filter(matchesSearch);
         const visibleCount = phaseDaten.filter(d =>
           d.dr.some(r => activeDR.has(r)) &&
+          (!d.struktur || activeStrukturen.has(d.struktur)) &&
           (d.gesetze   || []).some(g => activeLaws.has(getLawGroup(g))) &&
           (!d.standards || d.standards.length === 0 || d.standards.some(s => activeStandards.has(getStandardGroup(s))))
         ).length;
@@ -739,14 +783,16 @@
       // Print-Filterzeile aktualisieren
       const phaseText    = activePhase === 'alle' ? 'Alle Phasen' : phaseLabel[activePhase];
       const drText       = activeDR.size === 4 ? 'Alle Datenräume' : [...activeDR].map(r => drLabel[r]).join(', ');
+      const strText      = activeStrukturen.size === allStrukturen.length ? null : `Struktur: ${[...activeStrukturen].join(', ')}`;
       const lawText      = activeLaws.size === allLawGroups.length ? 'Alle Rechtsgrundlagen' : [...activeLaws].join(', ');
       const stdText      = activeStandards.size === allStandardGroups.length ? null : `Standards: ${[...activeStandards].join(', ')}`;
       const searchText   = searchTerm ? `Suche: „${searchTerm}"` : null;
-      const dateText   = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+      const dateText     = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
 
       const parts = [
         `Phase: ${phaseText}`,
         `Datenräume: ${drText}`,
+        strText,
         `Rechtsgrundlagen: ${lawText}`,
         stdText,
         searchText
@@ -765,6 +811,7 @@
         (activePhase === 'alle' || d.phase === activePhase) &&
         matchesSearch(d) &&
         d.dr.some(r => activeDR.has(r)) &&
+        (!d.struktur || activeStrukturen.has(d.struktur)) &&
         (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
       );
     }

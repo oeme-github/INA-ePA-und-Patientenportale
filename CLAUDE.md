@@ -60,6 +60,17 @@ Alle Ausgaben, Commit-Messages, Kommentare und Dokumente auf Deutsch.
 - Ein Commit pro sinnvoller Arbeitseinheit
 - Commit-Format: `Bereich: Was und warum`
 
+**Häufig committen — nicht erst am Session-Ende:**
+Nach jeder abgeschlossenen Teilaufgabe direkt committen und pushen, nicht auf das Session-Ende warten.
+
+**WIP-Commits bei unfertigem Stand:**
+Wenn eine Aufgabe am Session-Ende noch nicht abgeschlossen ist, trotzdem committen:
+`WIP: Bereich – kurze Beschreibung was fehlt`
+So geht kein Stand verloren. WIP-Commits beim nächsten Start fertigstellen und squashen.
+
+**Vor jedem Branch-Wechsel: `git status` prüfen.**
+Nie `git checkout` oder `git switch` ausführen, bevor sichergestellt ist, dass keine uncommitted Changes vorhanden sind. Falls doch: erst committen oder stashen.
+
 Siehe README.md für vollständige Team-Konventionen.
 
 ---
