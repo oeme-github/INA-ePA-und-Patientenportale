@@ -21,12 +21,14 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 ## Worum geht es?
 
-Arbeitskreis der gematik (ina.gematik.de) zur Standardisierung des Datenaustauschs zwischen:
+**AK Patientenportale** im Rahmen der INA der gematik — Standardisierung des Datenaustauschs zwischen:
 - einrichtungsspezifischen Patientenportalen
 - einrichtungsspezifischen Primärsystemen (KIS/PVS)
 - der bundesweiten elektronischen Patientenakte (ePA)
 
-Eine Unterarbeitsgruppe wurde gegründet, die sich mit dem Patientenpfad und den Prozessen vor, im und nach dem Krankenhaus beschäftigt.
+Offizielle Seite: https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1
+
+Eine Unterarbeitsgruppe des AK beschäftigt sich mit dem Patientenpfad und den Prozessen vor, im und nach dem Krankenhaus.
 
 ---
 
