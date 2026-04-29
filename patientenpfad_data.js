@@ -66,6 +66,7 @@ const meta = {
   standards: [
     "ABDA Medikationsliste",
     "DICOM",
+    "DIN EN ISO/IEEE 11073 Point of Care",
     "gematik ePA-Spezifikation",
     "gematik TI-Messenger",
     "gematik VSDM",
