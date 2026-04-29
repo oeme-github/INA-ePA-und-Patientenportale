@@ -1,9 +1,133 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="refresh" content="0; url=patientenpfad_interaktiv.html">
-  </head>
-  <body>
-    <a href="patientenpfad_interaktiv.html">Weiter zur Seite</a>
-  </body>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – AK Patientenportale</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text-1);
+      min-height: 100vh;
+    }
+
+    .page-header {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px;
+    }
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .page-header p {
+      font-size: 12px;
+      color: var(--c-text-3);
+      margin-top: 3px;
+    }
+
+    .main {
+      max-width: 720px;
+      margin: 48px auto;
+      padding: 0 24px;
+    }
+
+    .intro {
+      font-size: 14px;
+      color: var(--c-text-2);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 500px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border-1);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      border-color: var(--c-border-2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .card h2 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--c-text-3);
+      line-height: 1.5;
+    }
+
+    .card-arrow {
+      margin-top: auto;
+      padding-top: 16px;
+      font-size: 12px;
+      color: var(--c-text-3);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Patientenpfad – AK Patientenportale</h1>
+    <p>INA der gematik · Unterarbeitsgruppe Patientenpfad</p>
+  </header>
+
+  <main class="main">
+    <p class="intro">
+      Interaktive Arbeitsmaterialien zur Modellierung des Patientenpfads im Zusammenspiel
+      von Patientenportalen, Primärsystemen und der elektronischen Patientenakte (ePA).
+    </p>
+
+    <div class="cards">
+      <a class="card" href="patientenpfad_interaktiv.html">
+        <h2>Viewer</h2>
+        <p>Interaktive Prozesskarte mit Filter nach Phase, Datenraum, Domäne und Struktur. Suche, Export (PDF, CSV, JSON).</p>
+        <div class="card-arrow">Viewer öffnen →</div>
+      </a>
+
+      <a class="card" href="patientenpfad_editor.html">
+        <h2>Editor</h2>
+        <p>Pflege der Prozessschritte, Auswahllisten und Metadaten. Export der Datenbasis als JS-Datei.</p>
+        <div class="card-arrow">Editor öffnen →</div>
+      </a>
+    </div>
+  </main>
+
+</body>
 </html>
