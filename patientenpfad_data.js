@@ -272,7 +272,7 @@ const data = [
     dr: ["versorgung"],
     domäne: "Pflege",
     gesetze: ["DSGVO Art. 9", "SGB XI § 14 (Pflegebedürftigkeit)", "KrPflG"],
-    standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC"],
+    standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "unstrukturiert",
     detail: "Erfassung des pflegerischen Bedarfs bei Aufnahme – Mobilität, Ernährung, Risikoscreening. Eigenständiges Datenobjekt der Pflege."
   },
@@ -286,7 +286,7 @@ const data = [
     dr: ["versorgung", "epa", "ehds"],
     domäne: "Befunde",
     gesetze: ["DSGVO Art. 9", "BGB § 630a (Behandlungsvertrag)", "MBO-Ä § 10"],
-    standards: ["HL7 FHIR R4 (DiagnosticReport)", "LOINC", "DICOM", "IHE RAD"],
+    standards: ["HL7 FHIR R4 (DiagnosticReport)", "LOINC", "DICOM", "IHE RAD", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "teilstrukturiert",
     detail: "Untersuchungen und Diagnostik. Erzeugt medizinische Kerndaten – sollten strukturiert vorliegen für optimale Weiterverarbeitung."
   },
@@ -314,7 +314,7 @@ const data = [
     dr: ["versorgung", "epa"],
     domäne: "Pflege",
     gesetze: ["DSGVO Art. 9", "BGB § 630f (Dokumentationspflicht)", "SGB XI"],
-    standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC"],
+    standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "teilstrukturiert",
     detail: "Laufende Dokumentation von Pflegemaßnahmen, Vitalwerten und Verlauf. Wird kontinuierlich ergänzt."
   },
