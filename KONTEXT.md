@@ -11,11 +11,12 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
 | `patientenpfad_interaktiv.html` | v8 | 2026-04-25 | Struktur-Filter als Filter-Zeile im Toolbar |
 | `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
-| `patientenpfad_data.js` | v3 | 2026-04-25 | meta.standards (32 Einträge + KIM), struktur-Feld alle 25 Schritte |
+| `patientenpfad_data.js` | v4 | 2026-04-29 | DIN EN ISO/IEEE 11073 ergänzt (meta + Schritte 9, 10, 12) |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
-| `KONTEXT.md` | – | 2026-04-25 | Lebendes Dokument, kein Versionsschema |
-| `README.md` | – | 2026-04-25 | Grundprinzip 3 korrigiert |
+| `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
+| `KONTEXT.md` | – | 2026-04-29 | Lebendes Dokument, kein Versionsschema |
+| `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
 
@@ -121,6 +122,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | PR #7 (Standards + Struktur-Kennzeichen) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #8 (Standards-Filter + Auf-/Zuklappen + Struktur-Filter) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #10 (Struktur-Filter + CLAUDE.md Commit-Konventionen) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
+| Issue #12 (DIN EN ISO/IEEE 11073 ergänzen) | Claude | Erledigt (2026-04-29) |
 
 ---
 
