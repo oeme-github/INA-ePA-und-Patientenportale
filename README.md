@@ -2,6 +2,10 @@
 
 **[AK Patientenportale](https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1)** im Rahmen der INA der gematik — Standardisierung des Datenaustauschs zwischen einrichtungsspezifischen Patientenportalen, Primärsystemen (KIS/PVS) und der elektronischen Patientenakte (ePA).
 
+**Live-Version:** [oeme-github.github.io/INA-ePA-und-Patientenportale](https://oeme-github.github.io/INA-ePA-und-Patientenportale/)
+
+---
+
 ## Leitformel
 
 > **Akteur × Prozess → Datenobjekt**
