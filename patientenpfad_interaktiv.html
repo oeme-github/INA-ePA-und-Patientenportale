@@ -591,6 +591,20 @@
       color: var(--c-text-1);
       background: var(--c-surface);
     }
+    .matrix-legende {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .matrix-legende-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
     .matrix-step-chip.phase-vor  { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
     .matrix-step-chip.phase-im   { background: #EDE9FE; border-color: #A78BFA; color: #3730A3; }
     .matrix-step-chip.phase-nach { background: #FEF3C7; border-color: #FCD34D; color: #78350F; }
@@ -676,7 +690,8 @@
     <div class="export-bar">
       <div class="counter" id="counter"></div>
       <button class="btn-export" id="btn-expand" onclick="toggleExpandAll()">⊞ Alle aufklappen</button>
-      <button class="btn-export" onclick="exportPDF()" title="Druckansicht öffnen">↓ PDF</button>
+      <button class="btn-export" onclick="exportUebersicht()" title="Strukturierte Tabellenübersicht drucken">↓ Übersicht</button>
+      <button class="btn-export" onclick="exportPDF()" title="Kachelansicht drucken">↓ PDF</button>
       <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
       <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
     </div>
@@ -1007,6 +1022,12 @@
 
       document.getElementById('matrix-view').innerHTML = `
         <div class="matrix-wrap">
+          <div class="matrix-legende">
+            <span class="matrix-legende-label">Phasen:</span>
+            <span class="matrix-step-chip phase-vor" style="cursor:default;display:inline-block;width:auto;">Vor dem Krankenhaus</span>
+            <span class="matrix-step-chip phase-im"  style="cursor:default;display:inline-block;width:auto;">Im Krankenhaus</span>
+            <span class="matrix-step-chip phase-nach" style="cursor:default;display:inline-block;width:auto;">Nach dem Krankenhaus</span>
+          </div>
           <table class="matrix-table">
             <thead><tr><th>Informationsdomäne</th>${thDR}</tr></thead>
             <tbody>${rows}</tbody>
@@ -1071,17 +1092,17 @@
     // ── Matrix Cross-Highlighting ────────────────────────────────────
     const matrixEl = document.getElementById('matrix-view');
     matrixEl.addEventListener('mouseover', e => {
-      const chip = e.target.closest('.matrix-step-chip');
+      const chip = e.target.closest('.matrix-step-chip[data-nr]');
       if (!chip) return;
       const nr = chip.dataset.nr;
-      document.querySelectorAll('.matrix-step-chip').forEach(c => {
+      document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c => {
         const same = c.dataset.nr === nr;
         c.classList.toggle('highlighted',     same);
         c.classList.toggle('dimmed-by-hover', !same);
       });
     });
     matrixEl.addEventListener('mouseleave', () => {
-      document.querySelectorAll('.matrix-step-chip').forEach(c =>
+      document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c =>
         c.classList.remove('highlighted', 'dimmed-by-hover')
       );
     });
@@ -1096,6 +1117,61 @@
         (!d.struktur || activeStrukturen.has(d.struktur)) &&
         (d.gesetze || []).some(g => activeLaws.has(getLawGroup(g)))
       );
+    }
+
+    function exportUebersicht() {
+      const visible = getVisibleData();
+      const dateText = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+      const phaseColor = { vor: '#059669', im: '#4F46E5', nach: '#B45309' };
+      const rows = visible.map(d => `
+        <tr>
+          <td style="white-space:nowrap;font-weight:600;">#${String(d.nr).padStart(2,'0')}</td>
+          <td style="white-space:nowrap;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${phaseColor[d.phase]};margin-right:5px;vertical-align:middle;"></span>${phaseLabel[d.phase]}
+          </td>
+          <td style="font-weight:500;">${d.titel}</td>
+          <td>${d.akteur.join(', ')}</td>
+          <td>${d.objekt.join('<br>')}</td>
+          <td style="text-align:center;font-weight:700;">${d.op}</td>
+          <td>${d.dr.map(r => drLabel[r]).join(', ')}</td>
+          <td>${d.domäne || '–'}</td>
+        </tr>`).join('');
+
+      const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Patientenpfad – Strukturierte Übersicht</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; color: #111; margin: 24px 28px; }
+    h1 { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+    .meta { font-size: 10px; color: #666; margin-bottom: 18px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #888; border-bottom: 2px solid #ddd; padding: 5px 8px; white-space: nowrap; }
+    td { padding: 5px 8px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.4; }
+    tr:hover td { background: #f5f5f5; }
+    @media print { body { margin: 12px; } tr:hover td { background: none; } }
+  </style>
+</head>
+<body>
+  <h1>Patientenpfad – Strukturierte Übersicht</h1>
+  <div class="meta">${visible.length} von ${data.length} Prozessschritten &nbsp;·&nbsp; Stand: ${dateText} &nbsp;·&nbsp; AK Patientenportale · INA gematik</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Nr</th><th>Phase</th><th>Titel</th><th>Akteur</th><th>Datenobjekt</th><th>Op</th><th>Datenräume</th><th>Informationsdomäne</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body>
+</html>`;
+
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+      w.print();
     }
 
     function exportPDF() {
