@@ -460,6 +460,92 @@
       }
     }
 
+    /* ── View-Tabs ── */
+    .view-tabs {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 0 24px;
+      display: flex;
+    }
+    .view-tab {
+      padding: 10px 18px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--c-text-3);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      margin-bottom: -1px;
+      font-family: inherit;
+    }
+    .view-tab:hover:not(.active) { color: var(--c-text-2); }
+    .view-tab.active {
+      color: var(--c-text-1);
+      border-bottom-color: var(--c-text-1);
+      font-weight: 600;
+    }
+
+    /* ── Matrix ── */
+    .matrix-wrap {
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+    .matrix-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+    }
+    .matrix-table th {
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--c-border-1);
+      white-space: nowrap;
+    }
+    .matrix-table th:first-child {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--c-text-4);
+      min-width: 140px;
+    }
+    .matrix-table td {
+      padding: 8px 14px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--c-border-1);
+      min-width: 180px;
+    }
+    .matrix-domaene {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--c-text-1);
+      white-space: nowrap;
+    }
+    .matrix-step-chip {
+      display: block;
+      width: 100%;
+      padding: 3px 8px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border-2);
+      color: var(--c-text-2);
+      cursor: pointer;
+      margin: 2px 0;
+      transition: all 0.1s;
+      text-align: left;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+    .matrix-step-chip:hover {
+      border-color: var(--c-border-3);
+      color: var(--c-text-1);
+      background: var(--c-surface);
+    }
+
     /* ── Print ── */
     @media print {
       body { background: white; min-height: 0; }
@@ -480,6 +566,11 @@
   <div class="page-header">
     <h1>Patientenpfad – Interaktive Prozesskarte</h1>
     <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume &nbsp;&middot;&nbsp; <a href="https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1" target="_blank" style="color:inherit;opacity:0.6;text-decoration:none;">AK Patientenportale ↗</a></p>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('karten')">Prozessschritte</button>
+    <button class="view-tab" onclick="switchView('matrix')">Matrix</button>
   </div>
 
   <div class="print-filter-summary" id="print-filter-summary"></div>
@@ -534,6 +625,7 @@
       <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
     </div>
     <div id="karten"></div>
+    <div id="matrix-view" style="display:none;"></div>
   </div>
 
   <script src="patientenpfad_data.js"></script>
@@ -572,6 +664,7 @@
     // ── Filter-State ─────────────────────────────────────────────────
     const allStrukturen = ['strukturiert', 'teilstrukturiert', 'unstrukturiert'];
 
+    let activeView       = 'karten';
     let activePhase      = 'alle';
     let activeDR         = new Set(['portal','versorgung','epa','ehds']);
     let activeStrukturen = new Set(allStrukturen);
@@ -725,7 +818,7 @@
 
       return `
         <div class="prozess-card ${phaseBorder[d.phase]} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
-             onclick="toggleDetail(${d.nr})">
+             data-nr="${d.nr}" onclick="toggleDetail(${d.nr})">
           <div class="card-meta">
             <span class="card-nr">#${String(d.nr).padStart(2,'0')}</span>
           </div>
@@ -803,6 +896,70 @@
     }
 
     render();
+
+    // ── View-Switching ───────────────────────────────────────────────
+    function switchView(view) {
+      activeView = view;
+      document.querySelectorAll('.view-tab').forEach((t, i) =>
+        t.classList.toggle('active', ['karten','matrix'][i] === view)
+      );
+      const isKarten = view === 'karten';
+      document.querySelector('.toolbar').style.display    = isKarten ? '' : 'none';
+      document.querySelector('.export-bar').style.display = isKarten ? '' : 'none';
+      document.getElementById('karten').style.display     = isKarten ? '' : 'none';
+      document.getElementById('matrix-view').style.display = isKarten ? 'none' : '';
+      if (!isKarten) renderMatrix();
+    }
+
+    // ── Matrix-Rendering ─────────────────────────────────────────────
+    function renderMatrix() {
+      const datenraeume = ['portal', 'versorgung', 'epa', 'ehds'];
+      const domaenen    = meta.domaenen;
+
+      const matrix = {};
+      domaenen.forEach(d => {
+        matrix[d] = {};
+        datenraeume.forEach(dr => { matrix[d][dr] = []; });
+      });
+      data.forEach(step => {
+        if (!step.domäne || !matrix[step.domäne]) return;
+        step.dr.forEach(dr => { matrix[step.domäne][dr].push(step); });
+      });
+
+      const thDR = datenraeume.map(dr =>
+        `<th><span class="dr-badge ${drBadgeClass[dr]}">${drLabel[dr]}</span></th>`
+      ).join('');
+
+      const rows = domaenen.map(domäne => {
+        const cells = datenraeume.map(dr => {
+          const steps = matrix[domäne][dr];
+          if (!steps.length) return `<td></td>`;
+          const chips = steps.map(s =>
+            `<button class="matrix-step-chip" onclick="goToStep(${s.nr})">#${String(s.nr).padStart(2,'0')} ${s.titel}</button>`
+          ).join('');
+          return `<td>${chips}</td>`;
+        }).join('');
+        return `<tr><td class="matrix-domaene">${domäne}</td>${cells}</tr>`;
+      }).join('');
+
+      document.getElementById('matrix-view').innerHTML = `
+        <div class="matrix-wrap">
+          <table class="matrix-table">
+            <thead><tr><th>Informationsdomäne</th>${thDR}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function goToStep(nr) {
+      switchView('karten');
+      openCard = nr;
+      render();
+      setTimeout(() => {
+        const card = document.querySelector(`.prozess-card[data-nr="${nr}"]`);
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
 
     // ── Export-Funktionen ────────────────────────────────────────────
 
