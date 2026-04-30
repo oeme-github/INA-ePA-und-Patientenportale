@@ -545,6 +545,16 @@
       color: var(--c-text-1);
       background: var(--c-surface);
     }
+    .matrix-step-chip.phase-vor  { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
+    .matrix-step-chip.phase-im   { background: #EDE9FE; border-color: #A78BFA; color: #3730A3; }
+    .matrix-step-chip.phase-nach { background: #FEF3C7; border-color: #FCD34D; color: #78350F; }
+    .matrix-step-chip.highlighted {
+      outline: 2px solid currentColor;
+      font-weight: 700;
+      opacity: 1 !important;
+      filter: brightness(0.92);
+    }
+    .matrix-step-chip.dimmed-by-hover { opacity: 0.2; }
 
     /* ── Print ── */
     @media print {
@@ -935,7 +945,7 @@
           const steps = matrix[domäne][dr];
           if (!steps.length) return `<td></td>`;
           const chips = steps.map(s =>
-            `<button class="matrix-step-chip" onclick="goToStep(${s.nr})">#${String(s.nr).padStart(2,'0')} ${s.titel}</button>`
+            `<button class="matrix-step-chip phase-${s.phase}" data-nr="${s.nr}" onclick="goToStep(${s.nr})">#${String(s.nr).padStart(2,'0')} ${s.titel}</button>`
           ).join('');
           return `<td>${chips}</td>`;
         }).join('');
@@ -960,6 +970,24 @@
         if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 50);
     }
+
+    // ── Matrix Cross-Highlighting ────────────────────────────────────
+    const matrixEl = document.getElementById('matrix-view');
+    matrixEl.addEventListener('mouseover', e => {
+      const chip = e.target.closest('.matrix-step-chip');
+      if (!chip) return;
+      const nr = chip.dataset.nr;
+      document.querySelectorAll('.matrix-step-chip').forEach(c => {
+        const same = c.dataset.nr === nr;
+        c.classList.toggle('highlighted',     same);
+        c.classList.toggle('dimmed-by-hover', !same);
+      });
+    });
+    matrixEl.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.matrix-step-chip').forEach(c =>
+        c.classList.remove('highlighted', 'dimmed-by-hover')
+      );
+    });
 
     // ── Export-Funktionen ────────────────────────────────────────────
 
