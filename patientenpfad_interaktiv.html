@@ -591,6 +591,20 @@
       color: var(--c-text-1);
       background: var(--c-surface);
     }
+    .matrix-legende {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .matrix-legende-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
     .matrix-step-chip.phase-vor  { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
     .matrix-step-chip.phase-im   { background: #EDE9FE; border-color: #A78BFA; color: #3730A3; }
     .matrix-step-chip.phase-nach { background: #FEF3C7; border-color: #FCD34D; color: #78350F; }
@@ -1007,6 +1021,12 @@
 
       document.getElementById('matrix-view').innerHTML = `
         <div class="matrix-wrap">
+          <div class="matrix-legende">
+            <span class="matrix-legende-label">Phasen:</span>
+            <span class="matrix-step-chip phase-vor" style="cursor:default;display:inline-block;width:auto;">Vor dem Krankenhaus</span>
+            <span class="matrix-step-chip phase-im"  style="cursor:default;display:inline-block;width:auto;">Im Krankenhaus</span>
+            <span class="matrix-step-chip phase-nach" style="cursor:default;display:inline-block;width:auto;">Nach dem Krankenhaus</span>
+          </div>
           <table class="matrix-table">
             <thead><tr><th>Informationsdomäne</th>${thDR}</tr></thead>
             <tbody>${rows}</tbody>
