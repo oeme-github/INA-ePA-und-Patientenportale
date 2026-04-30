@@ -10,7 +10,8 @@ Alle Ausgaben, Commit-Messages, Kommentare und Dokumente auf Deutsch.
 1. `git status` und `git log --oneline -5` ausführen — was liegt offen?
 2. `git pull` — aktuellen Stand holen
 3. `KONTEXT.md` lesen — aktuellen Arbeitsstand verstehen
-4. User fragen: Was ist heute das Ziel?
+4. `gh issue list --state open` ausführen — offene Issues anzeigen
+5. User fragen: Was ist heute das Ziel?
 
 ---
 
