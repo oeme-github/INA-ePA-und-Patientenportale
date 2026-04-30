@@ -1091,17 +1091,17 @@
     // ── Matrix Cross-Highlighting ────────────────────────────────────
     const matrixEl = document.getElementById('matrix-view');
     matrixEl.addEventListener('mouseover', e => {
-      const chip = e.target.closest('.matrix-step-chip');
+      const chip = e.target.closest('.matrix-step-chip[data-nr]');
       if (!chip) return;
       const nr = chip.dataset.nr;
-      document.querySelectorAll('.matrix-step-chip').forEach(c => {
+      document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c => {
         const same = c.dataset.nr === nr;
         c.classList.toggle('highlighted',     same);
         c.classList.toggle('dimmed-by-hover', !same);
       });
     });
     matrixEl.addEventListener('mouseleave', () => {
-      document.querySelectorAll('.matrix-step-chip').forEach(c =>
+      document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c =>
         c.classList.remove('highlighted', 'dimmed-by-hover')
       );
     });
