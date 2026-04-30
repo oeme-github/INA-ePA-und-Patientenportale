@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
-| `patientenpfad_interaktiv.html` | v9 | 2026-04-30 | Matrix-Ansicht als zweiter Tab (Issue #13) |
+| `patientenpfad_interaktiv.html` | v10 | 2026-04-30 | Matrix-Ansicht + Popup-Detail beim Chip-Klick |
 | `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
 | `patientenpfad_data.js` | v4 | 2026-04-29 | DIN EN ISO/IEEE 11073 ergänzt (meta + Schritte 9, 10, 12) |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
@@ -124,7 +124,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | PR #8 (Standards-Filter + Auf-/Zuklappen + Struktur-Filter) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | PR #10 (Struktur-Filter + CLAUDE.md Commit-Konventionen) mergen | oeme-github | Erledigt (gemergt 2026-04-25) |
 | Issue #12 (DIN EN ISO/IEEE 11073 ergänzen) | Claude | Erledigt (2026-04-29) |
-| Issue #13 (Matrix-Ansicht Domänen × Datenräume) | Claude | Erledigt (2026-04-30) – PR #15 |
+| Issue #13 (Matrix-Ansicht Domänen × Datenräume) | Claude | Erledigt (2026-04-30) – PR #15 (inkl. Popup) |
 | Issue #14 (Ist-Analyse) | AG | Offen – wartet auf Entscheidung der Arbeitsgruppe |
 
 ---
