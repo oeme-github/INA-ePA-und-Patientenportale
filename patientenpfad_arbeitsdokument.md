@@ -101,6 +101,8 @@ Die möglichen Operationen sind:
 
 Ein Datenobjekt gilt als erzeugt **(E)**, wenn es im Kontext des jeweiligen Prozessschritts erstmalig vorliegt – unabhängig davon, ob es an anderer Stelle bereits existiert.
 
+Ein Datenobjekt ist eine Informationseinheit im Kontext eines Prozessschritts. Es kann **persistent** sein – gespeichert und über den Prozessschritt hinaus verfügbar (z. B. Diagnose, Pflegedokumentation, Medikationsplan) – oder **transient** – erzeugt, übermittelt und danach nicht mehr als eigenständiges Objekt vorhanden (z. B. Terminanfrage, Nachricht, Check-in-Bestätigung). Diese Unterscheidung trifft der Prozess – nicht das System.
+
 | Phase | Prozessschritt | Akteur | Datenobjekt | Operation |
 |---|---|---|---|---|
 | Vor dem Krankenhaus | Termin anfragen / buchen | Patient, Verwaltung | Terminanfrage / Terminbestätigung | E |
@@ -157,14 +159,14 @@ Die im Prozessmodell identifizierten Datenobjekte lassen sich zu stabilen Inform
 
 ## 6. Datenräume im Patientenpfad
 
-Die im Prozess entstehenden Datenobjekte können in unterschiedlichen Datenräumen vorliegen.
+Die im Prozess entstehenden Datenobjekte können in unterschiedlichen Datenräumen auftreten – als persistent gespeicherte Objekte oder als transiente Objekte, die einen Prozessschritt durchlaufen.
 
 | Datenraum | Beschreibung |
 |---|---|
 | Versorgungssysteme | Systeme der Leistungserbringer – z. B. KIS, PVS |
 | Patientenportal | Patientenzentrierter Zugang zu Informationen und Kommunikation |
 | ePA | Bundesweite, sektorenübergreifende persönliche Patientenakte |
-| EHDS | Europäischer Gesundheitsdatenraum – länderübergreifende Verfügbarkeit von Gesundheitsdaten |
+| EHDS | Europäischer Gesundheitsdatenraum – länderübergreifende Verfügbarkeit und transaktionaler Austausch von Gesundheitsdaten; Datenobjekte werden hier oft durchgeleitet, nicht dauerhaft gespeichert (z. B. MyHealth@EU) |
 
 Diese Datenräume erfüllen unterschiedliche Funktionen – sind aber gleichwertig. Kein Datenraum ist führend. Die Architektur folgt nicht einem Systemfluss, sondern einer Informationsverteilung über Datenräume. Kommunikation findet dabei über alle Datenräume hinweg statt – unabhängig vom genutzten Übertragungsweg.
 
