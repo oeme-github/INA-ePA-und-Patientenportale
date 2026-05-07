@@ -8,14 +8,14 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
-| `patientenpfad_arbeitsdokument.md` | v3 | 2026-04-24 | Grundprinzip 3 korrigiert: „vor" statt „statt" |
+| `patientenpfad_arbeitsdokument.md` | v4 | 2026-05-07 | Kap. 4+6: Datenobjekte persistent/transient klargestellt (Issue #17) |
 | `patientenpfad_interaktiv.html` | v11 | 2026-04-30 | Phasen-Legende, Hover-Fix, Druckübersicht (R2.5) |
 | `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
 | `patientenpfad_data.js` | v4 | 2026-04-29 | DIN EN ISO/IEEE 11073 ergänzt (meta + Schritte 9, 10, 12) |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
-| `KONTEXT.md` | – | 2026-04-30 | Session 2026-04-30 (2) abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-07 | Session 2026-05-07 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 | `CLAUDE.md` | – | 2026-04-30 | Issue-Check in Start-Routine ergänzt |
 
@@ -98,6 +98,9 @@ Die Pflege wurde bewusst als eigenständiger Akteur mit drei eigenen Prozessschr
 - Pflegedokumentation
 - Pflegerische Entlassungsplanung
 
+### Zu persistent vs. transient (Issue #17)
+Die AG hat Datenobjekte als reine Speicherobjekte missverstanden und den EHDS als „transaktional" bezeichnet. Beides ist berechtigt: Das Dokument verwendete „vorliegen" (Kap. 6), was Persistenz impliziert. Klarstellung in Kap. 4 und Kap. 6: Datenobjekte können persistent (Diagnose, Medikationsplan) oder transient (Terminanfrage, Nachricht) sein – die Unterscheidung trifft der Prozess. EHDS-Beschreibung um transaktionale Dimension ergänzt (MyHealth@EU).
+
 ### Zur Kommunikation / TI-Messenger
 Kommunikation wird systemunabhängig betrachtet. Der TI-Messenger ist eine Implementierung, keine Domäne. Kommunikation als Informationsdomäne existiert unabhängig vom Übertragungsweg.
 
@@ -128,6 +131,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | R2.5 (Druckübersicht strukturierte Tabelle) | Claude | Erledigt (2026-04-30) – PR #16 |
 | Matrix-Legende + Hover-Fix | Claude | Erledigt (2026-04-30) – PR #16 |
 | Issue #14 (Ist-Analyse) | AG | Offen – wartet auf Entscheidung der Arbeitsgruppe |
+| Issue #17 (Datenobjekte persistent/transient) | Claude | Erledigt (2026-05-07) – PR #18 |
 
 ---
 
