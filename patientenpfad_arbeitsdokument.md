@@ -1,7 +1,7 @@
 # Rolle von Patientenportalen im Zusammenspiel mit Primärsystemen und ePA
 ### Standardisierung des Datenaustauschs im Patientenpfad
 
-**Version 3 | Stand: 2026-04-24**
+**Version 4 | Stand: 2026-05-07**
 
 ---
 
