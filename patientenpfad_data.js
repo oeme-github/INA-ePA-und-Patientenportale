@@ -35,7 +35,6 @@ const meta = {
     "Patient",
     "Pflege",
     "Sozialdienst",
-    "Test",
     "Verwaltung"
   ],
 
