@@ -9,15 +9,15 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v4 | 2026-05-07 | Kap. 4+6: Datenobjekte persistent/transient klargestellt (Issue #17) |
-| `patientenpfad_interaktiv.html` | v11 | 2026-04-30 | Phasen-Legende, Hover-Fix, Druckübersicht (R2.5) |
-| `patientenpfad_editor.html` | v2 | 2026-04-25 | Standards + Struktur-Select ergänzt |
-| `patientenpfad_data.js` | v4 | 2026-04-29 | DIN EN ISO/IEEE 11073 ergänzt (meta + Schritte 9, 10, 12) |
+| `patientenpfad_interaktiv.html` | v12 | 2026-05-11 | Neue Sektionen ist/luecke/forderungen in Detailkarte und Modal |
+| `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
+| `patientenpfad_data.js` | v5 | 2026-05-11 | Felder ist/luecke/forderungen (Schritte 1–3 befüllt, 4–25 vorbereitet) |
+| `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
-| `KONTEXT.md` | – | 2026-05-07 | Session 2026-05-07 abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-11 | Session 2026-05-11 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
-| `CLAUDE.md` | – | 2026-04-30 | Issue-Check in Start-Routine ergänzt |
 
 ---
 
@@ -98,6 +98,14 @@ Die Pflege wurde bewusst als eigenständiger Akteur mit drei eigenen Prozessschr
 - Pflegedokumentation
 - Pflegerische Entlassungsplanung
 
+### Zur Ist-Analyse (Issue #14)
+
+Die UAG „Vor Krankenhaus" hat in ihrer ersten Sitzung entschieden, auf Detailebene zu bleiben und pro Prozessschritt textuell zu beschreiben: Was ist da? / Was fehlt? / Forderungen. Diese Struktur wurde als drei neue Felder (`ist`, `luecke`, `forderungen`) im Datenmodell abgebildet. Schritte 1–3 sind mit dem UAG-Ergebnis befüllt, Schritte 4–25 warten auf weitere Sitzungen.
+
+### Zur Online-Pflege (Editor GitHub-Integration)
+
+Der Editor kann `patientenpfad_data.js` jetzt direkt per GitHub REST API ins Repository schreiben. AG-Mitglieder benötigen einen GitHub Personal Access Token (classic, `repo`-Scope) und tragen ihn einmalig im ⚙-Panel ein. Anleitung: `ANLEITUNG_EDITOR.md`. Damit entfällt der manuelle Export/Commit-Workflow für die Datenpflege.
+
 ### Zu persistent vs. transient (Issue #17)
 Die AG hat Datenobjekte als reine Speicherobjekte missverstanden und den EHDS als „transaktional" bezeichnet. Beides ist berechtigt: Das Dokument verwendete „vorliegen" (Kap. 6), was Persistenz impliziert. Klarstellung in Kap. 4 und Kap. 6: Datenobjekte können persistent (Diagnose, Medikationsplan) oder transient (Terminanfrage, Nachricht) sein – die Unterscheidung trifft der Prozess. EHDS-Beschreibung um transaktionale Dimension ergänzt (MyHealth@EU).
 
@@ -130,7 +138,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Issue #13 (Matrix-Ansicht Domänen × Datenräume) | Claude | Erledigt (2026-04-30) – PR #15 gemergt |
 | R2.5 (Druckübersicht strukturierte Tabelle) | Claude | Erledigt (2026-04-30) – PR #16 |
 | Matrix-Legende + Hover-Fix | Claude | Erledigt (2026-04-30) – PR #16 |
-| Issue #14 (Ist-Analyse) | AG | Offen – wartet auf Entscheidung der Arbeitsgruppe |
+| Issue #14 (Ist-Analyse) | Claude | Erledigt (2026-05-11) – PR #19, PR #20 |
 | Issue #17 (Datenobjekte persistent/transient) | Claude | Erledigt (2026-05-07) – PR #18 |
 
 ---
@@ -201,7 +209,8 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 ## Offene Punkte & nächste Schritte
 
 ### Im Tool
-- Issue #14 (Ist-Analyse) – wartet auf Entscheidung der AG: strukturiert in Daten aufnehmen oder im Word-Dokument belassen?
+- Schritte 4–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
+- Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
