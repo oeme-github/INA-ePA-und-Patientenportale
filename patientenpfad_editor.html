@@ -132,23 +132,65 @@
     /* Formular-Footer */
     .form-footer { display: flex; gap: 8px; align-items: center; padding-top: 14px; border-top: 1px solid var(--c-border-1); margin-top: 6px; }
     .form-footer .btn-danger { margin-left: auto; }
+
+    /* ── GitHub-Integration ── */
+    .btn-github { background: #24292F; border-color: #24292F; color: #fff; }
+    .btn-github:hover { background: #1a1f24; border-color: #1a1f24; color: #fff; }
+    .btn-github:disabled { opacity: 0.5; cursor: not-allowed; }
+    .gh-status { font-size: 12px; font-weight: 500; margin-left: 8px; }
+    .gh-status.pending { color: #92400E; }
+    .gh-status.success { color: #065F46; }
+    .gh-status.error   { color: #991B1B; }
+    .gh-settings-panel {
+      background: #F8FAFC; border-bottom: 1px solid var(--c-border-1);
+      padding: 0 24px; overflow: hidden; max-height: 0; transition: max-height 0.2s ease, padding 0.2s;
+    }
+    .gh-settings-panel.open { max-height: 200px; padding: 14px 24px; }
+    .gh-settings-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .gh-token-input {
+      padding: 6px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: monospace; color: var(--c-text-2); background: var(--c-surface);
+      width: 340px; max-width: 100%;
+    }
+    .gh-token-input:focus { outline: none; border-color: #24292F; }
+    .gh-info { font-size: 12px; color: var(--c-text-3); }
+    .gh-info code { background: var(--c-bg); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
   </style>
 </head>
 <body>
 
   <div class="page-header">
     <h1>Patientenpfad – Daten-Editor</h1>
-    <p>AK Patientenportale &nbsp;&middot;&nbsp; Änderungen werden erst nach dem Export wirksam · Exportierte <code>patientenpfad_data.js</code> ersetzen und committen</p>
+    <p>AK Patientenportale &nbsp;&middot;&nbsp; Änderungen direkt in GitHub speichern oder lokal exportieren</p>
   </div>
 
   <div class="action-bar">
     <button class="btn btn-primary" onclick="addStep()">+ Neuer Schritt</button>
-    <button class="btn btn-export" onclick="exportData()">↓ data.js exportieren</button>
+    <button class="btn btn-github" id="btn-gh-save" onclick="saveToGitHub()">↑ In GitHub speichern</button>
+    <button class="btn btn-export" onclick="exportData()">↓ Lokal exportieren</button>
+    <button class="btn btn-sm" onclick="toggleGitHubSettings()" title="GitHub-Token konfigurieren">⚙ GitHub</button>
+    <span class="gh-status" id="gh-status"></span>
     <span class="counter" id="counter"></span>
   </div>
 
+  <div class="gh-settings-panel" id="gh-settings-panel">
+    <div class="gh-settings-inner">
+      <input type="password" class="gh-token-input" id="gh-token-input"
+             placeholder="GitHub Personal Access Token (repo-Berechtigung)"
+             onkeydown="if(event.key==='Enter') saveToken()">
+      <button class="btn btn-sm btn-primary" onclick="saveToken()">Token speichern</button>
+      <button class="btn btn-sm btn-danger" onclick="clearToken()">Token löschen</button>
+      <span class="gh-info">
+        Repo: <code>oeme-github/INA-ePA-und-Patientenportale</code> &nbsp;·&nbsp;
+        Branch: <code>main</code> &nbsp;·&nbsp;
+        Datei: <code>patientenpfad_data.js</code>
+        &nbsp;·&nbsp; Token wird nur im Browser (localStorage) gespeichert.
+      </span>
+    </div>
+  </div>
+
   <div class="main">
-    <div class="hint">
+    <div class="hint" id="local-hint" style="display:none;">
       ⚠ Diese Datei und <code>patientenpfad_data.js</code> müssen im gleichen Ordner liegen.
       Nach dem Export die heruntergeladene Datei mit der bestehenden ersetzen und ins Repository committen.
     </div>
@@ -405,27 +447,26 @@
     }
 
     // ── Export ───────────────────────────────────────────────────────
-    function exportData() {
+    function buildContent() {
       const today = new Date().toISOString().slice(0,10);
-
       const fmtArr  = arr => arr.length === 0 ? '[]' : `[${arr.map(v => JSON.stringify(v)).join(', ')}]`;
       const fmtMeta = (key) => {
-        const items = metaCopy[key];
-        const lines = items.map(v => `    ${JSON.stringify(v)}`).join(',\n');
+        const its = metaCopy[key];
+        const lines = its.map(v => `    ${JSON.stringify(v)}`).join(',\n');
         return `  ${key}: [\n${lines}\n  ]`;
       };
-
       const metaStr = `const meta = {\n${META_CONFIG.map(c => fmtMeta(c.key)).join(',\n\n')}\n};`;
-
       const dataLines = items.map((item, i) => {
         const nr = i + 1;
         return `  {\n    nr: ${nr},\n    phase: ${JSON.stringify(item.phase)},\n    titel: ${JSON.stringify(item.titel)},\n    akteur: ${fmtArr(item.akteur||[])},\n    objekt: ${fmtArr(item.objekt||[])},\n    op: ${JSON.stringify(item.op)},\n    dr: ${fmtArr(item.dr||[])},\n    domäne: ${JSON.stringify(item['domäne']||'')},\n    gesetze: ${fmtArr(item.gesetze||[])},\n    standards: ${fmtArr(item.standards||[])},\n    struktur: ${JSON.stringify(item.struktur||'')},\n    detail: ${JSON.stringify(item.detail||'')},\n    ist: ${JSON.stringify(item.ist||'')},\n    luecke: ${JSON.stringify(item.luecke||'')},\n    forderungen: ${JSON.stringify(item.forderungen||'')}\n  }`;
       });
-
-      const content =
-`// Patientenpfad – Daten und Konfiguration
+      return `// Patientenpfad – Daten und Konfiguration
 //
 // Felder: nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], standards[], struktur, detail, ist, luecke, forderungen
+// struktur: 'strukturiert' | 'teilstrukturiert' | 'unstrukturiert'  — Ist-Zustand des erzeugten Datenobjekts
+// ist:       Was heute vorhanden ist (Ist-Zustand des Prozessschritts)
+// luecke:    Was fehlt (Lücke zwischen Ist und Soll)
+// forderungen: Was die AG fordert
 // phase:  'vor' | 'im' | 'nach'
 // op:     E = Erzeugt, V = Verändert, G = Gelöscht
 // Exportiert: ${today}
@@ -440,7 +481,10 @@ const data = [
 ${dataLines.join(',\n')}
 ];
 `;
+    }
 
+    function exportData() {
+      const content = buildContent();
       const blob = new Blob([content], { type:'text/javascript' });
       const url  = URL.createObjectURL(blob);
       const a    = Object.assign(document.createElement('a'), { href: url, download: 'patientenpfad_data.js' });
@@ -448,9 +492,119 @@ ${dataLines.join(',\n')}
       URL.revokeObjectURL(url);
     }
 
+    // ── GitHub-Integration ───────────────────────────────────────────
+    const GH_OWNER  = 'oeme-github';
+    const GH_REPO   = 'INA-ePA-und-Patientenportale';
+    const GH_PATH   = 'patientenpfad_data.js';
+    const GH_BRANCH = 'main';
+
+    function toggleGitHubSettings(forceOpen) {
+      const panel = document.getElementById('gh-settings-panel');
+      if (forceOpen) {
+        panel.classList.add('open');
+      } else {
+        panel.classList.toggle('open');
+      }
+      if (panel.classList.contains('open')) {
+        const stored = localStorage.getItem('gh-token') || '';
+        document.getElementById('gh-token-input').value = stored ? '••••••••••••••••' : '';
+        document.getElementById('gh-token-input').placeholder = stored
+          ? 'Token gespeichert – neu eingeben zum Ändern'
+          : 'GitHub Personal Access Token (repo-Berechtigung)';
+      }
+    }
+
+    function saveToken() {
+      const val = document.getElementById('gh-token-input').value.trim();
+      if (!val || val === '••••••••••••••••') return;
+      localStorage.setItem('gh-token', val);
+      document.getElementById('gh-token-input').value = '••••••••••••••••';
+      document.getElementById('gh-token-input').placeholder = 'Token gespeichert – neu eingeben zum Ändern';
+      document.getElementById('gh-settings-panel').classList.remove('open');
+      setStatus('✓ Token gespeichert', 'success');
+    }
+
+    function clearToken() {
+      localStorage.removeItem('gh-token');
+      document.getElementById('gh-token-input').value = '';
+      document.getElementById('gh-token-input').placeholder = 'GitHub Personal Access Token (repo-Berechtigung)';
+      setStatus('Token gelöscht', '');
+    }
+
+    function setStatus(msg, cls) {
+      const el = document.getElementById('gh-status');
+      el.textContent = msg;
+      el.className = 'gh-status' + (cls ? ' ' + cls : '');
+      if (cls === 'success') setTimeout(() => { el.textContent = ''; el.className = 'gh-status'; }, 4000);
+    }
+
+    async function saveToGitHub() {
+      const token = localStorage.getItem('gh-token') || '';
+      if (!token) {
+        toggleGitHubSettings(true);
+        document.getElementById('gh-token-input').focus();
+        setStatus('Bitte zuerst einen Token eingeben', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-gh-save');
+      btn.disabled = true;
+      setStatus('⏳ Verbinde …', 'pending');
+
+      try {
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        };
+
+        const getResp = await fetch(
+          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}?ref=${GH_BRANCH}`,
+          { headers }
+        );
+        if (!getResp.ok) {
+          const err = await getResp.json();
+          throw new Error(err.message || `HTTP ${getResp.status}`);
+        }
+        const fileData = await getResp.json();
+
+        setStatus('⏳ Speichere …', 'pending');
+        const content = buildContent();
+        const encoded = btoa(unescape(encodeURIComponent(content)));
+
+        const putResp = await fetch(
+          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,
+          {
+            method: 'PUT',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: 'Daten: Prozessschritte aktualisiert (Editor)',
+              content: encoded,
+              sha: fileData.sha,
+              branch: GH_BRANCH
+            })
+          }
+        );
+        if (!putResp.ok) {
+          const err = await putResp.json();
+          throw new Error(err.message || `HTTP ${putResp.status}`);
+        }
+
+        setStatus('✓ In GitHub gespeichert', 'success');
+      } catch (e) {
+        setStatus(`✗ ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     // ── Init ─────────────────────────────────────────────────────────
     renderMeta();
     render();
+    // Lokaler Hinweis nur anzeigen wenn kein Token vorhanden
+    if (!localStorage.getItem('gh-token')) {
+      document.getElementById('local-hint').style.display = '';
+    }
   </script>
 </body>
 </html>
