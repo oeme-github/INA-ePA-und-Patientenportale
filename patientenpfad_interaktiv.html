@@ -876,6 +876,22 @@
           ? d.gesetze.map(g => `<span class="gesetz-chip">${g}</span>`).join('')
           : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
 
+        const istSection = d.ist ? `
+            <div class="detail-section">
+              <div class="detail-section-label">Was ist da?</div>
+              <div style="white-space:pre-line;">${highlight(d.ist, searchTerm)}</div>
+            </div>` : '';
+        const lueckeSection = d.luecke ? `
+            <div class="detail-section">
+              <div class="detail-section-label">Was fehlt?</div>
+              <div style="white-space:pre-line;">${highlight(d.luecke, searchTerm)}</div>
+            </div>` : '';
+        const forderungenSection = d.forderungen ? `
+            <div class="detail-section">
+              <div class="detail-section-label">Forderungen</div>
+              <div style="white-space:pre-line;">${highlight(d.forderungen, searchTerm)}</div>
+            </div>` : '';
+
         detailHtml = `
           <div class="detail-box">
             <div>${highlight(d.detail, searchTerm)}</div>
@@ -891,6 +907,7 @@
               <div class="detail-section-label">Standards <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
               <div>${(d.standards||[]).length ? d.standards.map(s=>`<span class="standard-chip">${highlight(s,searchTerm)}</span>`).join('') : '<span style="color:var(--c-text-4);font-size:12px;">–</span>'}</div>
             </div>
+            ${istSection}${lueckeSection}${forderungenSection}
           </div>`;
       }
 
@@ -1073,7 +1090,11 @@
         <div class="detail-section" style="margin-top:12px;">
           <div class="detail-section-label">Standards <span style="font-weight:400;text-transform:none;letter-spacing:0;">(Entwurf)</span></div>
           <div>${standardsHtml}</div>
-        </div>`;
+        </div>
+        ${d.ist ? `<div class="detail-section" style="margin-top:12px;"><div class="detail-section-label">Was ist da?</div><div style="white-space:pre-line;font-size:13px;color:var(--c-text-2);line-height:1.65;">${d.ist}</div></div>` : ''}
+        ${d.luecke ? `<div class="detail-section" style="margin-top:12px;"><div class="detail-section-label">Was fehlt?</div><div style="white-space:pre-line;font-size:13px;color:var(--c-text-2);line-height:1.65;">${d.luecke}</div></div>` : ''}
+        ${d.forderungen ? `<div class="detail-section" style="margin-top:12px;"><div class="detail-section-label">Forderungen</div><div style="white-space:pre-line;font-size:13px;color:var(--c-text-2);line-height:1.65;">${d.forderungen}</div></div>` : ''}
+        `;
 
       const panel = document.getElementById('modal-panel');
       panel.className = `modal-panel phase-${d.phase}`;
