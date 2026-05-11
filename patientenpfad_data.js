@@ -1,10 +1,13 @@
 // Patientenpfad – Daten und Konfiguration
 //
-// Felder: nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], standards[], struktur, detail
+// Felder: nr, phase, titel, akteur[], objekt[], op, dr[], domäne, gesetze[], standards[], struktur, detail, ist, luecke, forderungen
 // struktur: 'strukturiert' | 'teilstrukturiert' | 'unstrukturiert'  — Ist-Zustand des erzeugten Datenobjekts
+// ist:       Was heute vorhanden ist (Ist-Zustand des Prozessschritts)
+// luecke:    Was fehlt (Lücke zwischen Ist und Soll)
+// forderungen: Was die AG fordert
 // phase:  'vor' | 'im' | 'nach'
 // op:     E = Erzeugt, V = Verändert, G = Gelöscht
-// Exportiert: 2026-04-25
+// Exportiert: 2026-05-11
 
 // ── Konfiguration (pflegbar über den Editor) ──────────────────────────────────
 
@@ -159,7 +162,10 @@ const data = [
     gesetze: ["DSGVO Art. 6 Abs. 1", "SGB V § 75 (Terminvermittlung)"],
     standards: ["HL7 FHIR R4 (Appointment)", "ISiK Terminplanung"],
     struktur: "unstrukturiert",
-    detail: "Terminvereinbarung für ambulante Vorstellung oder stationäre Aufnahme. Das Portal ist die primäre Schnittstelle – der Patient löst den Prozess aus."
+    detail: "Terminvereinbarung für ambulante Vorstellung oder stationäre Aufnahme. Das Portal ist die primäre Schnittstelle – der Patient löst den Prozess aus.",
+    ist: "Das Portal ist die primäre Schnittstelle für die Terminvereinbarung.",
+    luecke: "Eindeutige Identifikation des Patienten fehlt.\nIntegration der Systeme per FHIR-Standard noch nicht durchgängig.",
+    forderungen: "Datenbasis als Ausgangspunkt und Endpunkt für alle Systeme (Standard: FHIR)."
   },
   {
     nr: 2,
@@ -173,7 +179,10 @@ const data = [
     gesetze: ["SGB V § 73 (Überweisungen)", "DSGVO Art. 9"],
     standards: ["HL7 FHIR R4 (ServiceRequest)", "KBV FHIR-Basisprofile", "HL7 CDA R2"],
     struktur: "unstrukturiert",
-    detail: "Die Überweisung wird im Kontext des Krankenhauses erstmalig bereitgestellt. Heute oft noch als Papier oder PDF – ein klassischer Medienbruch."
+    detail: "Die Überweisung wird im Kontext des Krankenhauses erstmalig bereitgestellt. Heute oft noch als Papier oder PDF – ein klassischer Medienbruch.",
+    ist: "Existiert heute nur in der Papierwelt.\neÜberweisung als Auftrag vorhanden.",
+    luecke: "Elektronische Einweisung / Überweisung fehlt durchgängig.\nFrühzeitiger Zugriff auf die ePA nicht möglich.\nIdentifikation des Patienten im Vorfeld fehlt.",
+    forderungen: "Frühe Identifikation des Patienten.\nFrüher Zugriff auf Einweisung/Überweisung.\nFrüher Zugriff auf die ePA."
   },
   {
     nr: 3,
@@ -187,7 +196,10 @@ const data = [
     gesetze: ["DSGVO Art. 6 + Art. 9", "SGB V § 291 (eGK)", "KHEntgG § 2"],
     standards: ["HL7 FHIR R4 (Patient)", "IHE PIX/PDQ", "gematik VSDM", "ISiK Basismodul"],
     struktur: "strukturiert",
-    detail: "Kontaktdaten und Versicherungsdaten werden erfasst oder aktualisiert. Datenobjekt kann sowohl neu entstehen als auch verändert werden."
+    detail: "Kontaktdaten und Versicherungsdaten werden erfasst oder aktualisiert. Datenobjekt kann sowohl neu entstehen als auch verändert werden.",
+    ist: "VSDM vorhanden (Meldeadresse über Register).\nErfassung am Aufnahmeschalter etabliert.",
+    luecke: "Angaben am Aufnahmeschalter stimmen oft nicht mit der Gesundheitskarte überein – Stammsatz wird daher nicht automatisch aktualisiert.\n\nFehlende Felder: E-Mail, Telefon (im Portal mit gedacht), abweichende Anschrift, Hausarzt und KIM-Adresse.",
+    forderungen: "Erweiterung und Harmonisierung der Stammdaten über Standards und Systeme hinweg.\nZiel: Kein mehrfaches Angeben derselben Daten an verschiedenen Stellen.\nAbgrenzung: VSDM als Grundlage; Patientenportale und KIS brauchen einen einheitlichen Standard."
   },
   {
     nr: 4,
@@ -201,7 +213,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630g (Akteneinsicht)", "SGB V § 341 ff. (ePA)"],
     standards: ["HL7 FHIR R4 (DocumentReference)", "IHE XDS.b", "IHE MHD", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
-    detail: "Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs."
+    detail: "Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 5,
@@ -215,7 +230,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630a (Behandlungsvertrag)"],
     standards: ["HL7 FHIR R4 (QuestionnaireResponse)", "HL7 CDA R2"],
     struktur: "unstrukturiert",
-    detail: "Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext."
+    detail: "Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 6,
@@ -229,7 +247,10 @@ const data = [
     gesetze: ["DSGVO Art. 7 + Art. 9", "BGB § 630d (Einwilligung)", "SGB V § 342 (ePA-Einwilligung)"],
     standards: ["HL7 FHIR R4 (Consent)", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
-    detail: "Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung."
+    detail: "Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
 
   // ── Im Krankenhaus ───────────────────────────────────────────────────────────
@@ -246,7 +267,10 @@ const data = [
     gesetze: ["DSGVO Art. 6", "SGB V § 39", "KHZG"],
     standards: ["HL7 FHIR R4 (Encounter)", "IHE PIX/PDQ", "ISiK Basismodul"],
     struktur: "strukturiert",
-    detail: "Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung."
+    detail: "Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 8,
@@ -260,7 +284,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "KHEntgG § 2", "SGB V § 39"],
     standards: ["HL7 v2", "HL7 FHIR R4 (Encounter)", "ISiK Basismodul"],
     struktur: "strukturiert",
-    detail: "Fallanlage im KIS. Zentrales Datenobjekt für den gesamten stationären Aufenthalt."
+    detail: "Fallanlage im KIS. Zentrales Datenobjekt für den gesamten stationären Aufenthalt.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 9,
@@ -274,7 +301,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "SGB XI § 14 (Pflegebedürftigkeit)", "KrPflG"],
     standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "unstrukturiert",
-    detail: "Erfassung des pflegerischen Bedarfs bei Aufnahme – Mobilität, Ernährung, Risikoscreening. Eigenständiges Datenobjekt der Pflege."
+    detail: "Erfassung des pflegerischen Bedarfs bei Aufnahme – Mobilität, Ernährung, Risikoscreening. Eigenständiges Datenobjekt der Pflege.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 10,
@@ -288,7 +318,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630a (Behandlungsvertrag)", "MBO-Ä § 10"],
     standards: ["HL7 FHIR R4 (DiagnosticReport)", "LOINC", "DICOM", "IHE RAD", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "teilstrukturiert",
-    detail: "Untersuchungen und Diagnostik. Erzeugt medizinische Kerndaten – sollten strukturiert vorliegen für optimale Weiterverarbeitung."
+    detail: "Untersuchungen und Diagnostik. Erzeugt medizinische Kerndaten – sollten strukturiert vorliegen für optimale Weiterverarbeitung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 11,
@@ -302,7 +335,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630f (Dokumentationspflicht)", "MBO-Ä § 10"],
     standards: ["HL7 FHIR R4 (Condition)", "ICD-10-GM", "OPS", "HL7 CDA R2"],
     struktur: "teilstrukturiert",
-    detail: "Befunde und Diagnosen werden dokumentiert. Zentrales Datenobjekt – wird laufend verändert und ergänzt."
+    detail: "Befunde und Diagnosen werden dokumentiert. Zentrales Datenobjekt – wird laufend verändert und ergänzt.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 12,
@@ -316,7 +352,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630f (Dokumentationspflicht)", "SGB XI"],
     standards: ["HL7 FHIR R4 (Observation)", "SNOMED CT", "LOINC", "DIN EN ISO/IEEE 11073 Point of Care"],
     struktur: "teilstrukturiert",
-    detail: "Laufende Dokumentation von Pflegemaßnahmen, Vitalwerten und Verlauf. Wird kontinuierlich ergänzt."
+    detail: "Laufende Dokumentation von Pflegemaßnahmen, Vitalwerten und Verlauf. Wird kontinuierlich ergänzt.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 13,
@@ -330,7 +369,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "BGB § 630g (Akteneinsicht)", "KHZG", "SGB V § 341 ff. (ePA)"],
     standards: ["HL7 FHIR R4 (DocumentReference)", "gematik ePA-Spezifikation", "ISiK Basismodul"],
     struktur: "teilstrukturiert",
-    detail: "Ausgewählte Informationen werden dem Patienten im Portal bereitgestellt – z.B. Laborwerte. Strukturierte Daten ermöglichen eine sinnvolle Darstellung."
+    detail: "Ausgewählte Informationen werden dem Patienten im Portal bereitgestellt – z.B. Laborwerte. Strukturierte Daten ermöglichen eine sinnvolle Darstellung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 14,
@@ -344,7 +386,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "StGB § 203 (Schweigepflicht)", "TKG"],
     standards: ["gematik TI-Messenger", "KIM (Kommunikation im Medizinwesen)", "HL7 FHIR R4 (Communication)"],
     struktur: "unstrukturiert",
-    detail: "Nachrichten und Rückfragen – unabhängig vom Übertragungsweg (Portal, TI-Messenger oder andere Kanäle)."
+    detail: "Nachrichten und Rückfragen – unabhängig vom Übertragungsweg (Portal, TI-Messenger oder andere Kanäle).",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 15,
@@ -358,7 +403,10 @@ const data = [
     gesetze: ["SGB V § 39 (Entlassmanagement)", "DSGVO Art. 9"],
     standards: ["HL7 FHIR R4 (EpisodeOfCare)", "HL7 CDA R2", "ISiK Basismodul"],
     struktur: "unstrukturiert",
-    detail: "Organisation der Entlassung. Auslöser für mehrere nachgelagerte Prozesse – Pflegeüberleitung, AHB, Nachsorgetermin."
+    detail: "Organisation der Entlassung. Auslöser für mehrere nachgelagerte Prozesse – Pflegeüberleitung, AHB, Nachsorgetermin.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 16,
@@ -372,7 +420,10 @@ const data = [
     gesetze: ["SGB V § 39 (Entlassmanagement)", "SGB XI § 37", "DSGVO Art. 9"],
     standards: ["HL7 FHIR R4 (CarePlan)", "SNOMED CT"],
     struktur: "unstrukturiert",
-    detail: "Pflegerische Bedarfserfassung und Weitergabe. Eigenständiges Datenobjekt – intern für die Planung."
+    detail: "Pflegerische Bedarfserfassung und Weitergabe. Eigenständiges Datenobjekt – intern für die Planung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 17,
@@ -386,7 +437,10 @@ const data = [
     gesetze: ["SGB V § 39 (Entlassmanagement)", "SGB XI § 37", "DSGVO Art. 9"],
     standards: ["HL7 FHIR R4 (CarePlan)", "IHE XDS.b", "HL7 CDA R2"],
     struktur: "unstrukturiert",
-    detail: "Bedarfserfassung und Organisation der pflegerischen Weiterversorgung. Das Überleitungsdokument geht an die nachversorgende Einrichtung."
+    detail: "Bedarfserfassung und Organisation der pflegerischen Weiterversorgung. Das Überleitungsdokument geht an die nachversorgende Einrichtung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 18,
@@ -400,7 +454,10 @@ const data = [
     gesetze: ["SGB V § 40 (Anschlussheilbehandlung)", "SGB IX", "DSGVO Art. 9"],
     standards: ["HL7 FHIR R4 (ServiceRequest)", "KBV FHIR-Basisprofile"],
     struktur: "unstrukturiert",
-    detail: "Antragstellung und Weiterleitung an Kostenträger. Erzeugt ein eigenständiges Datenobjekt mit Weiterleitung an externe Akteure."
+    detail: "Antragstellung und Weiterleitung an Kostenträger. Erzeugt ein eigenständiges Datenobjekt mit Weiterleitung an externe Akteure.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
 
   // ── Nach dem Krankenhaus ─────────────────────────────────────────────────────
@@ -417,7 +474,10 @@ const data = [
     gesetze: ["BGB § 630f + § 630g", "DSGVO Art. 9", "SGB V § 39 (Entlassmanagement)", "MBO-Ä § 10"],
     standards: ["HL7 CDA R2", "HL7 FHIR R4 (DocumentReference)", "IHE XDS.b", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
-    detail: "Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF."
+    detail: "Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 20,
@@ -431,7 +491,10 @@ const data = [
     gesetze: ["SGB V § 31a (Medikationsplan)", "DSGVO Art. 9", "AMVV § 14"],
     standards: ["HL7 FHIR R4 (MedicationStatement)", "KBV Medikationsplan", "ABDA Medikationsliste"],
     struktur: "teilstrukturiert",
-    detail: "Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert."
+    detail: "Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 21,
@@ -445,7 +508,10 @@ const data = [
     gesetze: ["SGB V § 341–360 (ePA)", "DSGVO Art. 9", "PatDatSchG"],
     standards: ["HL7 FHIR R4 (DocumentReference)", "IHE MHD", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
-    detail: "Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten."
+    detail: "Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 22,
@@ -459,7 +525,10 @@ const data = [
     gesetze: ["SGB V § 39 (Entlassmanagement)", "SGB V § 75a", "DSGVO Art. 6"],
     standards: ["HL7 FHIR R4 (Appointment)", "ISiK Terminplanung"],
     struktur: "strukturiert",
-    detail: "Terminplanung nach Entlassung. Portal als primäre Schnittstelle für den Patienten."
+    detail: "Terminplanung nach Entlassung. Portal als primäre Schnittstelle für den Patienten.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 23,
@@ -473,7 +542,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "SGB V § 68a (DiGA)", "DiGAV"],
     standards: ["HL7 FHIR R4 (QuestionnaireResponse)", "HL7 FHIR R4 (Observation)", "LOINC"],
     struktur: "teilstrukturiert",
-    detail: "Fragebögen und PROMs nach Entlassung. Patient als aktiver Datenerzeuger – strukturierte Rückmeldungen ermöglichen Automatisierung."
+    detail: "Fragebögen und PROMs nach Entlassung. Patient als aktiver Datenerzeuger – strukturierte Rückmeldungen ermöglichen Automatisierung.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 24,
@@ -487,7 +559,10 @@ const data = [
     gesetze: ["DSGVO Art. 9", "StGB § 203 (Schweigepflicht)", "TKG"],
     standards: ["gematik TI-Messenger", "KIM (Kommunikation im Medizinwesen)", "HL7 FHIR R4 (Communication)"],
     struktur: "unstrukturiert",
-    detail: "Rückfragen nach Entlassung – unabhängig vom Übertragungsweg."
+    detail: "Rückfragen nach Entlassung – unabhängig vom Übertragungsweg.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   },
   {
     nr: 25,
@@ -501,7 +576,10 @@ const data = [
     gesetze: ["BGB § 630f (Dokumentationspflicht)", "DSGVO Art. 9", "KHEntgG", "SGB V § 301"],
     standards: ["HL7 FHIR R4 (EpisodeOfCare)", "IHE XDS.b", "HL7 CDA R2"],
     struktur: "strukturiert",
-    detail: "Behandlungsfall wird abgeschlossen. Finales Datenobjekt des Patientenpfads."
+    detail: "Behandlungsfall wird abgeschlossen. Finales Datenobjekt des Patientenpfads.",
+    ist: "",
+    luecke: "",
+    forderungen: ""
   }
 
 ];
