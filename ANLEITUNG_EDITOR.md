@@ -22,23 +22,17 @@ Der Token ist wie ein Passwort für den Editor – er erlaubt dem Browser, direk
 1. Auf GitHub einloggen
 2. Oben rechts auf dein **Profilbild** klicken → **Settings**
 3. Links in der Seitenleiste ganz unten: **Developer settings**
-4. Links: **Personal access tokens** → **Fine-grained tokens**
-5. Klick auf **Generate new token**
+4. Links: **Personal access tokens** → **Tokens (classic)**
+5. Klick auf **Generate new token** → **Generate new token (classic)**
 
 **Token-Einstellungen:**
 
 | Feld | Wert |
 |---|---|
-| Token name | `Patientenpfad Editor` (oder beliebig) |
+| Note | `Patientenpfad Editor` (oder beliebig) |
 | Expiration | z.B. 90 Tage oder 1 Jahr |
-| Resource owner | `oeme-github` |
-| Repository access | **Only select repositories** → `INA-ePA-und-Patientenportale` |
 
-Unter **Permissions** → **Repository permissions**:
-
-| Berechtigung | Wert |
-|---|---|
-| Contents | **Read and write** |
+Unter **Select scopes** das Häkchen bei **`repo`** setzen (erste Checkbox in der Liste – alle Unteroptionen werden automatisch ausgewählt).
 
 6. Klick auf **Generate token**
 7. Den angezeigten Token **sofort kopieren** – er wird nur einmal angezeigt!
@@ -82,10 +76,10 @@ Einen neuen Token erstellen (Schritt 2 wiederholen) und im Editor hinterlegen (S
 Ja, der Token wird im localStorage gespeichert. Nach einem Cache-Löschen muss der Token erneut eingegeben werden. Falls der ursprüngliche Token noch gilt, kann er direkt wieder eingetragen werden – er muss nicht neu erstellt werden.
 
 **Fehlermeldung „403 Forbidden"?**
-Der Token hat keine ausreichenden Berechtigungen oder ist abgelaufen. Neuen Token mit den Berechtigungen aus Schritt 2 erstellen.
+Entweder ist der Token abgelaufen, oder du hast noch keinen Schreibzugriff auf das Repository. Bitte den Repository-Inhaber (`oeme-github`), dich als Collaborator einzutragen.
 
 **Fehlermeldung „404 Not Found"?**
-Der Token wurde möglicherweise für das falsche Repository erstellt. In den GitHub-Einstellungen prüfen, ob `INA-ePA-und-Patientenportale` ausgewählt ist.
+Token hat keinen Zugriff auf das Repository. Prüfen ob der Token mit `repo`-Scope erstellt wurde.
 
 **Kann ich parallel mit jemandem bearbeiten?**
 Besser nicht gleichzeitig – beim Speichern wird die aktuell im Repository liegende Version überschrieben. Abstimmen, wer gerade bearbeitet.
