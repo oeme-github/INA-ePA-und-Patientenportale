@@ -232,8 +232,8 @@
       { key: 'domaenen',        label: 'Informationsdomänen' },
       { key: 'akteure',         label: 'Akteure' },
       { key: 'datenobjekte',    label: 'Datenobjekte' },
-      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' },
-      { key: 'standards',       label: 'Standards' }
+      { key: 'standards',       label: 'Standards' },
+      { key: 'rechtsgrundlagen',label: 'Rechtsgrundlagen' }
     ];
 
     function renderMeta() {
@@ -456,9 +456,16 @@
         return `  ${key}: [\n${lines}\n  ]`;
       };
       const metaStr = `const meta = {\n${META_CONFIG.map(c => fmtMeta(c.key)).join(',\n\n')}\n};`;
+      const phaseHeader = { vor: '// ── Vor dem Krankenhaus ──────────────────────────────────────────────────────', im: '// ── Im Krankenhaus ───────────────────────────────────────────────────────────', nach: '// ── Nach dem Krankenhaus ─────────────────────────────────────────────────────' };
+      let lastPhase = null;
       const dataLines = items.map((item, i) => {
         const nr = i + 1;
-        return `  {\n    nr: ${nr},\n    phase: ${JSON.stringify(item.phase)},\n    titel: ${JSON.stringify(item.titel)},\n    akteur: ${fmtArr(item.akteur||[])},\n    objekt: ${fmtArr(item.objekt||[])},\n    op: ${JSON.stringify(item.op)},\n    dr: ${fmtArr(item.dr||[])},\n    domäne: ${JSON.stringify(item['domäne']||'')},\n    gesetze: ${fmtArr(item.gesetze||[])},\n    standards: ${fmtArr(item.standards||[])},\n    struktur: ${JSON.stringify(item.struktur||'')},\n    detail: ${JSON.stringify(item.detail||'')},\n    ist: ${JSON.stringify(item.ist||'')},\n    luecke: ${JSON.stringify(item.luecke||'')},\n    forderungen: ${JSON.stringify(item.forderungen||'')}\n  }`;
+        const entry = `  {\n    nr: ${nr},\n    phase: ${JSON.stringify(item.phase)},\n    titel: ${JSON.stringify(item.titel)},\n    akteur: ${fmtArr(item.akteur||[])},\n    objekt: ${fmtArr(item.objekt||[])},\n    op: ${JSON.stringify(item.op)},\n    dr: ${fmtArr(item.dr||[])},\n    domäne: ${JSON.stringify(item['domäne']||'')},\n    gesetze: ${fmtArr(item.gesetze||[])},\n    standards: ${fmtArr(item.standards||[])},\n    struktur: ${JSON.stringify(item.struktur||'')},\n    detail: ${JSON.stringify(item.detail||'')},\n    ist: ${JSON.stringify(item.ist||'')},\n    luecke: ${JSON.stringify(item.luecke||'')},\n    forderungen: ${JSON.stringify(item.forderungen||'')}\n  }`;
+        if (item.phase !== lastPhase) {
+          lastPhase = item.phase;
+          return `\n  ${phaseHeader[item.phase]}\n\n${entry}`;
+        }
+        return entry;
       });
       return `// Patientenpfad – Daten und Konfiguration
 //
