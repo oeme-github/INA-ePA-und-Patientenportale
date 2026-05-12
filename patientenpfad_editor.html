@@ -133,6 +133,19 @@
     .form-footer { display: flex; gap: 8px; align-items: center; padding-top: 14px; border-top: 1px solid var(--c-border-1); margin-top: 6px; }
     .form-footer .btn-danger { margin-left: auto; }
 
+    /* ── Dirty-Indikator ── */
+    .dirty-indicator { font-size: 12px; font-weight: 600; color: #92400E; }
+
+    /* ── Post-Save-Hinweis ── */
+    .post-save-hint {
+      background: #F0FDF4; border-bottom: 1px solid #BBF7D0;
+      padding: 9px 24px; font-size: 12px; color: #14532D;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .post-save-hint a { color: #065F46; font-weight: 600; }
+    .post-save-hint-close { background: none; border: none; cursor: pointer; font-size: 15px; color: #6B7280; margin-left: auto; line-height: 1; padding: 0 2px; }
+    .post-save-hint-close:hover { color: var(--c-text-1); }
+
     /* ── GitHub-Integration ── */
     .btn-github { background: #24292F; border-color: #24292F; color: #fff; }
     .btn-github:hover { background: #1a1f24; border-color: #1a1f24; color: #fff; }
@@ -170,6 +183,7 @@
     <button class="btn btn-export" onclick="exportData()">↓ Lokal exportieren</button>
     <button class="btn btn-sm" onclick="toggleGitHubSettings()" title="GitHub-Token konfigurieren">⚙ GitHub</button>
     <span class="gh-status" id="gh-status"></span>
+    <span class="dirty-indicator" id="dirty-indicator" style="display:none;">● Ungespeicherte Änderungen</span>
     <span class="counter" id="counter"></span>
   </div>
 
@@ -187,6 +201,13 @@
         &nbsp;·&nbsp; Token wird nur im Browser (localStorage) gespeichert.
       </span>
     </div>
+  </div>
+
+  <div class="post-save-hint" id="post-save-hint" style="display:none;">
+    ✓ In GitHub gespeichert.&nbsp;
+    <a href="patientenpfad_interaktiv.html" target="_blank">Viewer öffnen</a>
+    &nbsp;und Seite neu laden, um die aktuellen Daten zu sehen.
+    <button class="post-save-hint-close" onclick="document.getElementById('post-save-hint').style.display='none'" title="Schließen">×</button>
   </div>
 
   <div class="main">
@@ -217,6 +238,17 @@
     let items   = JSON.parse(JSON.stringify(data));
     let metaCopy = JSON.parse(JSON.stringify(meta));
     let editIdx = null;
+    let isDirty = false;
+
+    function markDirty() {
+      isDirty = true;
+      document.getElementById('dirty-indicator').style.display = '';
+      document.getElementById('post-save-hint').style.display = 'none';
+    }
+    function markClean() {
+      isDirty = false;
+      document.getElementById('dirty-indicator').style.display = 'none';
+    }
 
     const PHASEN       = ['vor', 'im', 'nach'];
     const PHASEN_LABEL = { vor: 'Vor dem Krankenhaus', im: 'Im Krankenhaus', nach: 'Nach dem Krankenhaus' };
@@ -261,11 +293,13 @@
       metaCopy[key].push(val);
       metaCopy[key].sort();
       input.value = '';
+      markDirty();
       renderMeta();
     }
 
     function delMetaItem(key, idx) {
       metaCopy[key].splice(idx, 1);
+      markDirty();
       renderMeta();
     }
 
@@ -382,7 +416,7 @@
             </div>
           </div>
           <div class="form-footer">
-            <button class="btn btn-primary" onclick="saveStep(${idx})">Speichern</button>
+            <button class="btn btn-primary" onclick="saveStep(${idx})">lokal Übernehmen</button>
             <button class="btn" onclick="cancelEdit()">Abbrechen</button>
             <button class="btn btn-sm btn-danger" onclick="deleteStep(${idx})">Schritt löschen</button>
           </div>
@@ -421,6 +455,7 @@
         forderungen: document.getElementById('f-forderungen').value.trim(),
       };
       editIdx = null;
+      markDirty();
       render();
     }
 
@@ -428,6 +463,7 @@
       if (!confirm(`Schritt #${idx+1} „${items[idx].titel}" wirklich löschen?`)) return;
       items.splice(idx, 1);
       editIdx = null;
+      markDirty();
       render();
     }
 
@@ -436,12 +472,14 @@
       if (t < 0 || t >= items.length) return;
       [items[idx], items[t]] = [items[t], items[idx]];
       if (editIdx === idx) editIdx = t;
+      markDirty();
       render();
     }
 
     function addStep() {
       items.push({ nr: items.length+1, phase:'vor', titel:'', akteur:[], objekt:[], op:'E', dr:[], 'domäne':'', gesetze:[], detail:'', ist:'', luecke:'', forderungen:'' });
       editIdx = items.length - 1;
+      markDirty();
       render();
       document.getElementById(`row-${editIdx}`).scrollIntoView({ behavior:'smooth', block:'start' });
     }
@@ -597,7 +635,9 @@ ${dataLines.join(',\n')}
           throw new Error(err.message || `HTTP ${putResp.status}`);
         }
 
+        markClean();
         setStatus('✓ In GitHub gespeichert', 'success');
+        document.getElementById('post-save-hint').style.display = '';
       } catch (e) {
         setStatus(`✗ ${e.message}`, 'error');
       } finally {
@@ -606,6 +646,12 @@ ${dataLines.join(',\n')}
     }
 
     // ── Init ─────────────────────────────────────────────────────────
+    window.addEventListener('beforeunload', e => {
+      if (!isDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
     renderMeta();
     render();
     // Lokaler Hinweis nur anzeigen wenn kein Token vorhanden
