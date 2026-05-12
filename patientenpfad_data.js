@@ -7,7 +7,7 @@
 // forderungen: Was die AG fordert
 // phase:  'vor' | 'im' | 'nach'
 // op:     E = Erzeugt, V = Verändert, G = Gelöscht
-// Exportiert: 2026-05-11
+// Exportiert: 2026-05-12
 
 // ── Konfiguration (pflegbar über den Editor) ──────────────────────────────────
 
@@ -30,6 +30,7 @@ const meta = {
   ],
 
   akteure: [
+    "Angehörige",
     "Arzt",
     "Niedergelassener Arzt",
     "Patient",
@@ -64,6 +65,43 @@ const meta = {
     "Verlaufsdokumentation / PROMs",
     "Vorbefunde / Fremdbefunde",
     "Widerspruch"
+  ],
+
+  standards: [
+    "ABDA Medikationsliste",
+    "DICOM",
+    "DIN EN ISO/IEEE 11073 Point of Care",
+    "gematik ePA-Spezifikation",
+    "gematik TI-Messenger",
+    "gematik VSDM",
+    "KIM (Kommunikation im Medizinwesen)",
+    "HL7 CDA R2",
+    "HL7 FHIR R4 (Appointment)",
+    "HL7 FHIR R4 (CarePlan)",
+    "HL7 FHIR R4 (Communication)",
+    "HL7 FHIR R4 (Condition)",
+    "HL7 FHIR R4 (Consent)",
+    "HL7 FHIR R4 (DiagnosticReport)",
+    "HL7 FHIR R4 (DocumentReference)",
+    "HL7 FHIR R4 (Encounter)",
+    "HL7 FHIR R4 (EpisodeOfCare)",
+    "HL7 FHIR R4 (MedicationStatement)",
+    "HL7 FHIR R4 (Observation)",
+    "HL7 FHIR R4 (QuestionnaireResponse)",
+    "HL7 FHIR R4 (ServiceRequest)",
+    "HL7 v2",
+    "ICD-10-GM",
+    "IHE MHD",
+    "IHE PIX/PDQ",
+    "IHE RAD",
+    "IHE XDS.b",
+    "ISiK Basismodul",
+    "ISiK Terminplanung",
+    "KBV FHIR-Basisprofile",
+    "KBV Medikationsplan",
+    "LOINC",
+    "OPS",
+    "SNOMED CT"
   ],
 
   rechtsgrundlagen: [
@@ -104,54 +142,20 @@ const meta = {
     "SGB XI § 37",
     "StGB § 203 (Schweigepflicht)",
     "TKG"
-  ],
-
-  standards: [
-    "ABDA Medikationsliste",
-    "DICOM",
-    "DIN EN ISO/IEEE 11073 Point of Care",
-    "gematik ePA-Spezifikation",
-    "gematik TI-Messenger",
-    "gematik VSDM",
-    "KIM (Kommunikation im Medizinwesen)",
-    "HL7 CDA R2",
-    "HL7 FHIR R4 (Appointment)",
-    "HL7 FHIR R4 (CarePlan)",
-    "HL7 FHIR R4 (Communication)",
-    "HL7 FHIR R4 (Condition)",
-    "HL7 FHIR R4 (Consent)",
-    "HL7 FHIR R4 (DiagnosticReport)",
-    "HL7 FHIR R4 (DocumentReference)",
-    "HL7 FHIR R4 (Encounter)",
-    "HL7 FHIR R4 (EpisodeOfCare)",
-    "HL7 FHIR R4 (MedicationStatement)",
-    "HL7 FHIR R4 (Observation)",
-    "HL7 FHIR R4 (QuestionnaireResponse)",
-    "HL7 FHIR R4 (ServiceRequest)",
-    "HL7 v2",
-    "ICD-10-GM",
-    "IHE MHD",
-    "IHE PIX/PDQ",
-    "IHE RAD",
-    "IHE XDS.b",
-    "ISiK Basismodul",
-    "ISiK Terminplanung",
-    "KBV FHIR-Basisprofile",
-    "KBV Medikationsplan",
-    "LOINC",
-    "OPS",
-    "SNOMED CT"
   ]
 };
 
 // ── Prozessschritte ───────────────────────────────────────────────────────────
 
 const data = [
+
+  // ── Vor dem Krankenhaus ──────────────────────────────────────────────────────
+
   {
     nr: 1,
     phase: "vor",
     titel: "Termin anfragen / buchen",
-    akteur: ["Patient", "Verwaltung"],
+    akteur: ["Angehörige", "Patient", "Verwaltung"],
     objekt: ["Terminanfrage / Terminbestätigung"],
     op: "E",
     dr: ["portal", "versorgung"],
@@ -249,6 +253,9 @@ const data = [
     luecke: "",
     forderungen: ""
   },
+
+  // ── Im Krankenhaus ───────────────────────────────────────────────────────────
+
   {
     nr: 7,
     phase: "im",
@@ -453,6 +460,9 @@ const data = [
     luecke: "",
     forderungen: ""
   },
+
+  // ── Nach dem Krankenhaus ─────────────────────────────────────────────────────
+
   {
     nr: 19,
     phase: "nach",
