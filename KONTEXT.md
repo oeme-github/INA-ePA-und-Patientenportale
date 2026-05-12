@@ -10,13 +10,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v4 | 2026-05-07 | Kap. 4+6: Datenobjekte persistent/transient klargestellt (Issue #17) |
 | `patientenpfad_interaktiv.html` | v12 | 2026-05-11 | Neue Sektionen ist/luecke/forderungen in Detailkarte und Modal |
-| `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
+| `patientenpfad_editor.html` | v4 | 2026-05-12 | UX: Dirty-State, Auto-Draft localStorage, Post-Save-Hinweis, „lokal Übernehmen" |
 | `patientenpfad_data.js` | v5 | 2026-05-11 | Felder ist/luecke/forderungen (Schritte 1–3 befüllt, 4–25 vorbereitet) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
-| `KONTEXT.md` | – | 2026-05-11 | Session 2026-05-11 abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-12 | Session 2026-05-12 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -101,6 +101,10 @@ Die Pflege wurde bewusst als eigenständiger Akteur mit drei eigenen Prozessschr
 ### Zur Ist-Analyse (Issue #14)
 
 Die UAG „Vor Krankenhaus" hat in ihrer ersten Sitzung entschieden, auf Detailebene zu bleiben und pro Prozessschritt textuell zu beschreiben: Was ist da? / Was fehlt? / Forderungen. Diese Struktur wurde als drei neue Felder (`ist`, `luecke`, `forderungen`) im Datenmodell abgebildet. Schritte 1–3 sind mit dem UAG-Ergebnis befüllt, Schritte 4–25 warten auf weitere Sitzungen.
+
+### Zur Editor-UX (Session 2026-05-12)
+
+Der Editor wurde um Schutz vor Datenverlust erweitert. Jede Änderung wird automatisch als Draft in `localStorage` gespeichert. Beim nächsten Öffnen erscheint ein Banner mit Datum und den Optionen „Wiederherstellen" / „Verwerfen". Der Formular-Button heißt jetzt „lokal Übernehmen" (statt „Speichern"), um den Unterschied zum GitHub-Push zu verdeutlichen. Nach erfolgreichem Push erscheint ein schließbarer Hinweis mit Link zum Viewer. PR #21.
 
 ### Zur Online-Pflege (Editor GitHub-Integration)
 
@@ -211,6 +215,7 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 ### Im Tool
 - Schritte 4–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
+- Issue #22: Akteure in Prozess-Kacheln des Viewers anzeigen (Backlog)
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
