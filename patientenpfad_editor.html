@@ -133,6 +133,15 @@
     .form-footer { display: flex; gap: 8px; align-items: center; padding-top: 14px; border-top: 1px solid var(--c-border-1); margin-top: 6px; }
     .form-footer .btn-danger { margin-left: auto; }
 
+    /* ── Draft-Banner ── */
+    .draft-banner {
+      background: #FFFBEB; border-bottom: 1px solid #FDE68A;
+      padding: 10px 24px; font-size: 12px; color: #78350F;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .draft-banner strong { font-weight: 600; }
+    .draft-banner-actions { display: flex; gap: 8px; margin-left: auto; }
+
     /* ── Dirty-Indikator ── */
     .dirty-indicator { font-size: 12px; font-weight: 600; color: #92400E; }
 
@@ -203,6 +212,14 @@
     </div>
   </div>
 
+  <div class="draft-banner" id="draft-banner" style="display:none;">
+    ⚠ <strong>Entwurf vom <span id="draft-date"></span> gefunden</strong> – diese Änderungen wurden noch nicht nach GitHub gespeichert oder lokal exportiert.
+    <div class="draft-banner-actions">
+      <button class="btn btn-sm btn-primary" onclick="restoreDraft()">Wiederherstellen</button>
+      <button class="btn btn-sm btn-danger" onclick="discardDraft()">Verwerfen</button>
+    </div>
+  </div>
+
   <div class="post-save-hint" id="post-save-hint" style="display:none;">
     ✓ In GitHub gespeichert.&nbsp;
     <a href="patientenpfad_interaktiv.html" target="_blank">Viewer öffnen</a>
@@ -239,15 +256,38 @@
     let metaCopy = JSON.parse(JSON.stringify(meta));
     let editIdx = null;
     let isDirty = false;
+    const DRAFT_KEY = 'patientenpfad-editor-draft';
 
+    function saveDraft() {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ items, meta: metaCopy, savedAt: new Date().toISOString() }));
+    }
     function markDirty() {
       isDirty = true;
       document.getElementById('dirty-indicator').style.display = '';
       document.getElementById('post-save-hint').style.display = 'none';
+      saveDraft();
     }
     function markClean() {
       isDirty = false;
       document.getElementById('dirty-indicator').style.display = 'none';
+      localStorage.removeItem(DRAFT_KEY);
+    }
+    function restoreDraft() {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      items = draft.items;
+      metaCopy = draft.meta;
+      editIdx = null;
+      isDirty = true;
+      document.getElementById('dirty-indicator').style.display = '';
+      document.getElementById('draft-banner').style.display = 'none';
+      renderMeta();
+      render();
+    }
+    function discardDraft() {
+      localStorage.removeItem(DRAFT_KEY);
+      document.getElementById('draft-banner').style.display = 'none';
     }
 
     const PHASEN       = ['vor', 'im', 'nach'];
@@ -535,6 +575,7 @@ ${dataLines.join(',\n')}
       const a    = Object.assign(document.createElement('a'), { href: url, download: 'patientenpfad_data.js' });
       a.click();
       URL.revokeObjectURL(url);
+      markClean();
     }
 
     // ── GitHub-Integration ───────────────────────────────────────────
@@ -649,7 +690,9 @@ ${dataLines.join(',\n')}
     window.addEventListener('beforeunload', e => {
       if (!isDirty) return;
       e.preventDefault();
-      e.returnValue = '';
+      const msg = 'Ungespeicherte Änderungen vorhanden. Beim nächsten Öffnen des Editors kann der Entwurf wiederhergestellt werden.';
+      e.returnValue = msg;
+      return msg;
     });
 
     renderMeta();
@@ -657,6 +700,20 @@ ${dataLines.join(',\n')}
     // Lokaler Hinweis nur anzeigen wenn kein Token vorhanden
     if (!localStorage.getItem('gh-token')) {
       document.getElementById('local-hint').style.display = '';
+    }
+    // Draft aus vorheriger Session prüfen
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        const d = new Date(draft.savedAt);
+        document.getElementById('draft-date').textContent =
+          d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ', ' +
+          d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+        document.getElementById('draft-banner').style.display = '';
+      } catch (e) {
+        localStorage.removeItem(DRAFT_KEY);
+      }
     }
   </script>
 </body>
