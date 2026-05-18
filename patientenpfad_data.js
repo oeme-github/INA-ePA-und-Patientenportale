@@ -7,7 +7,7 @@
 // forderungen: Was die AG fordert
 // phase:  'vor' | 'im' | 'nach'
 // op:     E = Erzeugt, V = Verändert, G = Gelöscht
-// Exportiert: 2026-05-12
+// Exportiert: 2026-05-18
 
 // ── Konfiguration (pflegbar über den Editor) ──────────────────────────────────
 
@@ -71,10 +71,7 @@ const meta = {
     "ABDA Medikationsliste",
     "DICOM",
     "DIN EN ISO/IEEE 11073 Point of Care",
-    "gematik ePA-Spezifikation",
-    "gematik TI-Messenger",
-    "gematik VSDM",
-    "KIM (Kommunikation im Medizinwesen)",
+    "HL7 - FHIR Consent",
     "HL7 CDA R2",
     "HL7 FHIR R4 (Appointment)",
     "HL7 FHIR R4 (CarePlan)",
@@ -95,13 +92,18 @@ const meta = {
     "IHE PIX/PDQ",
     "IHE RAD",
     "IHE XDS.b",
+    "ISIK 6 - Formular",
     "ISiK Basismodul",
     "ISiK Terminplanung",
     "KBV FHIR-Basisprofile",
     "KBV Medikationsplan",
+    "KIM (Kommunikation im Medizinwesen)",
     "LOINC",
     "OPS",
-    "SNOMED CT"
+    "SNOMED CT",
+    "gematik TI-Messenger",
+    "gematik VSDM",
+    "gematik ePA-Spezifikation"
   ],
 
   rechtsgrundlagen: [
@@ -206,35 +208,35 @@ const data = [
     nr: 4,
     phase: "vor",
     titel: "Vorbefunde bereitstellen",
-    akteur: ["Patient", "Niedergelassener Arzt"],
+    akteur: ["Niedergelassener Arzt", "Patient"],
     objekt: ["Vorbefunde / Fremdbefunde"],
     op: "E",
     dr: ["portal", "versorgung", "epa"],
     domäne: "Befunde",
-    gesetze: ["DSGVO Art. 9", "BGB § 630g (Akteneinsicht)", "SGB V § 341 ff. (ePA)"],
-    standards: ["HL7 FHIR R4 (DocumentReference)", "IHE XDS.b", "IHE MHD", "gematik ePA-Spezifikation"],
+    gesetze: ["BGB § 630g (Akteneinsicht)", "DSGVO Art. 9", "SGB V § 341 ff. (ePA)"],
+    standards: ["HL7 FHIR R4 (DocumentReference)", "IHE MHD", "IHE XDS.b", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Heute haben wir die ePA ab dem ersten Besuch mit dem VSDM im Zugriff.\nUpload über Patientenportale.\nPatient bringt Dokumente in Papierform oder elektronisch mit.\nLink: https://simplifier.net/guide/kdl-implementierungsleitfaden-2025?version=current",
+    luecke: "Früher Zugriff auf ePA existiert nicht. Wunsch aus Krankenhaus ist ein frühzeitiger Zugriff, ideal wäre mit Einweisung/Überweisung.\nPoPP im Kontext Patientenportal könnte einen Zugriff auf die ePA ermöglichen.\nStrukturierte Informationen (z.B. Medikamente, Labor, etc.).\nStandards: KDL",
+    forderungen: "Früher Zugriff auf die ePA.\nEinfache Methode den Zugriff auch über das Patientenportal, Einweisung/Überweisung zu erhalten.\nZusendung der Befunde durch Vorbehandler.\nKrankenhaussysteme  müssen bereitgestellte Informationen effizient verarbeiten können (Abdeckung von Standards z.B. LOINC).\nKI-gestützte Analyse der Informationen - wie kann eine Weg in die KI-Unterstützung aussehen?"
   },
   {
     nr: 5,
     phase: "vor",
     titel: "Anamnesebogen ausfüllen",
-    akteur: ["Patient"],
+    akteur: ["Angehörige", "Patient", "Pflege", "Sozialdienst"],
     objekt: ["Anamnese"],
     op: "E",
     dr: ["portal", "versorgung", "epa"],
     domäne: "Anamnese",
-    gesetze: ["DSGVO Art. 9", "BGB § 630a (Behandlungsvertrag)"],
-    standards: ["HL7 FHIR R4 (QuestionnaireResponse)", "HL7 CDA R2"],
+    gesetze: ["BGB § 630a (Behandlungsvertrag)", "DSGVO Art. 9"],
+    standards: ["HL7 CDA R2", "HL7 FHIR R4 (QuestionnaireResponse)", "ISIK 6 - Formular"],
     struktur: "unstrukturiert",
     detail: "Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Heute oft in der medizinischen Aufnahme.\nLink: https://gemspec.gematik.de/ig/fhir/isik/formular/6.0.0-rc/index.html",
+    luecke: "Keine Übermittlung der Informationen über die Grenzen hinweg. \nEinheitliche Anamnese vom Hausarzt zum Facharzt und Krankenhäuser.",
+    forderungen: "Standard für Anamnese festlegen als strukturiertes Datenobjekt. \nAbbildung in der KIS, ePA und Patientenportalen."
   },
   {
     nr: 6,
@@ -245,13 +247,13 @@ const data = [
     op: "E",
     dr: ["portal", "versorgung", "epa", "ehds"],
     domäne: "Einwilligung",
-    gesetze: ["DSGVO Art. 7 + Art. 9", "BGB § 630d (Einwilligung)", "SGB V § 342 (ePA-Einwilligung)"],
+    gesetze: ["BGB § 630d (Einwilligung)", "DSGVO Art. 7 + Art. 9", "SGB V § 342 (ePA-Einwilligung)"],
     standards: ["HL7 FHIR R4 (Consent)", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Heterogene Systemlandschaften. Wenig Standards. Hohe Relevanz.\nAufklärungsprozesse im Krankenhaus.\nLink: https://simplifier.net/guide/einwilligungsmanagement?version=current",
+    luecke: "Einheitliche Grundstruktur und Standards (z.B. FHIR - Consent).\nConsent-Management.",
+    forderungen: "Abbildung von Consents in der ePA (z.B. für Studien oder Broad-Consent).\nAbbildung des Widerspruchs zur Zugriff und Befüllung der ePA -> aus den KIS zurück in die ePA.\nLösungsidee: Unabhängige Treuhandstellen als Verwalter der Consent-Informationen."
   },
 
   // ── Im Krankenhaus ───────────────────────────────────────────────────────────
