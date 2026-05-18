@@ -1,7 +1,7 @@
 # Rolle von Patientenportalen im Zusammenspiel mit Primärsystemen und ePA
 ### Standardisierung des Datenaustauschs im Patientenpfad
 
-**Version 4 | Stand: 2026-05-07**
+**Version 5 | Stand: 2026-05-18**
 
 ---
 
@@ -16,6 +16,8 @@ Der gewählte Ansatz folgt bewusst dieser Reihenfolge:
 **Erst die Prinzipien – dann der Prozess – dann die Daten.**
 
 Die Systemebene wird zunächst ausgeklammert und erst später als Mapping auf Prozesse und Daten betrachtet.
+
+Das bedeutet nicht, dass bestehende technische Lösungen ignoriert werden. Im Gegenteil: Die Ist-Analyse zu jedem Prozessschritt benennt explizit, was heute bereits existiert und funktioniert — VSDM, ISiK, ePA-Infrastruktur, FHIR-Profile, IHE-Profile. Diese Bestandsaufnahme ist der Ausgangspunkt. Der Prozessrahmen gibt den Maßstab vor, an dem bestehende Lösungen gemessen und Lücken identifiziert werden. Was gut trägt, bleibt. Was fehlt, wird benannt.
 
 ---
 
