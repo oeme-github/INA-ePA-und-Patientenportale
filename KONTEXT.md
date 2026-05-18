@@ -8,15 +8,15 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
-| `patientenpfad_arbeitsdokument.md` | v4 | 2026-05-07 | Kap. 4+6: Datenobjekte persistent/transient klargestellt (Issue #17) |
+| `patientenpfad_arbeitsdokument.md` | v5 | 2026-05-18 | Kap. 1: Rahmentext zu bestehenden technischen Lösungen ergänzt |
 | `patientenpfad_interaktiv.html` | v12 | 2026-05-11 | Neue Sektionen ist/luecke/forderungen in Detailkarte und Modal |
 | `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
-| `patientenpfad_data.js` | v5 | 2026-05-11 | Felder ist/luecke/forderungen (Schritte 1–3 befüllt, 4–25 vorbereitet) |
+| `patientenpfad_data.js` | v6 | 2026-05-18 | ist/luecke/forderungen Schritte 1–6 überarbeitet und vereinheitlicht |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
-| `KONTEXT.md` | – | 2026-05-11 | Session 2026-05-11 abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-18 | Session 2026-05-18 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -102,6 +102,15 @@ Die Pflege wurde bewusst als eigenständiger Akteur mit drei eigenen Prozessschr
 
 Die UAG „Vor Krankenhaus" hat in ihrer ersten Sitzung entschieden, auf Detailebene zu bleiben und pro Prozessschritt textuell zu beschreiben: Was ist da? / Was fehlt? / Forderungen. Diese Struktur wurde als drei neue Felder (`ist`, `luecke`, `forderungen`) im Datenmodell abgebildet. Schritte 1–3 sind mit dem UAG-Ergebnis befüllt, Schritte 4–25 warten auf weitere Sitzungen.
 
+### Zur Ist-Analyse: Umgang mit bestehender Technik (Session 2026-05-18)
+
+AG-Feedback: Technisch orientierte Mitglieder befürchten einen "Papiertiger", wenn bestehende technische Lösungen nicht berücksichtigt werden. Reaktion: Rahmentext in Kap. 1 des Arbeitsdokuments ergänzt — bestehende Lösungen (VSDM, ISiK, ePA, FHIR) sind explizit Ausgangspunkt der Ist-Analyse, nicht ihr Gegner. Die `ist`-Felder beschreiben jetzt konkret und wertschätzend, was heute bereits funktioniert.
+
+Inhaltliche Korrekturen aus der Sitzung:
+- KIM-Adresse ist ein Attribut des Hausarztes, nicht des Patienten (Patienten haben keine KIM-Adressen)
+- Die gematik hat kein Einwilligungsmanagement in der ePA eingeführt — der gesetzlich vorgesehene Widerspruch (SGB V § 342) wurde an die KIS delegiert
+- Die Anamnese wird als kontinuierlicher, akteursübergreifender Prozess beschrieben: einmal erheben, sektorenübergreifend verfeinern — nicht neu erzeugen
+
 ### Zur Online-Pflege (Editor GitHub-Integration)
 
 Der Editor kann `patientenpfad_data.js` jetzt direkt per GitHub REST API ins Repository schreiben. AG-Mitglieder benötigen einen GitHub Personal Access Token (classic, `repo`-Scope) und tragen ihn einmalig im ⚙-Panel ein. Anleitung: `ANLEITUNG_EDITOR.md`. Damit entfällt der manuelle Export/Commit-Workflow für die Datenpflege.
@@ -140,6 +149,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Matrix-Legende + Hover-Fix | Claude | Erledigt (2026-04-30) – PR #16 |
 | Issue #14 (Ist-Analyse) | Claude | Erledigt (2026-05-11) – PR #19, PR #20 |
 | Issue #17 (Datenobjekte persistent/transient) | Claude | Erledigt (2026-05-07) – PR #18 |
+| Ist-Analyse Schritte 1–6 überarbeiten (AG-Feedback Papiertiger) | Claude | Erledigt (2026-05-18) – PR #23 |
 
 ---
 
@@ -209,7 +219,8 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 ## Offene Punkte & nächste Schritte
 
 ### Im Tool
-- Schritte 4–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
+- Schritte 1–6: `ist`, `luecke`, `forderungen` überarbeitet und vereinheitlicht (Session 2026-05-18, PR #23)
+- Schritte 7–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
 
 ### Im Dokument
