@@ -166,9 +166,9 @@ const data = [
     standards: ["HL7 FHIR R4 (Appointment)", "ISiK Terminplanung"],
     struktur: "unstrukturiert",
     detail: "Terminvereinbarung für ambulante Vorstellung oder stationäre Aufnahme. Das Portal ist die primäre Schnittstelle – der Patient löst den Prozess aus.",
-    ist: "Das Portal ist die primäre Schnittstelle für die Terminvereinbarung.",
-    luecke: "Eindeutige Identifikation des Patienten fehlt.\nIntegration der Systeme per FHIR-Standard noch nicht durchgängig.",
-    forderungen: "Datenbasis als Ausgangspunkt und Endpunkt für alle Systeme (Standard: FHIR)."
+    ist: "Krankenhausportale bieten heute Terminbuchungsfunktionen an — teils als eigenständige Lösungen, teils über den Terminservicedienst der KVen. Mit ISiK Terminplanung und HL7 FHIR Appointment existieren Standards für die strukturierte Abbildung von Terminen. Die Integration zwischen Portal und KIS ist in vielen Häusern bereits umgesetzt.",
+    luecke: "Der Patient ist beim Termin noch nicht eindeutig identifiziert — eine Verknüpfung mit bestehenden Stammdaten oder der ePA ist zu diesem Zeitpunkt nicht möglich. Die FHIR-Integration zwischen Portal und KIS ist nicht durchgängig umgesetzt. Die beim Termin erfassten Informationen (Grund, Vorgeschichte) werden nicht strukturiert in den weiteren Prozess überführt.",
+    forderungen: "Eindeutige Patientenidentifikation bereits bei der Terminbuchung etablieren.\nTerminbuchung als Startpunkt des Datenprozesses verstehen: erfasste Informationen strukturiert in den weiteren Patientenpfad überführen.\nDurchgängige FHIR-Integration zwischen Portal und KIS als Mindeststandard definieren (ISiK Terminplanung)."
   },
   {
     nr: 2,
@@ -183,9 +183,9 @@ const data = [
     standards: ["HL7 FHIR R4 (ServiceRequest)", "KBV FHIR-Basisprofile", "HL7 CDA R2"],
     struktur: "unstrukturiert",
     detail: "Die Überweisung wird im Kontext des Krankenhauses erstmalig bereitgestellt. Heute oft noch als Papier oder PDF – ein klassischer Medienbruch.",
-    ist: "Existiert heute nur in der Papierwelt.\neÜberweisung als Auftrag vorhanden.",
-    luecke: "Elektronische Einweisung / Überweisung fehlt durchgängig.\nFrühzeitiger Zugriff auf die ePA nicht möglich.\nIdentifikation des Patienten im Vorfeld fehlt.",
-    forderungen: "Frühe Identifikation des Patienten.\nFrüher Zugriff auf Einweisung/Überweisung.\nFrüher Zugriff auf die ePA."
+    ist: "Die Überweisung und Einweisung existieren heute überwiegend als Papier oder PDF — ein klassischer Medienbruch. Mit der eÜberweisung (KBV) ist ein erster elektronischer Standard im Aufbau. HL7 FHIR ServiceRequest und KBV FHIR-Basisprofile bieten eine strukturierte Grundlage für die Abbildung.",
+    luecke: "Die elektronische Überweisung ist noch nicht flächendeckend eingeführt — der Medienbruch (Papier, Fax, PDF) ist der Regelfall. Die Einweisung löst keinen automatischen Zugriff auf die ePA aus. Die enthaltenen strukturierten Informationen (Diagnose, Fragestellung) erreichen das Krankenhaus nicht maschinenlesbar und müssen manuell ins KIS übertragen werden.",
+    forderungen: "Elektronische Überweisung und Einweisung flächendeckend einführen — strukturiert, maschinenlesbar, auf Basis von FHIR ServiceRequest.\nEinweisung als Auslöser für den frühzeitigen ePA-Zugriff nutzen.\nPatientenidentifikation bereits mit der Einweisung verknüpfen, um Medienbrüche im weiteren Prozess zu vermeiden."
   },
   {
     nr: 3,
@@ -200,9 +200,9 @@ const data = [
     standards: ["HL7 FHIR R4 (Patient)", "IHE PIX/PDQ", "gematik VSDM", "ISiK Basismodul"],
     struktur: "strukturiert",
     detail: "Kontaktdaten und Versicherungsdaten werden erfasst oder aktualisiert. Datenobjekt kann sowohl neu entstehen als auch verändert werden.",
-    ist: "VSDM vorhanden (Meldeadresse über Register).\nErfassung am Aufnahmeschalter etabliert.",
-    luecke: "Angaben am Aufnahmeschalter stimmen oft nicht mit der Gesundheitskarte überein – Stammsatz wird daher nicht automatisch aktualisiert.\n\nFehlende Felder: E-Mail, Telefon (im Portal mit gedacht), abweichende Anschrift, Hausarzt und KIM-Adresse.",
-    forderungen: "Erweiterung und Harmonisierung der Stammdaten über Standards und Systeme hinweg.\nZiel: Kein mehrfaches Angeben derselben Daten an verschiedenen Stellen.\nAbgrenzung: VSDM als Grundlage; Patientenportale und KIS brauchen einen einheitlichen Standard."
+    ist: "Mit dem VSDM existiert eine funktionierende Infrastruktur für Versichertenstammdaten — Meldeadresse und Versicherungsstatus sind über die Gesundheitskarte abrufbar. Die Erfassung am Aufnahmeschalter ist in deutschen Krankenhäusern etabliert. ISiK Basismodul und IHE PIX/PDQ bieten Standards für die strukturierte Patientenidentifikation.",
+    luecke: "Angaben am Aufnahmeschalter stimmen häufig nicht mit den Daten auf der Gesundheitskarte überein — eine automatische Aktualisierung des Stammsatzes findet nicht statt. Für die Kommunikation über Patientenportale relevante Felder fehlen im VSDM: E-Mail, Telefon, abweichende Anschrift sowie Hausarzt inkl. dessen KIM-Adresse. Patient wird an mehreren Stellen neu erfasst, statt auf einen gemeinsamen Datensatz zuzugreifen.",
+    forderungen: "VSDM als Grundlage nutzen und um portalrelevante Felder erweitern (E-Mail, Telefon, Hausarzt inkl. KIM-Adresse).\nEinmalige Stammdatenerfassung als Prozessziel: Daten werden einmal erhoben und sektorenübergreifend genutzt — nicht mehrfach neu eingegeben.\nEinheitlichen Standard für Patientenidentifikation in Portal, KIS und ePA definieren (Grundlage: ISiK Basismodul, IHE PIX/PDQ)."
   },
   {
     nr: 4,
@@ -217,9 +217,9 @@ const data = [
     standards: ["HL7 FHIR R4 (DocumentReference)", "IHE MHD", "IHE XDS.b", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Upload oder Zugriff auf vorhandene Dokumente. Idealerweise strukturierte Datenobjekte – nicht PDFs.",
-    ist: "Heute haben wir die ePA ab dem ersten Besuch mit dem VSDM im Zugriff.\nUpload über Patientenportale.\nPatient bringt Dokumente in Papierform oder elektronisch mit.\nLink: https://simplifier.net/guide/kdl-implementierungsleitfaden-2025?version=current",
-    luecke: "Früher Zugriff auf ePA existiert nicht. Wunsch aus Krankenhaus ist ein frühzeitiger Zugriff, ideal wäre mit Einweisung/Überweisung.\nPoPP im Kontext Patientenportal könnte einen Zugriff auf die ePA ermöglichen.\nStrukturierte Informationen (z.B. Medikamente, Labor, etc.).\nStandards: KDL",
-    forderungen: "Früher Zugriff auf die ePA.\nEinfache Methode den Zugriff auch über das Patientenportal, Einweisung/Überweisung zu erhalten.\nZusendung der Befunde durch Vorbehandler.\nKrankenhaussysteme  müssen bereitgestellte Informationen effizient verarbeiten können (Abdeckung von Standards z.B. LOINC).\nKI-gestützte Analyse der Informationen - wie kann eine Weg in die KI-Unterstützung aussehen?"
+    ist: "Mit dem VSDM ist die ePA ab dem ersten institutionellen Kontakt (Versichertenkarte einlesen) grundsätzlich zugänglich — eine bereits funktionierende Infrastruktur. Patientenportale bieten Upload-Funktionen für Dokumente. Patienten bringen Befunde per Papier oder elektronisch mit. Mit der Klinischen Dokumentenliste (KDL) existiert ein Kategorisierungsstandard für Dokumente in der ePA.\nLink: https://simplifier.net/guide/kdl-implementierungsleitfaden-2025?version=current",
+    luecke: "Zugriff auf die ePA ist erst ab dem ersten institutionellen Kontakt möglich — nicht bereits bei Einweisung oder Überweisung. PoPP (Proof of Patient Presence) könnte im Kontext von Patientenportalen einen früheren Zugriff ermöglichen, ist aber noch nicht etabliert. Bereitgestellte Dokumente liegen überwiegend unstrukturiert vor (PDF) — strukturierte Informationen zu Medikamenten, Labor etc. fehlen. Die Klinische Dokumentenliste (KDL) ist vorhanden, wird aber nicht durchgängig genutzt.",
+    forderungen: "Frühzeitiger Zugriff auf die ePA — bereits ab Einweisung oder Überweisung, nicht erst ab erstem institutionellem Kontakt.\nZugriff über das Patientenportal ermöglichen, verknüpft mit Einweisung oder Überweisung.\nStrukturierte Zusendung von Vorbefunden durch Vorbehandler (Standard: LOINC, KDL).\nKrankenhaussysteme müssen bereitgestellte strukturierte Informationen automatisch verarbeiten können.\nKI-gestützte Aufbereitung bereitgestellter Vorbefunde als mittelfristiges Ziel definieren."
   },
   {
     nr: 5,
@@ -234,9 +234,9 @@ const data = [
     standards: ["HL7 CDA R2", "HL7 FHIR R4 (QuestionnaireResponse)", "ISIK 6 - Formular"],
     struktur: "unstrukturiert",
     detail: "Digitale medizinische Vorgeschichte. Zentrales Datenobjekt – wird im gesamten Pfad weitergenutzt. Sollte strukturiert vorliegen, nicht als Freitext.",
-    ist: "Heute oft in der medizinischen Aufnahme.\nLink: https://gemspec.gematik.de/ig/fhir/isik/formular/6.0.0-rc/index.html",
-    luecke: "Keine Übermittlung der Informationen über die Grenzen hinweg. \nEinheitliche Anamnese vom Hausarzt zum Facharzt und Krankenhäuser.",
-    forderungen: "Standard für Anamnese festlegen als strukturiertes Datenobjekt. \nAbbildung in der KIS, ePA und Patientenportalen."
+    ist: "ISiK Stufe 6 führt mit dem Formular-Modul einen neuen Standard für digitale Anamnese ein, der gezielt auf diesen Anwendungsfall zugeschnitten ist. HL7 FHIR QuestionnaireResponse ist ein reifer internationaler Standard. In der Praxis findet die Anamnese heute überwiegend in der medizinischen Aufnahme statt — digital in KIS-Systemen oder auf Papier.\nLink: https://gemspec.gematik.de/ig/fhir/isik/formular/6.0.0-rc/index.html",
+    luecke: "Der Anamneseprozess beginnt an jeder Sektorgrenze neu: Patientinnen und Patienten geben dieselben Informationen beim Hausarzt, beim Facharzt und im Krankenhaus wiederholt an. Das Datenobjekt \"Anamnese\" wird nicht weitergereicht und verfeinert, sondern bei jedem Akteur neu erzeugt. Der Prozess ist fragmentiert — nicht das Werkzeug fehlt, sondern die Prozesskontinuität.",
+    forderungen: "Die Anamnese als kontinuierlichen, akteursübergreifenden Prozess gestalten: einmal erheben, sektorenübergreifend verfeinern und ergänzen — nicht neu erzeugen.\nEinheitlichen Standard als technische Grundlage festlegen (ISiK Formular, FHIR QuestionnaireResponse), der diesen Prozess trägt.\nAnamnesedaten in KIS, ePA und Patientenportalen abrufbar und erweiterbar machen."
   },
   {
     nr: 6,
@@ -251,9 +251,9 @@ const data = [
     standards: ["HL7 FHIR R4 (Consent)", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Datenschutz und Behandlungseinwilligung. Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung.",
-    ist: "Heterogene Systemlandschaften. Wenig Standards. Hohe Relevanz.\nAufklärungsprozesse im Krankenhaus.\nLink: https://simplifier.net/guide/einwilligungsmanagement?version=current",
-    luecke: "Einheitliche Grundstruktur und Standards (z.B. FHIR - Consent).\nConsent-Management.",
-    forderungen: "Abbildung von Consents in der ePA (z.B. für Studien oder Broad-Consent).\nAbbildung des Widerspruchs zur Zugriff und Befüllung der ePA -> aus den KIS zurück in die ePA.\nLösungsidee: Unabhängige Treuhandstellen als Verwalter der Consent-Informationen."
+    ist: "Der Widerspruch gegen Zugriff und Befüllung der ePA ist gesetzlich vorgesehen (SGB V § 342), wurde in der Umsetzung jedoch an die Krankenhaussysteme (KIS) delegiert — mit heterogenen, nicht standardisierten Lösungen als Ergebnis. HL7 FHIR Consent ist ein reifer Standard für die strukturierte Abbildung von Einwilligungen, wird aber nicht durchgängig eingesetzt. Aufklärungsprozesse in Krankenhäusern existieren, teils digital unterstützt, aber ohne einheitliche Grundlage.\nLink: https://simplifier.net/guide/einwilligungsmanagement?version=current",
+    luecke: "Ein einrichtungsübergreifendes, standardisiertes Consent-Management fehlt. Die Umsetzung des gesetzlich vorgesehenen Widerspruchs liegt bei den Krankenhaussystemen — ohne gemeinsame Datenstruktur oder Prozesslogik. Krankenhausportale sind in diesen Prozess nicht eingebunden. FHIR Consent wäre ein geeigneter Standard, ist aber nicht durchgängig implementiert.",
+    forderungen: "Einwilligungsmanagement in der ePA verankern — nicht in heterogenen Krankenhaussystemen.\nWiderspruch gegen Zugriff und Befüllung der ePA zentral und standardisiert abbilden, nicht an KIS delegieren.\nKrankenhausportale als Patientenschnittstelle einbinden — Einwilligungen und Widersprüche über das Portal erteilen und verwalten.\nConsent-Abbildung für weitere Anwendungsfälle ermöglichen (z.B. Studienteilnahme, Broad-Consent).\nUnabhängige Treuhandstellen als mögliches Modell für die Verwaltung von Consent-Informationen prüfen."
   },
 
   // ── Im Krankenhaus ───────────────────────────────────────────────────────────
