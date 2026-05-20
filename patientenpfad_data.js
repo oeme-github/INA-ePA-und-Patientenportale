@@ -7,7 +7,7 @@
 // forderungen: Was die AG fordert
 // phase:  'vor' | 'im' | 'nach'
 // op:     E = Erzeugt, V = Verändert, G = Gelöscht
-// Exportiert: 2026-05-18
+// Exportiert: 2026-05-20
 
 // ── Konfiguration (pflegbar über den Editor) ──────────────────────────────────
 
@@ -469,32 +469,32 @@ const data = [
     nr: 19,
     phase: "nach",
     titel: "Bereitstellung Entlassdokumente",
-    akteur: ["Arzt", "Verwaltung"],
-    objekt: ["Arztbrief / Entlassbericht"],
+    akteur: ["Angehörige", "Arzt", "Niedergelassener Arzt", "Patient", "Pflege", "Sozialdienst", "Verwaltung"],
+    objekt: ["AHB / Reha-Antrag", "Arztbrief / Entlassbericht", "Diagnose / Befunddokumentation", "Medikationsplan", "Nachsorgetermin", "Untersuchungsergebnisse / Befunde"],
     op: "E",
     dr: ["portal", "versorgung", "epa", "ehds"],
     domäne: "Dokumente",
-    gesetze: ["BGB § 630f + § 630g", "DSGVO Art. 9", "SGB V § 39 (Entlassmanagement)", "MBO-Ä § 10"],
+    gesetze: ["BGB § 630f + § 630g", "DSGVO Art. 9", "MBO-Ä § 10", "SGB V § 39 (Entlassmanagement)"],
     standards: ["HL7 CDA R2", "HL7 FHIR R4 (DocumentReference)", "IHE XDS.b", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "ePA, Portale und Papier/Post\ntechnische Standards: ePA definiert (IHE-XDS); PatPortal abhängig vom Hersteller und Kundenwunsch (KHZG fordert bereits ISiK)",
+    luecke: "Abgrenzung, welche Dokumente wo zu finden sind\nLebenszyklus der Dokumente/Daten",
+    forderungen: "verpflichtende Integration ePA in PatPortal; \nDefinition Mindestanforderungen, was wohin gehört; \nVorgaben zum Status des bereitzustellenden Arztbriefes und weiterer Dokumente (vorläufig, final)"
   },
   {
     nr: 20,
     phase: "nach",
     titel: "Bereitstellung Medikationsplan",
-    akteur: ["Arzt"],
+    akteur: ["Angehörige", "Arzt", "Patient"],
     objekt: ["Medikationsplan"],
     op: "E",
     dr: ["portal", "versorgung", "epa", "ehds"],
     domäne: "Medikation",
-    gesetze: ["SGB V § 31a (Medikationsplan)", "DSGVO Art. 9", "AMVV § 14"],
-    standards: ["HL7 FHIR R4 (MedicationStatement)", "KBV Medikationsplan", "ABDA Medikationsliste"],
+    gesetze: ["AMVV § 14", "DSGVO Art. 9", "SGB V § 31a (Medikationsplan)"],
+    standards: ["ABDA Medikationsliste", "HL7 FHIR R4 (MedicationStatement)", "KBV Medikationsplan"],
     struktur: "teilstrukturiert",
-    detail: "Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.",
+    detail: "Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.\ns. #19",
     ist: "",
     luecke: "",
     forderungen: ""
@@ -508,30 +508,30 @@ const data = [
     op: "E",
     dr: ["epa", "ehds"],
     domäne: "Dokumente",
-    gesetze: ["SGB V § 341–360 (ePA)", "DSGVO Art. 9", "PatDatSchG"],
+    gesetze: ["DSGVO Art. 9", "PatDatSchG", "SGB V § 341–360 (ePA)"],
     standards: ["HL7 FHIR R4 (DocumentReference)", "IHE MHD", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
-    detail: "Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    detail: "Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.\n\nMedPlan: gematik, KBV, BÄK, GKV (?)\nFormulierung: BMG, gematik, DKG",
+    ist: "ePA 3.0, technisch verfügbar\nMedikationsliste, Spec für Dokumente, gesetzlicher Rahmen\nStandards: FHIR (MedPlan), IHE (ePA Dokumente)",
+    luecke: "Medikationsplan in strukturierter Form (siehe auch AG Medikationsplan des Expertenkreises @Stephan Schug)\nStrukturierte Datenobjekte zur automatisierten Verarbeitung\nHarmonisierung der Datenobjekte auf nationaler und internationaler Ebene.",
+    forderungen: "einheitliche Definition an einer Stelle zum Medikationsplan (sektoren- & anwendungsübergreifend); \nAuflösung der Formulierung, was \"stigmatisierende und lebensverändernde Befunde sind\" um Automatismen für KHs zu ermöglichen"
   },
   {
     nr: 22,
     phase: "nach",
     titel: "Nachsorgetermin vereinbaren",
-    akteur: ["Patient", "Verwaltung"],
+    akteur: ["Angehörige", "Patient", "Sozialdienst", "Verwaltung"],
     objekt: ["Nachsorgetermin"],
     op: "E",
     dr: ["portal", "versorgung"],
     domäne: "Termin",
-    gesetze: ["SGB V § 39 (Entlassmanagement)", "SGB V § 75a", "DSGVO Art. 6"],
+    gesetze: ["DSGVO Art. 6", "SGB V § 39 (Entlassmanagement)", "SGB V § 75a"],
     standards: ["HL7 FHIR R4 (Appointment)", "ISiK Terminplanung"],
     struktur: "strukturiert",
     detail: "Terminplanung nach Entlassung. Portal als primäre Schnittstelle für den Patienten.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Patientenportal, ePA als Plattformen für Datenbereitstellung\nKIM und TIM als Kommunikationsplattformen\nErste Digitalisierungsvorhaben zur Unterstützung des Sozialdienstes",
+    luecke: "Durchgängige Integration der verschiedenen Plattformen zu einer Nachsorgeplattform, die über die Sektoren hinweg den Gesamtprozess berücksichtigt. Vereinheitlichung und Harmonisierung der Datenobjekte möglichst in strukturierter Form.",
+    forderungen: "Verstecken der seht technisch lastigen Einzelkomponenten zu einer den Arbeitsprozess unterstützenden Gesamtplattform.\nStrukturierte Datenobjekte, die durch die Systemebene zu einem sinnvollen Bild zusammengesetzt werden (Abgrenzung Anzeige zu Verarbeitung)."
   },
   {
     nr: 23,
@@ -542,46 +542,46 @@ const data = [
     op: "E",
     dr: ["portal", "versorgung", "epa"],
     domäne: "Verlauf",
-    gesetze: ["DSGVO Art. 9", "SGB V § 68a (DiGA)", "DiGAV"],
-    standards: ["HL7 FHIR R4 (QuestionnaireResponse)", "HL7 FHIR R4 (Observation)", "LOINC"],
+    gesetze: ["DiGAV", "DSGVO Art. 9", "SGB V § 68a (DiGA)"],
+    standards: ["HL7 FHIR R4 (Observation)", "HL7 FHIR R4 (QuestionnaireResponse)", "LOINC"],
     struktur: "teilstrukturiert",
     detail: "Fragebögen und PROMs nach Entlassung. Patient als aktiver Datenerzeuger – strukturierte Rückmeldungen ermöglichen Automatisierung.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Patientenportal, DiGA's, Regsiter (IRD, Endoprothesenregister, etc)",
+    luecke: "PROMs bisher nicht standardisiert, einheitliche Vorgaben für Messpunkte in den PROMs, Einbindung von DiGas, dauerhafte Einbindung des Patienten auch ohne \"Fallbezug\"",
+    forderungen: "Standardisierte Vorgabe zu Messpunkten, verbindliche Mechanismen zur Integration der DiGAs \nDiGA-Verordnung --> Bereitstellung --> Ergebnisverwertung"
   },
   {
     nr: 24,
     phase: "nach",
     titel: "Kommunikation mit Klinik",
-    akteur: ["Patient", "Arzt"],
+    akteur: ["Arzt", "Patient"],
     objekt: ["Nachricht / Rückfrage"],
     op: "E, V",
     dr: ["portal", "versorgung", "epa"],
     domäne: "Kommunikation",
     gesetze: ["DSGVO Art. 9", "StGB § 203 (Schweigepflicht)", "TKG"],
-    standards: ["gematik TI-Messenger", "KIM (Kommunikation im Medizinwesen)", "HL7 FHIR R4 (Communication)"],
+    standards: ["HL7 FHIR R4 (Communication)", "KIM (Kommunikation im Medizinwesen)", "gematik TI-Messenger"],
     struktur: "unstrukturiert",
     detail: "Rückfragen nach Entlassung – unabhängig vom Übertragungsweg.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "KIM und TIM als Kommunikationsprotokolle, die mit eigenen technischen Lösungen neben den bestehenden Systemen aufgebaut wurden.",
+    luecke: "Integrationsmöglichkeiten in die bestehende und zukünftigen Behandlungssysteme.",
+    forderungen: "KIM und TIM müssen integrative Standards in den KIS-Systemen werden, damit die direkte Kommunikation mit allen Teilhabenden im Gesundheitswesen Prozesse flankieren und unterstützen. Reduktion der einzelnen Tool hin zu einem interoperablem Gesundheitsplattform für alle mit der Perspektive eines europäischen Gesamtsystems."
   },
   {
     nr: 25,
     phase: "nach",
     titel: "Abschluss der Behandlung",
-    akteur: ["Arzt", "Verwaltung"],
+    akteur: ["Angehörige", "Arzt", "Patient", "Verwaltung"],
     objekt: ["Abschlussdokumentation / Fallabschluss"],
     op: "E",
     dr: ["versorgung", "epa"],
     domäne: "Dokumente",
     gesetze: ["BGB § 630f (Dokumentationspflicht)", "DSGVO Art. 9", "KHEntgG", "SGB V § 301"],
-    standards: ["HL7 FHIR R4 (EpisodeOfCare)", "IHE XDS.b", "HL7 CDA R2"],
+    standards: ["HL7 CDA R2", "HL7 FHIR R4 (EpisodeOfCare)", "IHE XDS.b"],
     struktur: "strukturiert",
     detail: "Behandlungsfall wird abgeschlossen. Finales Datenobjekt des Patientenpfads.",
-    ist: "",
-    luecke: "",
+    ist: "Abrechnung und Fallabschluss",
+    luecke: "Was Grenzt einen Fall und einen Krankheitsverlauf ab?",
     forderungen: ""
   }
 ];
