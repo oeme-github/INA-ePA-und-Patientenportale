@@ -478,7 +478,7 @@ const data = [
     standards: ["HL7 CDA R2", "HL7 FHIR R4 (DocumentReference)", "IHE XDS.b", "gematik ePA-Spezifikation"],
     struktur: "unstrukturiert",
     detail: "Arztbrief und Befunde nach Entlassung. Zentrales Übergabedokument – sollte strukturiert vorliegen, nicht nur als PDF.",
-    ist: "ePA, Portale und Papier/Post\ntechnische Standards: ePA definiert (IHE-XDS); PatPortal abhängig vom Hersteller und Kundenwunsch (KHZG fordert bereits ISiK)",
+    ist: "ePA, Portale und Papier/Post\ntechnische Standards: ePA definiert (IHE-XDS); PatPortal abhängig vom Hersteller und Kundenwunsch (KHZG fordert bereits ISiK)\nKIM und TIM als Kommunikationsplattformen",
     luecke: "Abgrenzung, welche Dokumente wo zu finden sind\nLebenszyklus der Dokumente/Daten",
     forderungen: "verpflichtende Integration ePA in PatPortal; \nDefinition Mindestanforderungen, was wohin gehört; \nVorgaben zum Status des bereitzustellenden Arztbriefes und weiterer Dokumente (vorläufig, final)"
   },
@@ -495,9 +495,9 @@ const data = [
     standards: ["ABDA Medikationsliste", "HL7 FHIR R4 (MedicationStatement)", "KBV Medikationsplan"],
     struktur: "teilstrukturiert",
     detail: "Aktueller Medikationsplan nach Entlassung. Klassisches Konsistenzproblem – existiert heute oft mehrfach und nicht synchronisiert.\ns. #19",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Medikationsplan und eML in der ePA oder als Ausdruck\nPatientenportale\nMedikation im KIS",
+    luecke: "Harmonisierung über die Systeme und Sektoren zu einem europaweit einheitlichen Medikationsliste, die strukturiert vorliegt.\nÜbertragungswege, die eine automatisierte Verarbeitung ermöglicht.\nEinheitliche Form der Darstellung",
+    forderungen: "Europaweit einheitlichen Medikationsliste, die strukturiert vorliegt und Wege zur automatisierten Verarbeitung von Medikationsdaten und eine Harmonisierung der Darstellung der Medikation in den anzeigenden Systemen. Klar Trennung zwischen Verarbeitung und Anzeige."
   },
   {
     nr: 21,
@@ -513,8 +513,8 @@ const data = [
     struktur: "unstrukturiert",
     detail: "Upload strukturierter Datenobjekte in die ePA. Ziel: keine Dokumente, sondern maschinenlesbare strukturierte Daten.\n\nMedPlan: gematik, KBV, BÄK, GKV (?)\nFormulierung: BMG, gematik, DKG",
     ist: "ePA 3.0, technisch verfügbar\nMedikationsliste, Spec für Dokumente, gesetzlicher Rahmen\nStandards: FHIR (MedPlan), IHE (ePA Dokumente)",
-    luecke: "Medikationsplan in strukturierter Form (siehe auch AG Medikationsplan des Expertenkreises @Stephan Schug)\nStrukturierte Datenobjekte zur automatisierten Verarbeitung\nHarmonisierung der Datenobjekte auf nationaler und internationaler Ebene.",
-    forderungen: "einheitliche Definition an einer Stelle zum Medikationsplan (sektoren- & anwendungsübergreifend); \nAuflösung der Formulierung, was \"stigmatisierende und lebensverändernde Befunde sind\" um Automatismen für KHs zu ermöglichen"
+    luecke: "Medikationsplan in strukturierter Form (siehe auch AG Medikationsplan des Expertenkreises @Stephan Schug)\ngenerell Datenobjekte in strukturierter Form, die für eine automatisierte Verarbeitung besser geeignet sind.\nTrennung zwischen Verarbeitung und Anzeige. \nHarmonisierung der Datenobjekte auf nationaler und internationaler Ebene.\nConsent-Management in der ePA mid. für den ePA-Zugriff (besser auch für weitere Einwilligungen).",
+    forderungen: "einheitliche Definition an einer Stelle zum Medikationsplan (sektoren- & anwendungsübergreifend); \nAuflösung der Formulierung, was \"stigmatisierende und lebensverändernde Befunde sind\" um Automatismen für KHs zu ermöglichen\nConsent-Management in der ePA."
   },
   {
     nr: 22,
