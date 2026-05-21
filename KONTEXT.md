@@ -16,7 +16,8 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
-| `KONTEXT.md` | – | 2026-05-18 | Session 2026-05-18 abgeschlossen |
+| `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
+| `KONTEXT.md` | – | 2026-05-21 | Session 2026-05-21 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -150,6 +151,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Issue #14 (Ist-Analyse) | Claude | Erledigt (2026-05-11) – PR #19, PR #20 |
 | Issue #17 (Datenobjekte persistent/transient) | Claude | Erledigt (2026-05-07) – PR #18 |
 | Ist-Analyse Schritte 1–6 überarbeiten (AG-Feedback Papiertiger) | Claude | Erledigt (2026-05-18) – PR #23 |
+| Forderungen Präklinisch verdichten und als Positionspapier aufbereiten | Claude | Erledigt (2026-05-21) – PR offen |
 
 ---
 
@@ -222,6 +224,11 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Schritte 1–6: `ist`, `luecke`, `forderungen` überarbeitet und vereinheitlicht (Session 2026-05-18, PR #23)
 - Schritte 7–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
+
+### Positionspapier
+- `forderungen_praeklinisch.md` enthält alle Forderungen aus Schritte 1–6 in drei Varianten: Einzelpunkte, Kernforderungen mit Bestandsaufnahme, Fließtext
+- Struktur: je Forderung „Was existiert → Was fehlt → Was wir fordern"
+- Nächster Schritt: Forderungen für die klinische Phase (Schritte 7–25) nach Befüllung der Ist-Analyse ergänzen
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
