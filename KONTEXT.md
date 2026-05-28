@@ -72,6 +72,12 @@ Diese Formel ist der gemeinsame Anker der Gruppe. Kein Element kann ohne die and
 
 ---
 
+## Quellen und Artefakte der AG
+
+Originaldokumente (Präsentationen, Zusammenfassungen, UAG-Ergebnisse) liegen im SharePoint der gematik / KIG. Der Zugriff ist auf AK-Mitglieder beschränkt. Artefakte werden nicht ins Repository eingecheckt – relevante Inhalte fließen direkt in `patientenpfad_data.js` und `patientenpfad_arbeitsdokument.md` ein.
+
+---
+
 ## GitHub-Konfiguration
 
 ### Ruleset (Branch-Schutz für `main`)
