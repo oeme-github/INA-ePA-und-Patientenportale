@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v6 | 2026-05-28 | Kap. 9.3: Differenzierung Patientenportal vs. Zuweiserportal ergänzt |
-| `patientenpfad_interaktiv.html` | v12 | 2026-05-11 | Neue Sektionen ist/luecke/forderungen in Detailkarte und Modal |
+| `patientenpfad_interaktiv.html` | v13 | 2026-05-28 | Akteure als Tags in Prozess-Kacheln (Issue #22) |
 | `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
 | `patientenpfad_data.js` | v7 | 2026-05-28 | ist/luecke/forderungen Schritte 7, 8, 13 befüllt (UAG Klinische Prozesse) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
@@ -17,7 +17,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `KONTEXT.md` | – | 2026-05-28 | Session 2026-05-28 abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-28 | Session 2026-05-28 vollständig abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -157,7 +157,9 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Issue #14 (Ist-Analyse) | Claude | Erledigt (2026-05-11) – PR #19, PR #20 |
 | Issue #17 (Datenobjekte persistent/transient) | Claude | Erledigt (2026-05-07) – PR #18 |
 | Ist-Analyse Schritte 1–6 überarbeiten (AG-Feedback Papiertiger) | Claude | Erledigt (2026-05-18) – PR #23 |
-| Forderungen Präklinisch verdichten und als Positionspapier aufbereiten | Claude | Erledigt (2026-05-21) – PR offen |
+| Forderungen Präklinisch verdichten und als Positionspapier aufbereiten | Claude | Erledigt (2026-05-21) – PR #24 gemergt |
+| Schritte 7, 8, 13 mit UAG-Ergebnissen befüllen (klinische Phase) | Claude | Erledigt (2026-05-28) – PR #24 gemergt |
+| Issue #22: Akteure als Tags in Prozess-Kacheln | Claude | Erledigt (2026-05-28) – PR #25 gemergt |
 
 ---
 
