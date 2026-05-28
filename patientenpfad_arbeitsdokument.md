@@ -261,6 +261,20 @@ Wie haben andere Länder vergleichbare Probleme gelöst? Welche Ansätze – etw
 **Pilotprozesse definieren**
 Welche zwei oder drei Prozessschritte eignen sich für eine erste modellhafte Umsetzung? Ziel ist ein konkreter Proof of Concept, der die Prinzipien in die Praxis überführt.
 
+### 9.3 Differenzierung: Patientenportal und Zuweiserportal
+
+Die UAG Klinische Prozesse empfiehlt, den Datenraum „Portal" künftig zu differenzieren. Bisher wird das Portal als einheitliche Schnittstelle behandelt – die Praxis zeigt jedoch zwei klar unterschiedliche Anwendungsfälle:
+
+| | Patientenportal | Zuweiserportal |
+|---|---|---|
+| **Nutzer** | Patient, Angehörige | Niedergelassene Ärzte, Kliniken |
+| **Zweck** | Zugang zu eigenen Gesundheitsdaten | Medizinische Zusammenarbeit |
+| **Typische Inhalte** | Befunde, Termine, Einwilligungen, Kommunikation mit Behandlungsteam | Einweisungen, Entlassberichte, Konsile |
+
+Diese Unterscheidung ist für die Weiterentwicklung der Anforderungen und des Positionspapiers relevant: Welche Datenobjekte und Prozesse gehören primär in welchen Portaltyp? Und welche Standards müssen je Portal-Typ erfüllt sein?
+
+Die Differenzierung wird in einem weiteren Arbeitskreis vertieft.
+
 ---
 
 ## Anhang: Vollständiger Prozessblumenstrauß
