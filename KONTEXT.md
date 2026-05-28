@@ -17,7 +17,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `KONTEXT.md` | – | 2026-05-21 | Session 2026-05-21 abgeschlossen |
+| `KONTEXT.md` | – | 2026-05-28 | Session 2026-05-28 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
