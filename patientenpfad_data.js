@@ -271,9 +271,9 @@ const data = [
     standards: ["HL7 FHIR R4 (Encounter)", "IHE PIX/PDQ", "ISiK Basismodul"],
     struktur: "strukturiert",
     detail: "Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Krankenhäuser bieten Terminbuchungsfunktionen im Portal an. Mit ISiK Terminplanung, HL7 FHIR Appointment und HL7 SIU existieren Standards für die strukturierte Abbildung von Terminen. Einzelne KIS-Hersteller bieten FHIR-Schnittstellen an; die Integration zwischen Portal und KIS ist in einigen Häusern bereits umgesetzt.",
+    luecke: "Viele KIS-Hersteller bieten FHIR-Schnittstellen für Terminbuchung noch nicht oder nur gegen hohen Aufpreis an. Eine durchgängige, standardisierte Integration zwischen Portal und KIS ist die Ausnahme, nicht die Regel.",
+    forderungen: "Portal- und KIS-Anbieter sollen ISiK Terminplanung und FHIR für Terminbuchung unterstützen.\nKrankenhäuser sollen bei Ausschreibungen die Unterstützung von ISiK und FHIR als Vergabekriterium verankern."
   },
   {
     nr: 8,
@@ -288,9 +288,9 @@ const data = [
     standards: ["HL7 v2", "HL7 FHIR R4 (Encounter)", "ISiK Basismodul"],
     struktur: "strukturiert",
     detail: "Fallanlage im KIS. Zentrales Datenobjekt für den gesamten stationären Aufenthalt.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Digitale Einwilligungs- und Aufklärungsprozesse sind in Krankenhäusern vorhanden, häufig über spezialisierte Drittsysteme. Einige Häuser ermöglichen bereits die digitale Unterzeichnung von Aufklärungsbögen. Die relevanten Rechtsgrundlagen (§ 347 SGB V, GenDG, § 630d BGB, DSGVO) sind bekannt und werden umgesetzt.",
+    luecke: "Einwilligungsdokumente sind sehr individuell und kaum standardisiert. Drittsysteme verursachen hohe Kosten. Bei den erzeugten Dokumenten handelt es sich meist um PDF-Dateien – keine strukturierten, maschinenlesbaren Daten.",
+    forderungen: "Einheitlichen technischen Standard für Einwilligungsdokumente definieren.\nDigitale Signatur (QES) per GesundheitsID, EUDI-Wallet oder BundID als Zielbild etablieren: Patient signiert Einwilligungen im Portal oder vor Ort mit QES.\nEinwilligungen strukturiert an nachfolgende Systeme übermitteln – nicht als PDF."
   },
   {
     nr: 9,
@@ -373,9 +373,9 @@ const data = [
     standards: ["HL7 FHIR R4 (DocumentReference)", "gematik ePA-Spezifikation", "ISiK Basismodul"],
     struktur: "teilstrukturiert",
     detail: "Ausgewählte Informationen werden dem Patienten im Portal bereitgestellt – z.B. Laborwerte. Strukturierte Daten ermöglichen eine sinnvolle Darstellung.",
-    ist: "",
-    luecke: "",
-    forderungen: ""
+    ist: "Das KIS ist das führende System für medizinische Dokumentation; von dort werden Daten an Portal, ePA und Archiv weitergeleitet. Für Labordaten existieren etablierte Standards (HL7v2, FHIR, LOINC). Patientenportale stellen heute Befunde und Berichte bereit, häufig als PDF. Für strukturierte Verlaufsdaten (z.B. Vitalparameter) werden SNOMED CT-Codes eingesetzt.",
+    luecke: "Doppelte Datenbereitstellung in Portal und ePA verursacht Redundanz und Inkonsistenz. Die ePA-Versionierung für vorläufige Dokumente ist unzureichend – vorläufige Entlassberichte gehören daher derzeit nicht in die ePA. Die ePA ist patientengeführt (Opt-out), was eine verlässliche Bereitstellung einschränkt. KIM-Adressen des Zuweisers sind nicht immer bekannt; im Krankenhaus kann die KIM-Adresse von Fall zu Fall wechseln. Ethische Fragen (z.B. bei lebensverändernden Diagnosen) erfordern Workflowsteuerung vor automatischer Bereitstellung.",
+    forderungen: "Grundsätzlich strukturierte Daten gemäß anerkannter Standards und Terminologien anstreben – für die ePA immer, im Portal zunächst auch PDF ausreichend.\nVorläufige Entlassberichte gehören ins Patientenportal, nicht in die ePA – erst bei funktionierender Versionierung in der ePA.\nSystem- und prozessübergreifendes Merkmal zur Workflowsteuerung bereitstellen (z.B. Verhinderung automatischen Uploads vor persönlichem Arzt-Patienten-Gespräch bei kritischen Befunden).\nVersand an Zuweiser primär über KIM."
   },
   {
     nr: 14,

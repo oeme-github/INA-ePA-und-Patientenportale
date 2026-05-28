@@ -8,10 +8,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
-| `patientenpfad_arbeitsdokument.md` | v5 | 2026-05-18 | Kap. 1: Rahmentext zu bestehenden technischen Lösungen ergänzt |
+| `patientenpfad_arbeitsdokument.md` | v6 | 2026-05-28 | Kap. 9.3: Differenzierung Patientenportal vs. Zuweiserportal ergänzt |
 | `patientenpfad_interaktiv.html` | v12 | 2026-05-11 | Neue Sektionen ist/luecke/forderungen in Detailkarte und Modal |
 | `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
-| `patientenpfad_data.js` | v6 | 2026-05-18 | ist/luecke/forderungen Schritte 1–6 überarbeitet und vereinheitlicht |
+| `patientenpfad_data.js` | v7 | 2026-05-28 | ist/luecke/forderungen Schritte 7, 8, 13 befüllt (UAG Klinische Prozesse) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
@@ -229,6 +229,13 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - `forderungen_praeklinisch.md` enthält alle Forderungen aus Schritte 1–6 in drei Varianten: Einzelpunkte, Kernforderungen mit Bestandsaufnahme, Fließtext
 - Struktur: je Forderung „Was existiert → Was fehlt → Was wir fordern"
 - Nächster Schritt: Forderungen für die klinische Phase (Schritte 7–25) nach Befüllung der Ist-Analyse ergänzen
+
+### UAG Klinische Prozesse (Session 2026-05-28)
+- Schritte 7, 8 und 13 mit UAG-Ergebnissen befüllt (`ist`, `luecke`, `forderungen`)
+- UAG hat die Methode angewendet und drei Prozesse als Beispiele ausgearbeitet: Terminbuchung → Schritt 7, Administrative Aufnahme → Schritt 8, Informationsbereitstellung → Schritt 13
+- UAG-Fazit: Methode funktioniert; nicht alle Schritte konnten bearbeitet werden
+- UAG empfiehlt Differenzierung Patientenportal vs. Zuweiserportal → als neuer Abschnitt 9.3 ins Arbeitsdokument übernommen
+- Weiterer AK zur Vertiefung dieser Differenzierung empfohlen
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
