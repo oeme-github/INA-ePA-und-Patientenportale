@@ -17,10 +17,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `positionspapier.md` | v0.1 | 2026-06-03 | Neu: Grundstruktur + Kap. 3 und 4 ausgearbeitet (PR #26) |
+| `positionspapier.md` | v0.2 | 2026-06-03 | IQWiG-Feedback eingearbeitet; Querschnittsthema Patientenberatung; Plenum-Hinweis |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-06-03 | Session 2026-06-03 abgeschlossen |
+| `KONTEXT.md` | – | 2026-06-03 | Session 2026-06-03 (II) abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -164,6 +164,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Schritte 7, 8, 13 mit UAG-Ergebnissen befüllen (klinische Phase) | Claude | Erledigt (2026-05-28) – PR #24 gemergt |
 | Issue #22: Akteure als Tags in Prozess-Kacheln | Claude | Erledigt (2026-05-28) – PR #25 gemergt |
 | Positionspapier: Grundstruktur + Kap. 3 und 4 ausarbeiten | Claude | Erledigt (2026-06-03) – PR #26 offen |
+| Positionspapier: IQWiG-Feedback (Klaus Koch) einarbeiten | Claude | Erledigt (2026-06-03) – PR #26 aktualisiert, v0.2 |
 
 ---
 
@@ -248,6 +249,19 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - QS-Runde abgeschlossen: Abkürzungen eingeführt, Dopplungen bereinigt, Zählfehler korrigiert
 - PR #26 offen, noch nicht gemergt
 
+### IQWiG-Feedback (Session 2026-06-03, II)
+- Erste Rückmeldung von Klaus Koch (IQWiG) über `positionspapier_IQWiG.docx` mit 12 Kommentaren ausgewertet
+- Kernforderung IQWiG: Patientenberatung/-aufklärung und Gesundheitsinformationen als Datenobjekte im Modell verankern
+- Akteur „Ersteller von Gesundheitsinformationen" (§ 139a SGB V) ergänzt
+- Informationsdomäne „Dokumente" um Gesundheitsinformationen erweitert
+- Schritte 8, 13, 19, 21: Lückenabschnitte um Gesundheitsinformationen-Dimension ergänzt
+- Kap. 3.2: Prozessbegleitende Elemente (Querschnittsthema) eingeführt
+- Kap. 4.4: Neuer Abschnitt Querschnittsthema Patientenberatung + Plenum-Hinweis zu Option 2 (eigener Prozessschritt)
+- Kap. 5.2: § 395 SGB V und LOINC-Verknüpfung ergänzt
+- Begriff „Quelle der Wahrheit" → „verbindlicher Referenzdatensatz" (konsistent an 3 Stellen)
+- `positionspapier.md` auf v0.2 hochgesetzt, DOCX lokal neu erzeugt
+- PR #26 aktualisiert
+
 ### UAG Klinische Prozesse (Session 2026-05-28)
 - Schritte 7, 8 und 13 mit UAG-Ergebnissen befüllt (`ist`, `luecke`, `forderungen`)
 - UAG-Fazit: Methode funktioniert; nicht alle Schritte konnten bearbeitet werden
@@ -262,6 +276,11 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Standards prüfen: FHIR, IHE, HL7 – welche erfüllen die Anforderungen A1-A3?
 - Impulse aus dem Ausland: Dänemark, Estland, Niederlande
 - Pilotprozesse definieren für einen Proof of Concept
+
+### Offene Plenumsentscheidung: Querschnittsthema Patientenberatung
+- Kap. 4.4 enthält Querschnittsthema + Plenum-Hinweis
+- Frage: Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell aufgenommen werden?
+- Bei Ja: Ergänzung in `patientenpfad_data.js` und ggf. Renummerierung erforderlich
 
 ---
 
