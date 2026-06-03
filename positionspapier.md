@@ -77,6 +77,8 @@ Diese Modellierung erlaubt eine systemunabhängige Beschreibung des Patientenpfa
 
 Ein Datenobjekt gilt als **erzeugt (E)**, wenn es im Kontext des jeweiligen Prozessschritts erstmalig vorliegt — unabhängig davon, ob es an anderer Stelle bereits existiert. Datenobjekte können **persistent** sein — gespeichert und über den Prozessschritt hinaus verfügbar (z. B. Diagnose, Medikationsplan) — oder **transient** — erzeugt, übermittelt und danach nicht mehr als eigenständiges Objekt vorhanden (z. B. Terminanfrage, Nachricht). Diese Unterscheidung trifft der Prozess — nicht das System.
 
+Neben den explizit modellierten Prozessschritten gibt es **prozessbegleitende Elemente**, die an mehreren Stellen des Patientenpfads auftreten und nicht einem einzelnen Schritt zugeordnet werden können. Dazu gehört die **Patientenberatung und -aufklärung**: Aufklärungsgespräche, Informationsmaterialien und evidenzbasierte Entscheidungshilfen begleiten den Patienten von der Terminvorbereitung über die Einwilligungserteilung bis zur Entlassung. Die dabei entstehenden und eingesetzten Datenobjekte — Aufklärungsbögen, Gesundheitsinformationen, Entscheidungshilfen — sind im Prozessmodell noch nicht explizit abgebildet. Dies ist ein offener Punkt, der einer eigenständigen Modellierung bedarf (vgl. Kap. 4.4, Querschnittsthema).
+
 ---
 
 ### 3.3 Daten-, Informationsdomänen und Akteure
@@ -106,7 +108,7 @@ Die Datenobjekte lassen sich zu stabilen **Informationsdomänen** verdichten. Di
 | Kommunikation | Nachrichten, Rückfragen — unabhängig vom Übertragungsweg |
 | Nachsorge | Entlassungsplan, Überleitungsbogen, AHB-Antrag |
 | Verlauf | PROMs, Verlaufsdokumentation |
-| Dokumente | Arztbrief, Entlassbericht |
+| Dokumente | Arztbrief, Entlassbericht, Gesundheitsinformationen |
 
 #### Datenräume
 
@@ -136,6 +138,7 @@ Folgende Akteure wurden im Prozessmodell identifiziert:
 | Verwaltung | Administrative Prozesse, Fallanlage, Terminmanagement |
 | Sozialdienst | Entlassungsplanung, Überleitung, AHB-Beantragung |
 | Kostenträger / Krankenkasse | Genehmigung, Abrechnung, Versichertenstammdaten |
+| Ersteller von Gesundheitsinformationen | Evidenzbasierte Patienteninformationen zu Diagnosen, Behandlungen und Prozeduren — Entscheidungsunterstützung für Patienten (§ 139a SGB V) |
 
 Die Auflistung ist beispielhaft — weitere Akteure (z. B. Rettungsdienst, Apotheke, EHDS-Teilnehmer) können je nach Prozessschritt relevant sein. Patientenportal und Zuweiserportal adressieren unterschiedliche Akteure und Anwendungsfälle.
 
@@ -191,7 +194,7 @@ Die folgende Übersicht zeigt die analysierten Prozessschritte mit ihren zentral
 | Nr. | Prozessschritt | Akteur(e) | Datenobjekt | Forderungsbezug |
 |---|---|---|---|---|
 | 19 | Bereitstellung Entlassdokumente | Krankenhausarzt, Verwaltung | Arztbrief / Entlassbericht | Portal-Differenzierung (Patienten- vs. Zuweiserportal) |
-| 20 | Bereitstellung Medikationsplan | Krankenhausarzt | Medikationsplan | Medikation: eindeutige Quelle der Wahrheit |
+| 20 | Bereitstellung Medikationsplan | Krankenhausarzt | Medikationsplan | Medikation: verbindlicher Referenzdatensatz |
 | 21 | Bereitstellung Dokumente für ePA | Arzt, Verwaltung | Strukturierte Datenobjekte in der ePA | Konsequente ePA-Befüllung / EEHRxF |
 
 ### 4.4 Prozesse mit TI-Beteiligung — Ist-Analyse und Use Cases
@@ -288,7 +291,7 @@ Viele KIS-Hersteller bieten FHIR-Schnittstellen für Terminbuchung noch nicht od
 
 Digitale Einwilligungs- und Aufklärungsprozesse sind in Krankenhäusern vorhanden, häufig über spezialisierte Drittsysteme. Einige Häuser ermöglichen bereits die digitale Unterzeichnung von Aufklärungsbögen. Die relevanten Rechtsgrundlagen sind bekannt und werden umgesetzt.
 
-Einwilligungsdokumente sind nicht standardisiert. Drittsysteme verursachen hohe Kosten. Die erzeugten Dokumente sind meist PDFs — keine strukturierten, maschinenlesbaren Daten.
+Einwilligungsdokumente sind nicht standardisiert. Drittsysteme verursachen hohe Kosten. Die erzeugten Dokumente sind meist PDFs — keine strukturierten, maschinenlesbaren Daten. Aufklärungsbögen und Informationsmaterialien, die im Kontext der Einwilligungserteilung eingesetzt werden, liegen nicht als strukturierte Datenobjekte vor — weder in der ePA verfügbar noch für Folgesysteme zugänglich.
 
 **Use Case:** Bei der Aufnahme unterschreibt ein Patient einen Behandlungsvertrag auf einem Tablet. Das Drittsystem des Krankenhauses speichert das Ergebnis als PDF im KIS. Das nächste Krankenhaus nutzt ein anderes System — neue Formulare, neue Unterschriften. Die strukturierten Informationen aus der Einwilligung (welche Eingriffe, welche Bedingungen) stehen keinem Folgesystem zur Verfügung.
 
@@ -300,11 +303,11 @@ Einwilligungsdokumente sind nicht standardisiert. Drittsysteme verursachen hohe 
 
 Das KIS ist das führende System für medizinische Dokumentation; von dort werden Daten an Portal, ePA und Archiv weitergeleitet. Für Labordaten existieren etablierte Standards (HL7v2, FHIR, LOINC). Patientenportale stellen heute Befunde und Berichte bereit, häufig als PDF.
 
-Doppelte Datenbereitstellung in Portal und ePA erzeugt Redundanz und Inkonsistenz. Die ePA-Versionierung für vorläufige Dokumente ist unzureichend. Ethische Fragen (z. B. bei lebensverändernden Diagnosen) erfordern eine Workflowsteuerung, die heute fehlt.
+Doppelte Datenbereitstellung in Portal und ePA erzeugt Redundanz und Inkonsistenz. Die ePA-Versionierung für vorläufige Dokumente ist unzureichend. Ethische Fragen (z. B. bei lebensverändernden Diagnosen) erfordern eine Workflowsteuerung, die heute fehlt. Laborwerte und Befunde werden ohne kontextuelle Einordnung bereitgestellt. Evidenzbasierte Gesundheitsinformationen, die Patienten bei der Interpretation unterstützen könnten — z. B. LOINC-verknüpfte Patientenmerkblätter — sind nicht Teil des Datenobjekts.
 
 **Use Case:** Laborwerte eines Patienten sind verfügbar — darunter ein grenzwertiger Befund, der ein weiteres Gespräch erfordert. Das System erlaubt keinen kontrollierten Bereitstellungsprozess: entweder die Werte gehen sofort ins Portal, oder gar nicht. Der Arzt wählt „gar nicht" — der Patient wartet und fragt nach. Die Lösung wäre ein Workflow-Flag, das den Upload bis nach dem Arzt-Patienten-Gespräch zurückhält.
 
-→ Forderungen: Strukturierte Daten in Portal und ePA; Workflow-Steuerung für kritische Befunde (→ Kap. 5, mittelfristig)
+→ Forderungen: Strukturierte Daten in Portal und ePA; Workflow-Steuerung für kritische Befunde; Gesundheitsinformationen als kontextuelle Datenobjekte (LOINC-Verknüpfung) (→ Kap. 5, mittelfristig)
 
 ---
 
@@ -312,7 +315,7 @@ Doppelte Datenbereitstellung in Portal und ePA erzeugt Redundanz und Inkonsisten
 
 Arztbrief und Befunde werden nach Entlassung über ePA, Portal und ggf. Post/KIM bereitgestellt. Technische Standards für die ePA sind definiert (IHE XDS). Das Portal ist herstellerabhängig umgesetzt.
 
-Es fehlt eine verbindliche Vorgabe, welches Dokument in welchem Zustand (vorläufig / final) wohin gehört. Der Lebenszyklus von Dokumenten — wann wird ein vorläufiger Arztbrief durch den finalen ersetzt, wer wird informiert — ist nicht geregelt.
+Es fehlt eine verbindliche Vorgabe, welches Dokument in welchem Zustand (vorläufig / final) wohin gehört. Der Lebenszyklus von Dokumenten — wann wird ein vorläufiger Arztbrief durch den finalen ersetzt, wer wird informiert — ist nicht geregelt. Ergänzende Gesundheitsinformationen — etwa zu Diagnosen oder Verhaltensempfehlungen nach der Entlassung — sind kein Bestandteil des standardisierten Entlassdatensatzes.
 
 **Use Case:** Ein Patient erhält nach der Entlassung einen vorläufigen Arztbrief im Portal. Zehn Tage später ist der finale Arztbrief fertig. Er liegt in der ePA — aber nicht mehr im Portal. Der Hausarzt hat eine Version per KIM bekommen, der Kardiologe eine andere. Keine der vier Parteien kann sicher sein, mit der aktuellen Version zu arbeiten.
 
@@ -328,7 +331,7 @@ Es fehlt eine Harmonisierung über Systeme und Sektoren hinweg. Übertragungsweg
 
 **Use Case:** Ein Patient verlässt das Krankenhaus mit einem aktualisierten Medikationsplan. Der Hausarzt hat seine eigene Version aus dem letzten Quartal. Die Apotheke hat eine dritte, die ePA eine vierte. Alle vier Versionen weichen voneinander ab. Niemand hat die Autorität — und kein System hat die Logik — eine davon als verbindlich zu erklären. Das Risiko von Wechselwirkungen und Dosierungsfehlern ist real.
 
-→ Forderungen: Medikation als eindeutige Quelle der Wahrheit; europaweit einheitliche strukturierte Medikationsliste (→ Kap. 5, kurzfristig/mittelfristig)
+→ Forderungen: Medikation als verbindlicher Referenzdatensatz mit klarer Autorenschaft; europaweit einheitliche strukturierte Medikationsliste (→ Kap. 5, kurzfristig/mittelfristig)
 
 ---
 
@@ -336,11 +339,33 @@ Es fehlt eine Harmonisierung über Systeme und Sektoren hinweg. Übertragungsweg
 
 Die ePA 3.0 ist technisch verfügbar. Spezifikationen für Dokumente, Medikationsliste und der gesetzliche Rahmen sind vorhanden. FHIR und IHE-Standards sind definiert.
 
-Strukturierte Datenobjekte, die für eine automatisierte Verarbeitung geeignet sind, werden kaum geliefert — der Ist-Zustand sind Dokumente, nicht Daten. Consent-Management für den ePA-Zugriff ist nicht einheitlich gelöst. Die Abgrenzung „stigmatisierende und lebensverändernde Befunde" — die einen Upload verhindern sollen — ist rechtlich nicht präzise definiert, was Automatisierungen im KH blockiert.
+Strukturierte Datenobjekte, die für eine automatisierte Verarbeitung geeignet sind, werden kaum geliefert — der Ist-Zustand sind Dokumente, nicht Daten. Consent-Management für den ePA-Zugriff ist nicht einheitlich gelöst. Die Abgrenzung „stigmatisierende und lebensverändernde Befunde" — die einen Upload verhindern sollen — ist rechtlich nicht präzise definiert, was Automatisierungen im KH blockiert. Darüber hinaus fehlt eine strukturierte Verknüpfung von Befunden mit evidenzbasierten Gesundheitsinformationen, die Patienten in belastenden Situationen — z. B. bei unerwarteten Diagnosen — unterstützen könnten.
 
 **Use Case:** Ein Krankenhaus möchte nach der Entlassung strukturierte Befunddaten in die ePA schreiben. Der Patient hat die ePA, hat aber im Haus keine aktive Berechtigung erteilt. Das KH weiß nicht, wie es den Opt-out-Status prüfen soll. Ein anderes KH im selben Verbund hat dasselbe Problem — mit einer anderen Lösung. Ein einheitlicher, automatisierbarer Prozess fehlt.
 
 → Forderungen: Einheitliche Definition des Medikationsplans; Klärung lebensverändernder Befunde; Consent Management in der ePA (→ Kap. 5, kurzfristig/langfristig)
+
+---
+
+#### Querschnittsthema: Patientenberatung und Gesundheitsinformationen
+
+*Hinweis: Das IQWiG hat im Rahmen der Konsultation darauf hingewiesen, dass Patientenberatung und -aufklärung im aktuellen Modell unterbelichtet sind. Die folgende Darstellung ordnet das Thema in den methodischen Rahmen des AK ein. Eine Entscheidung über die weitere Behandlung — insbesondere die Frage der Modellierung als eigenständiger Prozessschritt — obliegt dem Plenum (vgl. Plenum-Hinweis am Ende dieses Abschnitts).*
+
+Patientenberatung und Aufklärung sind keine isolierten Ereignisse, sondern begleiten den gesamten Patientenpfad: vor der Einwilligung, bei der Befundübergabe, im Entlassungsgespräch. Die dabei eingesetzten Datenobjekte — Aufklärungsbögen, evidenzbasierte Patienteninformationen, Entscheidungshilfen — sind heute nicht strukturiert abgebildet.
+
+**Ist-Zustand:** Aufklärungsunterlagen existieren in Krankenhäusern überwiegend als Papierformulare oder unstrukturierte PDFs. Evidenzbasierte Gesundheitsinformationen — z. B. von gesundheitsinformation.de (IQWiG, § 139a SGB V) — stehen zwar öffentlich zur Verfügung, sind aber weder mit Diagnosen und Befunden verknüpft noch in der ePA verfügbar. Eine LOINC-basierte Verknüpfung von Laborwerten mit kontextuellen Patienteninformationen ist technisch möglich, aber nicht etabliert.
+
+**Lücke:** Gesundheitsinformationen und Entscheidungshilfen sind nicht als Datenobjekte im Sinne des Prozessmodells definiert. Sie werden weder in der ePA gespeichert noch als Teil des Entlassdatensatzes übergeben. Der Patient erhält sie situativ — aber nicht strukturiert, nicht nachvollziehbar dokumentiert und nicht mit seinen medizinischen Daten verknüpft.
+
+**Use Case:** Eine Patientin erhält im Portal ihre Laborbefunde — darunter ein erhöhter TSH-Wert. Die Zahl erscheint ohne Kontext. Im Portal gibt es keinen Link zu einer verständlichen Erläuterung, keine Einordnung in Normwerte, keinen Hinweis auf nächste Schritte. Die Patientin googelt — und landet auf einer kommerziellen Seite. Eine LOINC-verknüpfte, evidenzbasierte Information des IQWiG wäre verfügbar — aber nicht eingebunden.
+
+→ Forderungen: Gesundheitsinformationen als strukturierte Datenobjekte definieren; LOINC-basierte Verknüpfung mit Befunden und Diagnosen; Verfügbarkeit in der ePA und im Portal (→ Kap. 5, mittelfristig)
+
+---
+
+> **Hinweis für das Plenum — Option: Eigenständiger Prozessschritt**
+>
+> Das IQWiG schlägt vor, „Patient beraten und aufklären, Informationen zur Verfügung stellen" als expliziten Schritt in das Prozessmodell aufzunehmen. Da Beratung und Aufklärung phasenübergreifend stattfinden, wäre entweder ein wiederholter Schritt je Phase oder ein phasenunabhängiger Querschnittsschritt denkbar. Eine solche Aufnahme würde eine Ergänzung des Datenmodells (`patientenpfad_data.js`) erfordern und ggf. eine Renummerierung der betroffenen Schritte nach sich ziehen. Das Plenum wird gebeten zu entscheiden, ob und in welcher Form dieser Schritt modelliert werden soll.
 
 ---
 
@@ -358,7 +383,7 @@ Diese Maßnahmen sind ohne grundlegende strukturelle Änderungen umsetzbar und a
 
 - **ISiK-Schnittstellen als Mindeststandard** — Definierte Schnittstellen auf Basis von ISiK für den modularen Einsatz von Krankenhausportalen: schnellere Einführung, weniger Aufwand, herstellerunabhängig und austauschbar.
 
-- **Konsequente ePA-Befüllung** — Alle für die medizinische Versorgung relevanten Informationen sollen in die ePA eingestellt werden — bevorzugt in strukturierter Form, im Zweifel zunächst als PDF. Besonderes Augenmerk: Medikation. Es darf nur eine verbindliche, aktuelle Quelle geben.
+- **Konsequente ePA-Befüllung** — Alle für die medizinische Versorgung relevanten Informationen sollen in die ePA eingestellt werden — bevorzugt in strukturierter Form, im Zweifel zunächst als PDF. Besonderes Augenmerk: Medikation. Es darf nur einen verbindlichen, aktuellen Referenzdatensatz geben.
 
 - **Datenhoheit beim Krankenhaus sichern** — Daten, die im Kontext von Krankenhausportalen verarbeitet werden, verbleiben in der Verantwortung und Datenhoheit des Krankenhauses. Eine Weitergabe an Dritte als Voraussetzung für die Portalnutzung ist nicht gewünscht.
 
@@ -372,7 +397,7 @@ Diese Maßnahmen erfordern Abstimmung zwischen mehreren Akteuren oder Anpassunge
 
 - **Medizinische Basisinformationen strukturiert in der ePA** — Anamnesedaten und weitere medizinische Basisinformationen sollen als elektronische Patientenkurzakte (ePKA) strukturiert in der ePA verfügbar sein: abrufbar, bestätigbar, erweiterbar — sektorenübergreifend.
 
-- **Strukturierte Datenformate in der ePA ausbauen** — Konsequenter Ausbau strukturierter Datenformate und -services in der ePA, insbesondere auf Basis von FHIR und dem European Electronic Health Record Exchange Format (EEHRxF). Die verwendeten Formate sollen explizit benannt und verbindlich festgelegt werden.
+- **Strukturierte Datenformate in der ePA ausbauen** — Konsequenter Ausbau strukturierter Datenformate und -services in der ePA, insbesondere auf Basis von FHIR und dem European Electronic Health Record Exchange Format (EEHRxF). Die verwendeten Formate sollen explizit benannt und verbindlich festgelegt werden. Dies schließt evidenzbasierte Gesundheitsinformationen ein, die strukturiert mit Diagnosen, Befunden und Prozeduren verknüpft werden können — z. B. über LOINC-Codes (§ 395 SGB V i. V. m. § 139a SGB V).
 
 - **ePA und Portal nutzerfreundlich ins KIS integrieren** — Keine doppelten Aktionen: Einstellung von Daten in ePA und Portal soll über einen gemeinsamen Workflow erfolgen, nicht als separate Schritte.
 
