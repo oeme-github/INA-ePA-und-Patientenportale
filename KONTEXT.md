@@ -17,7 +17,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `KONTEXT.md` | – | 2026-05-28 | Session 2026-05-28 vollständig abgeschlossen |
+| `positionspapier.md` | v0.1 | 2026-06-03 | Neu: Grundstruktur + Kap. 3 und 4 ausgearbeitet (PR #26) |
+| `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
+| `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
+| `KONTEXT.md` | – | 2026-06-03 | Session 2026-06-03 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -160,6 +163,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Forderungen Präklinisch verdichten und als Positionspapier aufbereiten | Claude | Erledigt (2026-05-21) – PR #24 gemergt |
 | Schritte 7, 8, 13 mit UAG-Ergebnissen befüllen (klinische Phase) | Claude | Erledigt (2026-05-28) – PR #24 gemergt |
 | Issue #22: Akteure als Tags in Prozess-Kacheln | Claude | Erledigt (2026-05-28) – PR #25 gemergt |
+| Positionspapier: Grundstruktur + Kap. 3 und 4 ausarbeiten | Claude | Erledigt (2026-06-03) – PR #26 offen |
 
 ---
 
@@ -233,17 +237,21 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Schritte 7–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
 
-### Positionspapier
-- `forderungen_praeklinisch.md` enthält alle Forderungen aus Schritte 1–6 in drei Varianten: Einzelpunkte, Kernforderungen mit Bestandsaufnahme, Fließtext
-- Struktur: je Forderung „Was existiert → Was fehlt → Was wir fordern"
-- Nächster Schritt: Forderungen für die klinische Phase (Schritte 7–25) nach Befüllung der Ist-Analyse ergänzen
+### Positionspapier (Session 2026-06-03)
+- Zwei AG-Dokumente (`Agenda Positionspapier.docx`, `Forderungen.docx`) als Markdown konvertiert
+- `positionspapier.md` angelegt: alle 6 Kapitel, Kap. 3 und 4 vollständig ausgearbeitet
+- Kap. 3: Grundprinzipien, Prozessmodell, Domänen, Datenräume, Akteure, interaktives Schaubild
+- Kap. 4.3: 12 analysierte Prozessschritte aus 3 UAGs (je eine je Phase)
+- Kap. 4.4: Ist-Analyse + Use Case für alle 12 Schritte
+- Kap. 5+6: Vorschläge der UAG für Plenum — nicht unsere Kapitel
+- Kap. 1, 2, 4.1, 4.2: Platzhalter — obliegen dem Plenum
+- QS-Runde abgeschlossen: Abkürzungen eingeführt, Dopplungen bereinigt, Zählfehler korrigiert
+- PR #26 offen, noch nicht gemergt
 
 ### UAG Klinische Prozesse (Session 2026-05-28)
 - Schritte 7, 8 und 13 mit UAG-Ergebnissen befüllt (`ist`, `luecke`, `forderungen`)
-- UAG hat die Methode angewendet und drei Prozesse als Beispiele ausgearbeitet: Terminbuchung → Schritt 7, Administrative Aufnahme → Schritt 8, Informationsbereitstellung → Schritt 13
 - UAG-Fazit: Methode funktioniert; nicht alle Schritte konnten bearbeitet werden
 - UAG empfiehlt Differenzierung Patientenportal vs. Zuweiserportal → als neuer Abschnitt 9.3 ins Arbeitsdokument übernommen
-- Weiterer AK zur Vertiefung dieser Differenzierung empfohlen
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
