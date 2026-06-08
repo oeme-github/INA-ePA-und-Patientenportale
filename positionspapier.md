@@ -438,3 +438,13 @@ Das interaktive Prozessschaubild ist ein lebendiges Arbeitsinstrument. Es kann i
 - **Internationale Perspektive vertiefen** — Wie haben andere Länder (Dänemark, Estland, Niederlande) vergleichbare Herausforderungen gelöst? Welche Ansätze sind auf den deutschen Kontext übertragbar?
 - **Pilotprozesse definieren** — Zwei bis drei Prozessschritte für eine modellhafte Umsetzung identifizieren, die die erarbeiteten Prinzipien in einen konkreten Proof of Concept überführen.
 - **Lebenszyklus von Datenobjekten** — Die Frage, wann ein Datenobjekt als abgeschlossen gilt, wer es archiviert und wer es löscht, wurde bewusst ausgeklammert. Sie ist für eine vollständige Architektur jedoch relevant und sollte in einer späteren Phase adressiert werden.
+
+---
+
+## Änderungshistorie
+
+| Version | Datum | Änderungen |
+|---|---|---|
+| v0.1 | 2026-06-03 | Grundstruktur; Kap. 3 und 4 ausgearbeitet |
+| v0.2 | 2026-06-03 | IQWiG-Feedback eingearbeitet (Patientenberatung, Querschnittsthema, § 395 SGB V) |
+| v0.3 | 2026-06-08 | HO-Feedback eingearbeitet (ISiK-Durchsetzung, Ist-Kontext Schritt 13, PDF-Übergangslösung, Datensouveränität neu gefasst) |
