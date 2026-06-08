@@ -283,7 +283,7 @@ Viele KIS-Hersteller bieten FHIR-Schnittstellen für Terminbuchung noch nicht od
 
 **Use Case:** Ein Patient checkt über das Portal ein und bestätigt seine Anwesenheit digital. Das Portal zeigt eine Bestätigungsseite — aber das KIS weiß davon nichts. Die Verwaltung erfasst die Ankunft manuell am Schalter, weil die Systeme nicht integriert sind. Der digitale Check-in ist aus Sicht des Patienten vorhanden, hat aber keinen Effekt auf den Verwaltungsprozess.
 
-→ Forderungen: ISiK Terminplanung als verbindlicher Standard; FHIR-Integration als Vergabekriterium (→ Kap. 5, kurzfristig)
+→ Forderungen: ISiK Terminplanung als verbindlicher Standard durchsetzen; FHIR-Integration als Vergabekriterium (→ Kap. 5, kurzfristig)
 
 ---
 
@@ -301,7 +301,7 @@ Einwilligungsdokumente sind nicht standardisiert. Drittsysteme verursachen hohe 
 
 #### Schritt 13: Bereitstellung ausgewählter Informationen im Portal
 
-Das KIS ist das führende System für medizinische Dokumentation; von dort werden Daten an Portal, ePA und Archiv weitergeleitet. Für Labordaten existieren etablierte Standards (HL7v2, FHIR, LOINC). Patientenportale stellen heute Befunde und Berichte bereit, häufig als PDF.
+Im heutigen Ist-Zustand gilt das KIS als führendes System für medizinische Dokumentation; von dort werden Daten an Portal, ePA und Archiv weitergeleitet. Für Labordaten existieren etablierte Standards (HL7v2, FHIR, LOINC). Patientenportale stellen heute Befunde und Berichte bereit, häufig als PDF.
 
 Doppelte Datenbereitstellung in Portal und ePA erzeugt Redundanz und Inkonsistenz. Die ePA-Versionierung für vorläufige Dokumente ist unzureichend. Ethische Fragen (z. B. bei lebensverändernden Diagnosen) erfordern eine Workflowsteuerung, die heute fehlt. Laborwerte und Befunde werden ohne kontextuelle Einordnung bereitgestellt. Evidenzbasierte Gesundheitsinformationen, die Patienten bei der Interpretation unterstützen könnten — z. B. LOINC-verknüpfte Patientenmerkblätter — sind nicht Teil des Datenobjekts.
 
@@ -381,11 +381,13 @@ Diese Maßnahmen sind ohne grundlegende strukturelle Änderungen umsetzbar und a
 
 - **Schneller TI-Zugriff für Patientenportale** — Einbau eines PoPP-Moduls (Proof of Patient Presence) in das Portal, um frühzeitigen Zugriff auf TI-Fachdienste (insbesondere ePA, aber auch eRezept und VSDM) zu ermöglichen.
 
-- **ISiK-Schnittstellen als Mindeststandard** — Definierte Schnittstellen auf Basis von ISiK für den modularen Einsatz von Krankenhausportalen: schnellere Einführung, weniger Aufwand, herstellerunabhängig und austauschbar.
+- **ISiK-Schnittstellen konsequent umsetzen** — ISiK ist als Mindeststandard bereits gesetzlich verankert. Die Umsetzung in der Fläche fehlt: Definierte Schnittstellen auf Basis von ISiK für den modularen Einsatz von Krankenhausportalen — schnellere Einführung, weniger Aufwand, herstellerunabhängig und austauschbar.
 
-- **Konsequente ePA-Befüllung** — Alle für die medizinische Versorgung relevanten Informationen sollen in die ePA eingestellt werden — bevorzugt in strukturierter Form, im Zweifel zunächst als PDF. Besonderes Augenmerk: Medikation. Es darf nur einen verbindlichen, aktuellen Referenzdatensatz geben.
+- **Konsequente ePA-Befüllung** — Alle für die medizinische Versorgung relevanten Informationen sollen in die ePA eingestellt werden — bevorzugt in strukturierter Form; wo strukturierte Formate noch fehlen, übergangsweise als PDF. Besonderes Augenmerk: Medikation. Es darf nur einen verbindlichen, aktuellen Referenzdatensatz geben.
 
-- **Datenhoheit beim Krankenhaus sichern** — Daten, die im Kontext von Krankenhausportalen verarbeitet werden, verbleiben in der Verantwortung und Datenhoheit des Krankenhauses. Eine Weitergabe an Dritte als Voraussetzung für die Portalnutzung ist nicht gewünscht.
+- **Keine Sekundärnutzung und keine proprietäre Bindung** — Patientendaten, die über Krankenhausportale verarbeitet werden, sind keine Handelsware. Das Krankenhaus bleibt als DSGVO-Verantwortlicher für ihre ordnungsgemäße Verarbeitung zuständig — die Hoheit liegt beim Patienten. Daraus folgt zweierlei: Portal-Anbieter dürfen Patientendaten nicht für eigene Zwecke (Analysen, Benchmarking, kommerzielle Weiterverarbeitung) nutzen — entsprechende Klauseln in Verträgen sind nicht akzeptabel. Portaldaten dürfen zudem nicht in proprietären Systemen eingeschlossen werden — Datenportabilität und Interoperabilität sind Mindestanforderungen an jeden Anbieter.
+
+  > *Hinweis an die AG: Bitte prüfen, ob der Sachverhalt so getroffen wird.*
 
 ### 5.2 Mittelfristig — Strukturelle Verbesserungen (2–5 Jahre)
 
