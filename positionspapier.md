@@ -1,7 +1,7 @@
 # Positionspapier: Patientenportale im Zusammenspiel mit Primärsystemen und ePA
 
 **AK Patientenportale | INA gematik**
-**Stand: 2026-06-03 | Version 0.2 (Entwurf)**
+**Stand: 2026-06-08 | Version 0.3 (Entwurf)**
 
 ---
 
