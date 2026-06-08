@@ -17,10 +17,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `positionspapier.md` | v0.2 | 2026-06-03 | IQWiG-Feedback eingearbeitet; Querschnittsthema Patientenberatung; Plenum-Hinweis |
+| `positionspapier.md` | v0.3 | 2026-06-08 | HO-Feedback eingearbeitet (4 Kommentare); DOCX lokal als v0.3 erzeugt |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-06-03 | Session 2026-06-03 (II) abgeschlossen |
+| `KONTEXT.md` | – | 2026-06-08 | Session 2026-06-08 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -165,6 +165,7 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Issue #22: Akteure als Tags in Prozess-Kacheln | Claude | Erledigt (2026-05-28) – PR #25 gemergt |
 | Positionspapier: Grundstruktur + Kap. 3 und 4 ausarbeiten | Claude | Erledigt (2026-06-03) – PR #26 offen |
 | Positionspapier: IQWiG-Feedback (Klaus Koch) einarbeiten | Claude | Erledigt (2026-06-03) – PR #26 aktualisiert, v0.2 |
+| Positionspapier: HO-Feedback (Henrik Ohlms) einarbeiten | Claude | Erledigt (2026-06-08) – PR #26 aktualisiert, v0.3 |
 
 ---
 
@@ -260,6 +261,15 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Kap. 5.2: § 395 SGB V und LOINC-Verknüpfung ergänzt
 - Begriff „Quelle der Wahrheit" → „verbindlicher Referenzdatensatz" (konsistent an 3 Stellen)
 - `positionspapier.md` auf v0.2 hochgesetzt, DOCX lokal neu erzeugt
+- PR #26 aktualisiert
+
+### HO-Feedback (Session 2026-06-08)
+- Rückmeldung von Henrik Ohlms (HO) über `positionspapier_HO.docx` mit 4 Kommentaren ausgewertet
+- Kommentar #29: ISiK-Formulierung auf „durchsetzen" umgestellt (Standard gilt bereits) — Schritt 7 + Kap. 5.1
+- Kommentar #32: Ist-Analyse-Kontext klargestellt: „Im heutigen Ist-Zustand gilt das KIS als führendes System..." — kein echter Widerspruch zu Grundprinzip
+- Kommentar #38: PDF-Fallback als explizite Übergangslösung formuliert (nicht als gleichwertige Alternative)
+- Kommentar #39: „Datenhoheit beim Krankenhaus" ersetzt durch „Keine Sekundärnutzung und keine proprietäre Bindung" — Widerspruch zu Grundprinzip aufgelöst; AG-Hinweis zur Prüfung ergänzt
+- `positionspapier.md` auf v0.3 hochgesetzt, DOCX lokal neu erzeugt
 - PR #26 aktualisiert
 
 ### UAG Klinische Prozesse (Session 2026-05-28)
