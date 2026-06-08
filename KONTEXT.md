@@ -270,6 +270,7 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Kommentar #38: PDF-Fallback als explizite Übergangslösung formuliert (nicht als gleichwertige Alternative)
 - Kommentar #39: „Datenhoheit beim Krankenhaus" ersetzt durch „Keine Sekundärnutzung und keine proprietäre Bindung" — Widerspruch zu Grundprinzip aufgelöst; AG-Hinweis zur Prüfung ergänzt
 - `positionspapier.md` auf v0.3 hochgesetzt, DOCX lokal neu erzeugt
+- Änderungshistorie als eigener Abschnitt am Ende des Dokuments ergänzt
 - PR #26 aktualisiert
 
 ### UAG Klinische Prozesse (Session 2026-05-28)
