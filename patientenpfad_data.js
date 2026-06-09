@@ -271,9 +271,9 @@ const data = [
     standards: ["HL7 FHIR R4 (Encounter)", "IHE PIX/PDQ", "ISiK Basismodul"],
     struktur: "strukturiert",
     detail: "Bestätigung der Anwesenheit. Auslöser des stationären Prozesses – verbindet das Portal mit der Verwaltung.",
-    ist: "Krankenhäuser bieten Terminbuchungsfunktionen im Portal an. Mit ISiK Terminplanung, HL7 FHIR Appointment und HL7 SIU existieren Standards für die strukturierte Abbildung von Terminen. Einzelne KIS-Hersteller bieten FHIR-Schnittstellen an; die Integration zwischen Portal und KIS ist in einigen Häusern bereits umgesetzt.",
-    luecke: "Viele KIS-Hersteller bieten FHIR-Schnittstellen für Terminbuchung noch nicht oder nur gegen hohen Aufpreis an. Eine durchgängige, standardisierte Integration zwischen Portal und KIS ist die Ausnahme, nicht die Regel.",
-    forderungen: "Portal- und KIS-Anbieter sollen ISiK Terminplanung und FHIR für Terminbuchung unterstützen.\nKrankenhäuser sollen bei Ausschreibungen die Unterstützung von ISiK und FHIR als Vergabekriterium verankern."
+    ist: "Krankenhäuser bieten zunehmend digitale Check-in-Möglichkeiten über das Portal an — Bestätigung der Anwesenheit, Aktualisierung von Stammdaten, Übergabe vorbereiteter Unterlagen. Mit HL7 FHIR Encounter und ISiK Basismodul existieren Standards für die Fallanlage und Patientenidentifikation. In einigen Häusern ist der digitale Check-in bereits mit dem KIS verbunden.",
+    luecke: "Die Integration zwischen Portal-Check-in und KIS-Fallanlage ist nicht standardisiert. Der Check-in im Portal hat häufig keinen direkten Effekt auf den Verwaltungsprozess — eine parallele Erfassung am Schalter bleibt erforderlich. Beim Check-in könnten bereits vorbereitete Einwilligungen und Anamnesedaten übergeben werden; dieser Übergang ist heute nicht strukturiert geregelt.",
+    forderungen: "ISiK Basismodul als Standard für die Portal-KIS-Integration beim Check-in.\nFHIR-Integration als Vergabe- und Zulassungskriterium."
   },
   {
     nr: 8,

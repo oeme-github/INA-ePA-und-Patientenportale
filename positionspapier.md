@@ -207,7 +207,7 @@ Für die in Kapitel 4.3 ausgewiesenen Prozessschritte wurde eine strukturierte I
 
 **Ist-Zustand**
 
-Krankenhausportale bieten heute Terminbuchungsfunktionen an — teils als eigenständige Lösungen, teils über Terminservicedienste. Mit ISiK Terminplanung und HL7 FHIR Appointment existieren Standards für die strukturierte Abbildung von Terminen. In einigen Häusern ist die Integration zwischen Portal und KIS bereits umgesetzt.
+Krankenhausportale bieten heute Terminbuchungsfunktionen an — teils als eigenständige Lösungen, teils über Terminservicedienste. Mit ISiK Terminplanung und HL7 FHIR Appointment existieren Standards für die strukturierte Abbildung von Terminen. Diese sind jedoch nicht flächendeckend implementiert und werden teils nur gegen hohen Aufpreis angeboten. In einigen Häusern ist die Integration zwischen Portal und KIS bereits umgesetzt.
 
 **Lücke**
 
@@ -219,7 +219,7 @@ Ein Patient bucht über das Portal einen Termin für eine geplante Hüftoperatio
 
 **Forderung**
 
-Verzeichnisdienst / Findbarkeit; Gesundheits-ID als frühzeitige Identifikation (→ Kap. 5, kurzfristig)
+Gesundheits-ID (inkl. EUDI-Wallet) als frühzeitige Identifikation; erfasste Informationen strukturiert in den weiteren Patientenpfad überführen; durchgängige FHIR-Integration zwischen Portal und KIS als Mindeststandard (ISiK Terminplanung) (→ Kap. 5, kurzfristig)
 
 ---
 
@@ -239,7 +239,7 @@ Der Hausarzt stellt eine Einweisung aus und druckt sie aus. Der Patient bringt d
 
 **Forderung**
 
-Elektronische Einweisung (eEinweisung); ePA-Zugriff ab Einweisung (→ Kap. 5, mittelfristig)
+Elektronische Einweisung (eEinweisung); ePA-Zugriff ab Einweisung; Auffindbarkeit von Leistungserbringern im VZD verbessern — einschl. Verweis auf bestehende sektorale Arbeitsgruppen der gematik (→ Kap. 5, mittelfristig)
 
 ---
 
@@ -267,7 +267,7 @@ Gesundheits-ID / EUDI-Wallet; einmalige Stammdatenerfassung (→ Kap. 5, kurzfri
 
 **Ist-Zustand**
 
-Mit dem VSDM ist die ePA ab dem ersten institutionellen Kontakt grundsätzlich zugänglich. Patientenportale bieten Upload-Funktionen für Dokumente. Mit der Klinischen Dokumentenliste (KDL) existiert ein Kategorisierungsstandard für Dokumente in der ePA.
+Mit VSDM++ (Entitlement per SMC-B-signiertem VSDM-Prüfnachweis) ist die ePA ab dem ersten institutionellen Kontakt grundsätzlich zugänglich; perspektivisch wird dieser Nachweis durch PoPP (Proof of Patient Presence) abgelöst. Patientenportale bieten Upload-Funktionen für Dokumente. Für die Kategorisierung von Dokumenten in der ePA sind IHE class code und type code verpflichtend; die Klinische Dokumentenliste (KDL) bietet darüber hinaus eine detailliertere Klassifikation, ist aber bisher optional — die Mapping-Tabellen im ePA-ILF sind Empfehlungen, keine Pflicht.
 
 **Lücke**
 
@@ -275,7 +275,7 @@ Der Zugriff auf die ePA ist erst ab dem ersten institutionellen Kontakt möglich
 
 **Use Case**
 
-Ein Patient hat letzte Woche beim Kardiologen ein EKG machen lassen. Das Ergebnis liegt beim Kardiologen als PDF. Das aufnehmende Krankenhaus kann noch nicht auf die ePA zugreifen — der erste institutionelle Kontakt findet erst beim Check-in statt. Der Patient bringt einen Ausdruck mit, der gescannt und als weiteres PDF abgelegt wird. Die darin enthaltenen Messwerte stehen für eine automatisierte Auswertung nicht zur Verfügung.
+Ein Patient hat letzte Woche beim Kardiologen ein EKG machen lassen. Das Ergebnis liegt beim Kardiologen als PDF. Das aufnehmende Krankenhaus kann noch nicht auf die ePA zugreifen — der erste institutionelle Kontakt findet erst beim Check-in statt. Der Patient bringt einen Ausdruck mit, der gescannt und als weiteres PDF abgelegt wird. Die darin enthaltenen Messwerte stehen für eine automatisierte Auswertung nicht zur Verfügung. Dabei gilt: Wäre ein ePA-Zugriff bereits möglich, könnten Dokumente und strukturierte Datenobjekte, die dort bereits vorliegen, direkt abgerufen werden — ein nochmaliger Upload via Portal wäre nicht nötig.
 
 **Forderung**
 
@@ -295,11 +295,11 @@ Der Anamneseprozess beginnt an jeder Sektorgrenze neu: Patientinnen und Patiente
 
 **Use Case**
 
-Eine Patientin füllt vor der stationären Aufnahme digital einen Anamnesebogen im Krankenhaus-Portal aus. Drei Wochen zuvor hat sie denselben Prozess beim einweisenden Facharzt durchlaufen — ähnliche Fragen, anderes System, keine Verbindung. Das Krankenhaus kann den Facharzt-Bogen nicht lesen, weil kein gemeinsamer Standard genutzt wird. Das Ergebnis: doppelte Arbeit, mögliche Widersprüche, Zeitverlust bei der Aufnahme.
+Eine Patientin füllt vor der stationären Aufnahme digital einen Anamnesebogen im Patientenportal aus. Drei Wochen zuvor hat sie denselben Prozess beim einweisenden Facharzt durchlaufen — ähnliche Fragen, anderes System, keine Verbindung. Das Krankenhaus kann den Facharzt-Bogen nicht lesen, weil kein gemeinsamer Standard genutzt wird. Das Ergebnis: doppelte Arbeit, mögliche Widersprüche, Zeitverlust bei der Aufnahme.
 
 **Forderung**
 
-Anamnesedaten strukturiert in der ePA (ePKA); einmal erheben, sektorenübergreifend verfeinern (→ Kap. 5, mittelfristig/langfristig)
+Anamnesedaten als strukturiertes Datenobjekt in der ePA — nicht als Dokument, sondern abrufbar, bestätigbar, erweiterbar; einmal erheben, sektorenübergreifend verfeinern (→ Kap. 5, mittelfristig/langfristig)
 
 ---
 
@@ -307,11 +307,11 @@ Anamnesedaten strukturiert in der ePA (ePKA); einmal erheben, sektorenübergreif
 
 **Ist-Zustand**
 
-Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung. Es gibt zwei Arten, die das Patientenportal berühren: erstens die datenschutzrechtliche Einwilligung bzw. der Widerspruch — gegen Zugriff und Befüllung der ePA (SGB V § 342), gegen Sekundärnutzung (z. B. MII Broad Consent für Forschungszwecke), gegen Datenweitergabe an einzelne Leistungserbringer oder Datenkategorien. Zweitens die medizinrechtliche Einwilligung in Behandlungsmaßnahmen — Aufklärungsbögen und Behandlungsverträge, die das Portal dem Patienten bereits vor dem Krankenhausbesuch zur Verfügung stellen kann, damit er sie in Ruhe liest und vorbereitet. Die Finalisierung und Unterschrift erfolgt dann bei der Aufnahme (vgl. Schritt 8). HL7 FHIR Consent ist als Standard für strukturierte Einwilligungsdaten vorhanden, wird aber nicht durchgängig eingesetzt.
+Einwilligung und Widerspruch sind eigenständige Datenobjekte mit unterschiedlicher rechtlicher Wirkung. Es gibt zwei Arten, die das Patientenportal berühren: erstens die datenschutzrechtliche Einwilligung bzw. der Widerspruch — gegen Zugriff und Befüllung der ePA — der Upload-Widerspruch in der Leistungserbringereinrichtung ergibt sich aus §§ 347/348 SGB V, der Widerspruch gegenüber der Krankenkasse aus § 342 SGB V; die Umsetzung des Upload-Widerspruchs wurde an die Krankenhaussysteme (KIS) delegiert — gegen Sekundärnutzung (z. B. MII Broad Consent für Forschungszwecke), gegen Datenweitergabe an einzelne Leistungserbringer oder Datenkategorien. Zweitens die medizinrechtliche Einwilligung in Behandlungsmaßnahmen — Aufklärungsbögen und Behandlungsverträge, die das Portal dem Patienten bereits vor dem Krankenhausbesuch zur Verfügung stellen kann, damit er sie in Ruhe liest und vorbereitet. Die Finalisierung und Unterschrift erfolgt dann bei der Aufnahme (vgl. Schritt 8). HL7 FHIR Consent ist als Standard für strukturierte Einwilligungsdaten vorhanden, wird aber nicht durchgängig eingesetzt.
 
 **Lücke**
 
-Ein einrichtungsübergreifendes, standardisiertes Consent-Management fehlt. Die verschiedenen Widerspruchsformen — gegen ePA-Zugriff, gegen Datenweitergabe, gegen Sekundärnutzung — sind heute nicht einheitlich abgebildet. Krankenhausportale sind in diesen Prozess nicht eingebunden, obwohl sie die natürliche Schnittstelle für das Einwilligungs- und Widerspruchsmanagement des Patienten wären — sowohl für die datenschutzrechtliche als auch für die medizinrechtliche Dimension.
+Ein einrichtungsübergreifendes, standardisiertes Consent-Management fehlt. Die verschiedenen Widerspruchsformen sind heute nicht einheitlich abgebildet: Widersprüche gegen den ePA-Zugriff sind zentral im Aktensystem implementiert; in der Leistungserbringereinrichtung sind lediglich Upload-Widersprüche sowie die explizite Einwilligung zur Übermittlung von Ergebnissen gendiagnostischer Untersuchungen (GenDG) relevant. Krankenhausportale sind in diesen Prozess nicht eingebunden, obwohl sie die natürliche Schnittstelle für das Einwilligungs- und Widerspruchsmanagement des Patienten wären — sowohl für die datenschutzrechtliche als auch für die medizinrechtliche Dimension.
 
 **Use Case**
 
@@ -327,11 +327,11 @@ Einheitliches Consent Management für datenschutzrechtliche und medizinrechtlich
 
 **Ist-Zustand**
 
-Krankenhäuser bieten Terminbuchungsfunktionen im Portal an. Mit ISiK Terminplanung, HL7 FHIR Appointment und HL7 SIU existieren Standards. Einzelne KIS-Hersteller bieten FHIR-Schnittstellen; in einigen Häusern ist die Integration bereits umgesetzt.
+Krankenhäuser bieten zunehmend digitale Check-in-Möglichkeiten über das Portal an — Bestätigung der Anwesenheit, Aktualisierung von Stammdaten, Übergabe vorbereiteter Unterlagen. Mit HL7 FHIR Encounter und ISiK Basismodul existieren Standards für die Fallanlage und Patientenidentifikation. In einigen Häusern ist der digitale Check-in bereits mit dem KIS verbunden.
 
 **Lücke**
 
-Viele KIS-Hersteller bieten FHIR-Schnittstellen für Terminbuchung noch nicht oder nur gegen hohen Aufpreis an. Eine durchgängige, standardisierte Integration zwischen Portal und KIS ist die Ausnahme.
+Die Integration zwischen Portal-Check-in und KIS-Fallanlage ist nicht standardisiert. Der Check-in im Portal hat häufig keinen direkten Effekt auf den Verwaltungsprozess — eine parallele Erfassung am Schalter bleibt erforderlich. Beim Check-in könnten bereits vorbereitete Einwilligungen und Anamnesedaten übergeben werden; dieser Übergang ist heute nicht strukturiert geregelt.
 
 **Use Case**
 
@@ -339,7 +339,7 @@ Ein Patient checkt über das Portal ein und bestätigt seine Anwesenheit digital
 
 **Forderung**
 
-ISiK Terminplanung als verbindlicher Standard durchsetzen; FHIR-Integration als Vergabekriterium (→ Kap. 5, kurzfristig)
+ISiK Basismodul als Standard für die Portal-KIS-Integration beim Check-in; FHIR-Integration als Vergabe- und Zulassungskriterium (→ Kap. 5, kurzfristig)
 
 ---
 
@@ -347,7 +347,7 @@ ISiK Terminplanung als verbindlicher Standard durchsetzen; FHIR-Integration als 
 
 **Ist-Zustand**
 
-Digitale Einwilligungs- und Aufklärungsprozesse sind in Krankenhäusern vorhanden, häufig über spezialisierte Drittsysteme. Einige Häuser ermöglichen bereits die digitale Unterzeichnung von Aufklärungsbögen. Die relevanten Rechtsgrundlagen sind bekannt und werden umgesetzt.
+Die administrative Aufnahme umfasst die Finalisierung von Einwilligungen und Behandlungsverträgen, die vor dem Besuch im Portal vorbereitet wurden (vgl. Schritt 6). Digitale Aufklärungsprozesse sind in Krankenhäusern vorhanden, häufig über spezialisierte Drittsysteme. Einige Häuser ermöglichen bereits die digitale Unterzeichnung von Aufklärungsbögen. Die relevanten Rechtsgrundlagen sind bekannt und werden umgesetzt.
 
 **Lücke**
 
@@ -373,7 +373,7 @@ Im heutigen Ist-Zustand gilt das KIS als führendes System für medizinische Dok
 
 Doppelte Datenbereitstellung in Portal und ePA erzeugt Redundanz und Inkonsistenz: Dieselben Befunde werden parallel in zwei Systemen abgelegt, ohne dass eine gemeinsame Quelle existiert. Die ePA-Versionierung für vorläufige Dokumente ist unzureichend — welche Version aktuell gilt, ist für alle Beteiligten unklar.
 
-Daneben fehlt eine Workflow-Steuerung für ethisch sensible Informationen. Bei lebensverändernden Diagnosen darf eine automatische Bereitstellung nicht ohne vorheriges Arzt-Patienten-Gespräch erfolgen — heute gibt es dafür keinen standardisierten Mechanismus. Laborwerte und Befunde werden zudem ohne kontextuelle Einordnung bereitgestellt; evidenzbasierte Gesundheitsinformationen, die Patienten bei der Interpretation unterstützen könnten (z. B. LOINC-verknüpfte Patientenmerkblätter), sind nicht Teil des Datenobjekts.
+Daneben fehlt eine Workflow-Steuerung für ethisch sensible Informationen. Bei lebensverändernden Diagnosen darf eine automatische Bereitstellung nicht ohne vorheriges Arzt-Patienten-Gespräch erfolgen — heute gibt es dafür keinen standardisierten Mechanismus. Laborwerte und Befunde werden zudem ohne kontextuelle Einordnung bereitgestellt; evidenzbasierte Gesundheitsinformationen, die Patienten bei der Interpretation unterstützen könnten (z. B. LOINC-verknüpfte Patientenmerkblätter), sind nicht Teil des Datenobjekts. Beide Lücken — fehlende Konsistenz und fehlende Workflow-Steuerung — verhindern die Automatisierung: Digitalisierung ohne strukturierte Prozesslogik erzeugt wenig Effizienzgewinn.
 
 **Use Case**
 
@@ -409,7 +409,7 @@ Verpflichtende ePA-Portal-Integration; Vorgaben zu Dokumentenstatus und -ablage 
 
 **Ist-Zustand**
 
-Medikationsplan und elektronische Medikationsliste (eML) existieren in der ePA und als Ausdruck. Standards sind vorhanden (KBV Medikationsplan, FHIR MedicationStatement). Das KIS führt eine eigene Medikationsliste.
+Medikationsplan und elektronische Medikationsliste (eML) existieren in der ePA und als Ausdruck. Die ePA kann als PDF/A oder XHTML abgerufen werden sowie per FHIR API. Standards sind vorhanden (KBV Medikationsplan, FHIR MedicationStatement). Das KIS führt eine eigene Medikationsliste.
 
 **Lücke**
 
@@ -421,7 +421,7 @@ Ein Patient verlässt das Krankenhaus mit einem aktualisierten Medikationsplan. 
 
 **Forderung**
 
-Medikation als verbindlicher Referenzdatensatz mit klarer Autorenschaft; europaweit einheitliche strukturierte Medikationsliste (→ Kap. 5, kurzfristig/mittelfristig)
+Medikation als verbindlicher Referenzdatensatz mit klarer Autorenschaft; laut GeDIG-Referentenentwurf künftig nur noch ein FHIR-basierter eMP in der ePA — für Versicherte ohne ePA muss der eMP als strukturiertes Datenobjekt übermittelt werden können (z. B. per KIM oder TI-Messenger); europaweit einheitliche strukturierte Medikationsliste (→ Kap. 5, kurzfristig/mittelfristig)
 
 ---
 
@@ -485,7 +485,7 @@ Diese Maßnahmen sind ohne grundlegende strukturelle Änderungen umsetzbar und a
 
 - **Frühzeitige Identifikation über Gesundheits-ID ermöglichen** — einschließlich Unterstützung des EUDI-Wallet für eine sichere, einrichtungsübergreifende Anmeldung im Portal.
 
-- **Schneller TI-Zugriff für Patientenportale** — Einbau eines PoPP-Moduls (Proof of Patient Presence) in das Portal, um frühzeitigen Zugriff auf TI-Fachdienste (insbesondere ePA, aber auch eRezept und VSDM) zu ermöglichen.
+- **Schneller TI-Zugriff über das Patientenportal** — Integration eines PoPP-Moduls (Proof of Patient Presence) in das Portal, um den Prozess der Anwesenheitsbestätigung auszulösen. Empfang des PoPP-Tokens und der daraus resultierende Zugriff auf TI-Fachdienste (insbesondere ePA, aber auch eRezept und VSDM) erfolgen weiterhin über das KIS.
 
 - **ISiK-Schnittstellen konsequent umsetzen** — ISiK ist als Mindeststandard bereits gesetzlich verankert. Die Umsetzung in der Fläche fehlt: Definierte Schnittstellen auf Basis von ISiK für den modularen Einsatz von Krankenhausportalen — schnellere Einführung, weniger Aufwand, herstellerunabhängig und austauschbar.
 
@@ -501,7 +501,7 @@ Diese Maßnahmen erfordern Abstimmung zwischen mehreren Akteuren oder Anpassunge
 
 - **Elektronische Einweisung (eEinweisung)** — Umsetzung der eEinweisung analog zur gesetzlich vorgesehenen eÜberweisung: strukturierte Daten, klare Identifikation des auslösenden Leistungserbringers. Die Einweisung soll automatisch einen ePA-Zugriff des aufnehmenden Krankenhauses ermöglichen — ohne weitere Patienteninteraktion.
 
-- **Verzeichnisdienst (VZD) nutzergerecht gestalten** — Abbildung fachlicher Untergruppen in klaren, einheitlichen Strukturen; Findbarkeit so gestalten, dass Nutzerinnen und Nutzer ohne technisches Wissen navigieren können — einschließlich der Adressierbarkeit über den TI-Messenger (TIM) und Kommunikation im Medizinwesen (KIM).
+- **Verzeichnisdienst (VZD) nutzergerecht gestalten** — Abbildung fachlicher Untergruppen in klaren, einheitlichen Strukturen; Findbarkeit so gestalten, dass Nutzerinnen und Nutzer ohne technisches Wissen navigieren können — einschließlich der Adressierbarkeit über den TI-Messenger (TIM) und Kommunikation im Medizinwesen (KIM). Für die Weiterentwicklung des VZD empfiehlt sich die Einbeziehung bestehender sektoraler Arbeitsgruppen und Workshops der gematik.
 
 - **Medizinische Basisinformationen strukturiert in der ePA** — Anamnesedaten und weitere medizinische Basisinformationen sollen als elektronische Patientenkurzakte (ePKA) strukturiert in der ePA verfügbar sein: abrufbar, bestätigbar, erweiterbar — sektorenübergreifend.
 
