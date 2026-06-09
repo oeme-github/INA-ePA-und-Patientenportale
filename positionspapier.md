@@ -291,26 +291,26 @@ Die folgende Übersicht zeigt die analysierten Prozessschritte mit ihren zentral
 
 | Nr. | Prozessschritt | Akteur(e) | Datenobjekt | Forderungsbezug |
 |---|---|---|---|---|
-| 1 | Termin anfragen / buchen | Patient, Verwaltung | Terminanfrage / Terminbestätigung | Verzeichnisdienst / Findbarkeit |
-| 2 | Überweisung / Einweisung bereitstellen | Niedergelassener Arzt, Patient | Überweisung / Einweisung | Elektronische Einweisung (eEinweisung) |
+| 1 | Termin anfragen / buchen | Patient, Verwaltung | Terminanfrage / Terminbestätigung | Gesundheits-ID / ISiK Terminplanung |
+| 2 | Überweisung / Einweisung bereitstellen | Niedergelassener Arzt, Patient | Überweisung / Einweisung | eEinweisung / ePA-Zugriff / VZD |
 | 3 | Stammdaten erfassen / aktualisieren | Patient, Verwaltung | Patientenstammdaten | Gesundheits-ID / EUDI-Wallet |
-| 4 | Vorbefunde bereitstellen | Patient, Niedergelassener Arzt | Vorbefunde / Fremdbefunde | TI-Zugriff / PoPP-Modul |
-| 5 | Anamnesebogen ausfüllen | Patient | Anamnese | Anamnesedaten strukturiert in ePA (ePKA) |
+| 4 | Vorbefunde bereitstellen | Patient, Niedergelassener Arzt | Vorbefunde / Fremdbefunde | PoPP-Modul / frühzeitiger ePA-Zugriff |
+| 5 | Anamnesebogen ausfüllen | Patient | Anamnese | Strukturiertes Datenobjekt in ePA |
 | 6 | Einwilligungen erteilen | Patient | Einwilligungserklärung / Widerspruch | Consent Management / QES |
 
 #### Phase 2: Im Krankenhaus
 
 | Nr. | Prozessschritt | Akteur(e) | Datenobjekt | Forderungsbezug |
 |---|---|---|---|---|
-| 7 | Digitaler Check-in | Patient, Verwaltung | Check-in Bestätigung | ISiK-Schnittstellen / Portalintegration |
-| 8 | Administrative Aufnahme | Verwaltung | Patientenfall / Fallakte | ISiK-Schnittstellen / ePA-Portal-Integration |
-| 13 | Bereitstellung ausgewählter Informationen im Portal | Krankenhausarzt, Verwaltung | Laborwerte / Befunde im Portal | Strukturierte Daten / Kritische Informationen |
+| 7 | Digitaler Check-in | Patient, Verwaltung | Check-in Bestätigung | ISiK Basismodul / Check-in Integration |
+| 8 | Administrative Aufnahme | Verwaltung | Patientenfall / Fallakte | Einwilligungsstandards / QES |
+| 13 | Bereitstellung ausgewählter Informationen im Portal | Krankenhausarzt, Verwaltung | Laborwerte / Befunde im Portal | Strukturierte Daten / kritische Befunde |
 
 #### Phase 3: Nach dem Krankenhaus
 
 | Nr. | Prozessschritt | Akteur(e) | Datenobjekt | Forderungsbezug |
 |---|---|---|---|---|
-| 19 | Bereitstellung Entlassdokumente | Krankenhausarzt, Verwaltung | Arztbrief / Entlassbericht | Portal-Differenzierung (Patienten- vs. Zuweiserportal) |
+| 19 | Bereitstellung Entlassdokumente | Krankenhausarzt, Verwaltung | Arztbrief / Entlassbericht | ePA-Portal-Integration / Dokumentenstatus |
 | 20 | Bereitstellung Medikationsplan | Krankenhausarzt | Medikationsplan | Medikation: verbindlicher Referenzdatensatz |
 | 21 | Bereitstellung Dokumente für ePA | Arzt, Verwaltung | Strukturierte Datenobjekte in der ePA | Konsequente ePA-Befüllung / EEHRxF |
 
