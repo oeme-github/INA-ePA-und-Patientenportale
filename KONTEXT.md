@@ -17,7 +17,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `positionspapier.md` | v0.4 | 2026-06-08 | msusky-Feedback eingearbeitet (14 Kommentare); DOCX lokal als v0.4 erzeugen |
+| `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
 | `KONTEXT.md` | – | 2026-06-08 | Session 2026-06-08 (II) abgeschlossen |
@@ -167,6 +167,8 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Positionspapier: IQWiG-Feedback (Klaus Koch) einarbeiten | Claude | Erledigt (2026-06-03) – PR #26 aktualisiert, v0.2 |
 | Positionspapier: HO-Feedback (Henrik Ohlms) einarbeiten | Claude | Erledigt (2026-06-08) – PR #26 aktualisiert, v0.3 |
 | Positionspapier: msusky-Feedback einarbeiten (14 Kommentare) | Claude | Erledigt (2026-06-08) – PR #26 aktualisiert, v0.4 |
+| Positionspapier: LSR-Feedback (20 Kommentare aus v0.3-DOCX) einarbeiten | Claude | Erledigt (2026-06-09) – PR #26 aktualisiert |
+| Positionspapier: Zusammenführung mit v0.4.1 (Ralf) – Kap. 4.1 + 4.2 | Claude | Erledigt (2026-06-09) – PR #26 aktualisiert, v0.5 |
 
 ---
 

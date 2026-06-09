@@ -1,7 +1,7 @@
 # Positionspapier: Patientenportale im Zusammenspiel mit Primärsystemen und ePA
 
 **AK Patientenportale | INA gematik**
-**Stand: 2026-06-08 | Version 0.4 (Entwurf)**
+**Stand: 2026-06-09 | Version 0.5 (Entwurf)**
 
 ---
 
@@ -156,13 +156,130 @@ Das Schaubild erfüllt zwei Funktionen: Es ist Arbeitswerkzeug für die Gruppe (
 
 ## 4. Problemstellung und Herausforderungen
 
-### 4.1 Systemrollen und Verantwortlichkeiten
+### 4.1 Systemrollen, Verantwortungszuschnitte und Datenraumlogik
 
-*[Platzhalter — Beschreibung der Rollen von ePA, KIS und Patientenportal gemäß Agenda-Entwurf]*
+Die Rollen von Patientenportal, Versorgungssystemen des Krankenhauses und elektronischer Patientenakte (ePA) lassen sich nicht tragfähig aus einer pauschalen Systemhierarchie ableiten. Maßgeblich ist vielmehr der in Kapitel 3 zugrunde gelegte prozessgetriebene Ansatz: Prozesse werden von Akteuren ausgeführt und erzeugen, verändern, nutzen oder löschen Datenobjekte. Systeme unterstützen diese Prozesse, sie dürfen diese jedoch nicht vorprägen. Die Systemebene ist deshalb nicht Ausgangspunkt, sondern nachgelagerte Zuordnungsebene. Dies entspricht der methodischen Grundannahme „Prozess vor Daten vor System" sowie der Leitlogik „Akteur × Prozess → Datenobjekt".
+
+Vor diesem Hintergrund ist auch der Begriff eines „führenden Systems" differenziert zu verwenden. In der Krankenhausversorgung sind die Versorgungssysteme des Krankenhauses — insbesondere KIS, Subsysteme, Spezialanwendungen, Archivsysteme, Interoperabilitätsplattformen und klinische Datenrepositorien — für die operative Fallführung, Behandlungsorganisation, Dokumentation und rechtssichere Nachvollziehbarkeit regelmäßig von zentraler Bedeutung. Daraus folgt jedoch keine pauschale Führungsrolle gegenüber Patientenportal, ePA oder weiteren Datenräumen. Die jeweils maßgebliche Rolle ergibt sich vielmehr aus dem konkreten Prozess, dem betroffenen Datenobjekt, der Autorenschaft, der fachlichen Freigabe, der Rechtsgrundlage, dem Zugriffskontext und dem Verantwortungszuschnitt.
+
+Patientenportal, Versorgungssysteme, ePA und perspektivisch auch der Europäische Gesundheitsdatenraum sind daher als unterschiedliche Datenräume mit unterschiedlichen Funktionen zu verstehen. Kein Datenraum ist abstrakt „führend". Maßgeblich ist, welches Datenobjekt in welchem Prozessschritt durch welchen Akteur erzeugt, verändert, freigegeben, bereitgestellt, empfangen oder genutzt wird. Ebenso ist zu unterscheiden, ob Datenobjekte persistent gespeichert oder lediglich transient übermittelt werden.
+
+#### 4.1.1 ePA als sektorenübergreifender persistenter Datenraum
+
+Die ePA ist perspektivisch ein zentraler sektorenübergreifender und persistenter Datenraum. Sie kann Patientinnen und Patienten sowie mit- und nachbehandelnden Leistungserbringern behandlungsrelevante Informationen über Einrichtungs- und Sektorengrenzen hinweg verfügbar machen. Dies betrifft insbesondere Vorbefunde, Entlassdokumente, Medikationsinformationen, medizinische Basisinformationen, Anamnesedaten, Befunde und künftig strukturierte Datenobjekte nach europäischen Austauschformaten.
+
+Gleichzeitig ist die ePA gegenwärtig nur begrenzt als Grundlage operativer Krankenhausprozesse nutzbar. Krankenhausbehandlung erfordert eine fallbezogene Prozesssteuerung, eine rechtssichere Behandlungsdokumentation, eine unmittelbare Verfügbarkeit im klinischen Workflow und eine eindeutige Zuordnung von Verantwortlichkeiten. Diese Funktionen können durch die ePA unterstützt, aber nicht ersetzt werden.
+
+Für die praktische Nutzbarkeit der ePA sind mehrere Voraussetzungen entscheidend:
+
+- Die Befüllung muss verlässlich und für die Versorgung relevant erfolgen.
+- Daten müssen soweit möglich strukturiert und maschinenlesbar vorliegen; reine Dokumentenablagen können nur eine Übergangsfunktion erfüllen.
+- Autorenschaft, Aktualität, Versionierung und Status eines Datenobjekts müssen nachvollziehbar sein — gerade bei vorläufigen und finalen Arztbriefen, Befunden oder Medikationsinformationen.
+- Consent- und Widerspruchslogiken müssen so in die Krankenhausprozesse integrierbar sein, dass sie automatisierbare und zugleich rechtssichere Workflows ermöglichen.
+
+Besondere Anforderungen stellen kritische oder besonders sensible Informationen. Lebensverändernde Diagnosen, genetische Befunde oder andere besonders belastende Informationen dürfen nicht rein technisch und ohne fachliche Kontextualisierung bereitgestellt werden. Erforderlich sind prozess- und systemübergreifende Freigabemechanismen (vgl. Kap. 4.4, Schritt 13).
+
+Die ePA sollte nicht primär als zusätzlicher Ablageort für PDF-Dokumente verstanden werden. Kurzfristig kann die Bereitstellung von Dokumenten im PDF-Format pragmatisch erforderlich sein. Das Zielbild muss jedoch in strukturierten Datenobjekten liegen, die sektorenübergreifend gelesen, bestätigt, ergänzt und weiterverarbeitet werden können.
+
+#### 4.1.2 Primärsysteme des Krankenhauses als Träger von Fallführung, Dokumentation, Prozesssteuerung und TI-Anbindung
+
+In der konkreten Krankenhausversorgung kommt dem Primärsystem — in der Praxis regelmäßig dem Krankenhausinformationssystem (KIS) — eine zentrale Funktion zu: Es ist typischerweise der maßgebliche Ort der fallbezogenen Behandlungsorganisation, der administrativen und medizinischen Dokumentation, der Prozesssteuerung und der rechtssicheren Nachvollziehbarkeit des Krankenhausfalls. Es bildet die operative Grundlage für Aufnahme, Behandlung, Pflege, Diagnostik, Medikation, Entlassmanagement und Abrechnung.
+
+Diese zentrale Rolle erstreckt sich zunehmend auch auf die Anbindung an die ePA, an Patientenportale und an weitere TI-bezogene Prozesse. Die Erstellung, Verwaltung und Nutzung von Zugriffsberechtigungen für die ePA, die Prüfung von Berechtigungs- und Widerspruchskonstellationen sowie die Auslösung von Bereitstellungsprozessen müssen in den operativen Krankenhausworkflow integriert werden. In der Praxis wird hierfür regelmäßig das KIS der zentrale Ausgangspunkt sein.
+
+Gleichwohl bedeutet dies keine pauschale Führungsrolle des KIS über alle Datenräume. Die ePA bleibt der sektorenübergreifende und patientenbezogene Datenraum. Das Patientenportal bleibt die krankenhausbezogene Interaktions- und Transaktionsschnittstelle zum Patienten. ISiK ist ein wesentlicher Standardisierungsansatz: Definierte Schnittstellen auf Basis von ISiK können den modularen Einsatz von Patientenportalen erleichtern und Herstellerabhängigkeiten begrenzen — Voraussetzung ist jedoch, dass sie verbindlich, praxistauglich und nutzerfreundlich umgesetzt werden.
+
+Hinsichtlich der datenschutzrechtlichen Verantwortung im Portal- und Versorgungskontext gilt: Kritisch ist insbesondere, wenn die Nutzung von Portal- oder Versorgungsfunktionen faktisch daran knüpft, dass Daten an externe Drittanbieter ausgeleitet oder außerhalb der Verantwortungssphäre des Krankenhauses verarbeitet werden. Krankenhäuser müssen die Möglichkeit haben, entsprechende Lösungen datenschutzkonform zu betreiben, ohne zu einer Ausleitung von Daten an Dritte gezwungen zu werden. Maßgeblich bleibt, dass fachliche Verantwortung, datenschutzrechtliche Rollenverteilung und organisatorische Kontrolle klar bestimmt sind.
+
+> *Hinweis an die AG: Der Begriff „Datenhoheit des Krankenhauses" wird in der Gruppe unterschiedlich verwendet — vgl. Kap. 5.1 (Forderung: „Keine Sekundärnutzung und keine proprietäre Bindung"). Bitte prüfen, ob der Sachverhalt hier und dort konsistent und im Sinne der Gruppe getroffen wird.*
+
+#### 4.1.3 Patientenportal als krankenhausbezogene Prozess-, Interaktions- und Transaktionsschnittstelle
+
+Patientenportale sind die krankenhausbezogene digitale Schnittstelle zu Patientinnen und Patienten. Sie sind nicht auf die Anzeige von Informationen beschränkt, sondern können eigenständige Prozesse und Transaktionen unterstützen: Terminierung, Aufnahmevorbereitung, Stammdatenerfassung, digitale Anamnese, Upload von Vorbefunden, Einwilligungen, Bereitstellung von Befunden und Entlassinformationen, Kommunikation und Nachsorge.
+
+Das Patientenportal ist weder eine ePA-App noch ein Ersatz für die ePA. Während die ePA als sektorenübergreifender persönlicher Datenraum angelegt ist, bleibt das Krankenhausportal auf Prozesse und Informationen des jeweiligen Krankenhauses oder Krankenhausverbundes bezogen. Es sollte ePA-Funktionen einbinden können, den Zugriff auf TI-Dienste ermöglichen und Informationen für die ePA bereitstellen können. Es darf aber nicht als isolierte Parallelakte ausgestaltet werden, die dauerhaft dieselben Daten ohne klare Versionierung und Verantwortlichkeit vorhält.
+
+Das Portal erzeugt und verarbeitet eigene Datenobjekte — Terminanfragen, Anamnesebögen, Einwilligungen, Kommunikationsdaten. Diese müssen so in die Versorgungssysteme integriert sein, dass sie im Behandlungsprozess tatsächlich nutzbar werden: Eine digitale Anamnese im Portal entfaltet ihren Nutzen nur, wenn die Angaben strukturiert übernommen und weitergeführt werden können. Ein digitaler Check-in ist nur dann wirksam, wenn er die administrative Aufnahme tatsächlich erreicht.
+
+Eine besondere Herausforderung liegt in der integrierten Betrachtung von Patientenportal, Zuweiserportal und Entlassmanagement. Diese Bereiche werden häufig getrennt betrachtet, berühren aber in der Praxis dieselben Prozessketten. Eine integrierte Portallandschaft, die unterschiedliche Akteursgruppen adressiert, aber gemeinsame Datenobjekte, Standards und Verantwortlichkeitsregeln nutzt, ist sachgerechter als eine getrennte Behandlung (vgl. Kap. 5.2).
+
+#### 4.1.4 TI-Anwendungen und digitale Vertrauensinfrastruktur als Querschnittsebene
+
+TI-Anwendungen und digitale Vertrauensdienste bilden keinen weiteren konkurrierenden Primärdatenraum, sondern stellen infrastrukturelle Voraussetzungen bereit: Identifikation, Authentisierung, Berechtigung, Kommunikation, Signatur, Zugriff und Nachweisführung. Zu nennen sind insbesondere Gesundheits-ID, EUDI-Wallet, Proof of Patient Presence (PoPP), VSDM, KIM, TI-Messenger, eRezept, qualifizierte elektronische Signatur (QES) und ein übergreifendes Consent Management.
+
+Diese Bausteine entfalten ihren Nutzen jedoch nur, wenn sie in klinische und administrative Workflows integriert werden. Werden TI-Dienste als zusätzliche Einzelanwendungen neben bestehende Prozesse gestellt, erhöhen sie Aufwand und Komplexität. Die entscheidende Anforderung ist daher nicht allein die technische Verfügbarkeit einzelner Dienste, sondern ihre nutzerfreundliche, standardisierte und prozessbezogene Einbindung in Portal und Versorgungssysteme.
+
+#### 4.1.5 Verantwortungsgrenzen und Governance
+
+Eine tragfähige Rollenverteilung setzt klare Verantwortungsgrenzen voraus. Dabei ist zwischen fachlicher, technischer, organisatorischer und regulatorischer Verantwortung zu unterscheiden. Ein System kann Daten speichern, anzeigen oder übermitteln, ohne fachlicher Autor des Datenobjekts zu sein.
+
+Im konkreten Behandlungskontext trägt das Krankenhaus die Verantwortung für Behandlungsorganisation, Dokumentation, fachliche Bewertung, Freigabe und rechtssichere Nachvollziehbarkeit. Patientinnen und Patienten wirken durch Selbstauskünfte, Einwilligungen, Widersprüche und Berechtigungsentscheidungen mit. Infrastrukturakteure, Gesetzgeber, Hersteller, Krankenkassen und weitere Leistungserbringer müssen ihre jeweiligen Rollen so wahrnehmen, dass sektorenübergreifende Prozesse technisch, rechtlich und organisatorisch anschlussfähig werden.
+
+Unklare Governance führt unmittelbar zu Umsetzungshemmnissen und Versorgungsrisiken: Wenn die Aktualität eines Medikationsdatensatzes, die maßgebliche Version eines Entlassdokuments oder die Verarbeitung von Widersprüchen nicht eindeutig geregelt sind, entstehen Unsicherheiten im klinischen Alltag. Erforderlich sind verbindliche Standards, klare Verantwortungsmodelle, nachvollziehbare Lebenszyklen von Datenobjekten und praxistaugliche Workflows. Ziel ist nicht die Etablierung einer neuen pauschalen Systemführerschaft, sondern eine belastbare, prozessbezogene und interoperable Verantwortungsordnung.
 
 ### 4.2 Internationale Perspektive
 
-*[Platzhalter — EHDS, Portale und ePAs in anderen Ländern, z. B. Dänemark, Estland, Niederlande]*
+Zahlreiche europäische Länder haben in den vergangenen Jahren nationale digitale Gesundheitsinfrastrukturen aufgebaut, die Patientenakte, Patientenportal und Leistungserbringerintegration verbinden. Einige dieser Länder sind Deutschland dabei teilweise viele Jahre voraus. Ein Vergleich dieser Systeme liefert sowohl Orientierungspunkte als auch konkrete Anforderungen — insbesondere im Hinblick auf den Europäischen Gesundheitsdatenraum (EHDS).
+
+#### 4.2.1 Dänemark — Sundhed.dk
+
+Dänemark gilt als europäischer Vorreiter der digitalen Gesundheitsversorgung. Sundhed.dk ist das nationale Patientenportal, das seit 2003 betrieben wird und sukzessive ausgebaut wurde. Die Plattform aggregiert Daten aus unterschiedlichen Quellen: niedergelassene Ärzte, Krankenhäuser, Labore, Apotheken und kommunale Pflegeeinrichtungen. Grundlage ist ein föderiertes Modell: Daten bleiben bei den jeweiligen Leistungserbringern und werden über standardisierte MedCom-Schnittstellen zugänglich gemacht.
+
+Patientinnen und Patienten können über Sundhed.dk Befunde, Diagnosen, Medikationslisten, Impfstatus und Krankenhausberichte einsehen, Termine buchen und mit Leistungserbringern kommunizieren. Der Identifikator ist die CPR-Nummer. Die monatliche Nutzung liegt bei ca. 2,3 Millionen Zugriffen — bei einer Gesamtbevölkerung von 5,9 Millionen entspricht dies rund 39 Prozent.
+
+Die Integration in Krankenhäuser ist verbindlich geregelt. MedCom-XML-Standards sind verpflichtend für den Datenaustausch. Lokale Krankenhausportale sind möglich, müssen aber an die nationale Infrastruktur angebunden sein.
+
+#### 4.2.2 Portugal — SNS24
+
+Portugal hat mit SNS24 eine zentralisierte nationale Gesundheitsplattform aufgebaut, die über eine Web-App und eine mobile Anwendung zugänglich ist. Das System wird durch den staatlichen Gesundheitsdienst SNS (Serviço Nacional de Saúde) betrieben und umfasst Patientenakten, Terminbuchungen, Rezeptmanagement sowie Kommunikationsfunktionen.
+
+Der Identifikator ist die Número de Utente. Die Integration öffentlicher Krankenhäuser ist verpflichtend; private Anbieter sind weitgehend ausgeschlossen. Stärke des Systems ist die konsequente staatliche Steuerung. Schwäche ist der weitgehende Ausschluss des Privatsektors sowie eine begrenzte strukturelle Datentiefe.
+
+#### 4.2.3 Frankreich — Mon Espace Santé
+
+Frankreich hat mit Mon Espace Santé 2022 ein nationales Patientenportal eingeführt, das mit dem Dossier Médical Partagé (DMP) als persönlicher Gesundheitsakte verbunden ist. Das System wird von der Assurance Maladie und der Agence du Numérique en Santé (ANS) betrieben.
+
+Über Mon Espace Santé können Patientinnen und Patienten Befunde, Medikationspläne, Impfnachweise und Arztbriefe einsehen, Termine buchen und einen zertifizierten Gesundheits-App-Katalog nutzen. Identifikator ist die NIR-Nummer (Sécurité Sociale). Die Ségur-Zertifizierung verpflichtet alle zertifizierten Softwareanbieter zur Integration. Die monatliche Nutzung liegt bei ca. 2,5 Millionen Zugriffen (ca. 3,7 Prozent der Bevölkerung).
+
+Besonderer Vorteil ist der zertifizierte App-Katalog, der Drittanbieter-Apps unter klar geregelten Bedingungen integriert. Frankreich hat zudem ein landesweites Mediatorenprogramm aufgebaut, das digitale Inklusion aktiv fördert.
+
+#### 4.2.4 Türkei — e-Nabız
+
+Die Türkei betreibt mit e-Nabız seit 2015 eine zentralisierte nationale Gesundheitsakte, die über das Gesundheitsministerium verwaltet wird. Das System ist eng mit dem nationalen Identifikator (T.C. Kimlik No) verknüpft und verpflichtet alle Krankenhäuser zur Integration. Lokale Krankenhausportale existieren nicht — die Patienteninteraktion läuft vollständig über e-Nabız.
+
+Die Nutzungsrate ist mit über 80 Prozent der Bevölkerung international einzigartig hoch — bedingt durch den verpflichtenden Charakter und die vollständige Integration. Das System ist technisch robust, bietet aber kaum Spielraum für dezentrale Portallösungen oder regionale Anpassungen. Da die Türkei kein EU-Mitglied ist, gelten EHDS-Anforderungen nicht direkt.
+
+#### 4.2.5 Vergleichstabelle
+
+| | Deutschland | Dänemark | Frankreich | Portugal | Türkei |
+|---|---|---|---|---|---|
+| **System** | ePA | Sundhed.dk | Mon Espace Santé | SNS24 | e-Nabız |
+| **Einführung** | 2025 (Opt-out) | 2003 | 2022 | ab ~2012 | 2015 |
+| **Architektur** | Föderiert | Föderiert | Zentral | Zentral | Stark zentral |
+| **Betreiber** | gematik + Krankenversicherungen | Gesundheitsmin. + Regionen + Kommunen | Assurance Maladie / ANS | SNS (Gesundheitsmin.) | Gesundheitsministerium |
+| **Identifikator** | Krankenversichertennr. + GesundheitsID | CPR-Nummer | NIR / Sécurité Sociale | Número de Utente | T.C. Kimlik No |
+| **KH-Integration** | Verpflichtend für alle LEI | MedCom XML, verpflichtend | Ségur-Zertifizierung, stufenweise | Öffentliche KH verpflichtend | Alle KH verpflichtend |
+| **Lokale KH-Portale** | Möglich | Möglich | Möglich + App-Katalog | Eingeschränkt | Nicht vorgesehen |
+| **Monatliche Nutzung** | Rollout läuft | ~2,3 Mio. (39 %) | ~2,5 Mio. (3,7 %) | k. A. | > 80 % |
+| **EHDS-Readiness** | Hoch | Hoch | Hoch | Mittel | Nicht EU-Mitglied |
+
+#### 4.2.6 EHDS und Auswirkungen für Deutschland
+
+Der Europäische Gesundheitsdatenraum (EHDS) schafft ab 2025/2026 einen verbindlichen Rechtsrahmen für die sektorenübergreifende und grenzüberschreitende Nutzung von Gesundheitsdaten in der EU. Die EHDS-Verordnung enthält umfassende Vorgaben zur Interoperabilität, zu Datenformaten, zu Zugriffsrechten und zur sekundären Datennutzung.
+
+Für Deutschland ergeben sich unmittelbare Anforderungen: Die ePA muss EHDS-konform ausgestaltet werden. Patientenrechte auf Datenzugang (MyHealth@EU) müssen technisch abgebildet werden. Strukturierte Datenformate — insbesondere nach dem European Health Data Exchange Format (EHDEF) auf Basis von HL7 FHIR — werden verpflichtend. Einrichtungen und Systeme, die bislang rein dokumentenbasiert arbeiten, werden diesen Anforderungen nicht genügen können.
+
+Der EHDS stärkt damit die im vorliegenden Positionspapier vertretene Forderung nach strukturierten Datenobjekten statt reiner Dokumentenablage erheblich. Systeme, die heute auf FHIR-R4-basierte Datenobjekte setzen (ISiK, ePA-Schnittstellen, VSDM++), werden eine deutlich geringere Umstellungslast haben.
+
+#### 4.2.7 Schlussfolgerungen für Deutschland
+
+Der internationale Vergleich zeigt:
+
+- **Föderierte Architekturen sind skalierbar, wenn die Standards stimmen.** Das dänische Modell zeigt, dass Daten nicht zentral gespeichert werden müssen. Entscheidend ist die Verbindlichkeit von Kommunikationsstandards. Deutschland muss ISiK und FHIR mit derselben Konsequenz durchsetzen, mit der Dänemark über die MedCom-Organisation eine digital gestützte Gesundheitsversorgung etabliert hat. Insbesondere bei Neuentwicklungen und der Einführung neuer Systeme sollten ISiK- und FHIR-basierte Anbindungen verpflichtend sein.
+- **Verbindlichkeit ist der entscheidende Hebel.** Alle erfolgreichen Systeme setzen auf verpflichtende Einbindung von Leistungserbringern — nicht auf freiwillige Marktentwicklung. Optionale Standards bleiben Randlösungen.
+- **Hohe Nutzungsraten entstehen nicht durch Technik allein.** Frankreichs Mediatorenprogramm und Dänemarks konsequenter Aufbau digitaler Kompetenz zeigen: Zugänglichkeit und aktive Nutzungsunterstützung sind eigenständige Anforderungen.
+- **Strukturierte Daten sind Voraussetzung für EHDS-Kompatibilität.** Länder wie Dänemark und Frankreich, die früh auf strukturierte Datenobjekte gesetzt haben, sind EHDS-ready. Deutschland muss den ePA-Rollout nutzen, um diesen Rückstand aufzuholen — eine weitere Phase der PDF-Ablage würde den Abstand vergrößern.
+- **Lokale Portallösungen brauchen klare Einbindungsregeln.** Wo lokale KH-Portale möglich sind, brauchen sie verbindliche Interoperabilitätsanforderungen — Insellösungen ohne Anbindung an die nationale Infrastruktur sind kein tragfähiges Modell.
 
 ### 4.3 Prozessüberblick
 
@@ -554,4 +671,5 @@ Das interaktive Prozessschaubild ist ein lebendiges Arbeitsinstrument. Es kann i
 | v0.1 | 2026-06-03 | Grundstruktur; Kap. 3 und 4 ausgearbeitet |
 | v0.2 | 2026-06-03 | IQWiG-Feedback eingearbeitet (Patientenberatung, Querschnittsthema, § 395 SGB V) |
 | v0.3 | 2026-06-08 | HO-Feedback eingearbeitet (ISiK-Durchsetzung, Ist-Kontext Schritt 13, PDF-Übergangslösung, Datensouveränität neu gefasst) |
-| v0.4 | 2026-06-08 | msusky-Feedback eingearbeitet: Grundprinzipien terminologisch geschärft (Datenobjekte, Lebenszyklus, Darstellungsform), Kap. 3.3 Überschrift ergänzt, Auswahlkriterien Prozessschritte neu begründet, einheitliche Zwischenüberschriften Kap. 4.4, Schritt 6 auf Consent Management fokussiert, Schritt 13 zwei Probleme getrennt, Schritt 21 Redundanzen entfernt |
+| v0.4 | 2026-06-08 | msusky-Feedback eingearbeitet: Grundprinzipien terminologisch geschärft (Datenobjekte, Lebenszyklus, Darstellungsform), Kap. 3.3 Überschrift ergänzt, Auswahlkriterien Prozessschritte neu begründet, einheitliche Zwischenüberschriften Kap. 4.4, Schritt 6 auf Consent Management fokussiert, Schritt 13 zwei Probleme getrennt, Schritt 21 Redundanzen entfernt; LSR-Feedback (v0.3) eingearbeitet: 20 Kommentare zu Schritten 1, 2, 4–8, 13, 20 und Kap. 5.1/5.2 |
+| v0.5 | 2026-06-09 | Zusammenführung mit Parallelversion v0.4.1 (Ralf): Kap. 4.1 vollständig ausgearbeitet (5 Unterabschnitte: Systemrollen, Datenraumlogik, Verantwortungsgrenzen); Kap. 4.2 vollständig ausgearbeitet (Ländervergleich Dänemark/Portugal/Frankreich/Türkei, EHDS-Abschnitt, Schlussfolgerungen); AG-Hinweis zu „Datenhoheit des Krankenhauses" in Kap. 4.1.2 ergänzt |
