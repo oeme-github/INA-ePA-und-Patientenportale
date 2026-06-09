@@ -20,7 +20,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-06-08 | Session 2026-06-08 (II) abgeschlossen |
+| `KONTEXT.md` | – | 2026-06-09 | Session 2026-06-09 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
