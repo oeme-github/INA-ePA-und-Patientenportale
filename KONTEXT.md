@@ -17,7 +17,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `CLAUDE.md` | – | 2026-04-25 | Session-Ende-Checkliste erweitert, Widget-Abschnitt aktualisiert |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
-| `KONTEXT.md` | – | 2026-05-28 | Session 2026-05-28 vollständig abgeschlossen |
+| `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
+| `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
+| `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
+| `KONTEXT.md` | – | 2026-06-09 | Session 2026-06-09 abgeschlossen |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -160,6 +163,12 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 | Forderungen Präklinisch verdichten und als Positionspapier aufbereiten | Claude | Erledigt (2026-05-21) – PR #24 gemergt |
 | Schritte 7, 8, 13 mit UAG-Ergebnissen befüllen (klinische Phase) | Claude | Erledigt (2026-05-28) – PR #24 gemergt |
 | Issue #22: Akteure als Tags in Prozess-Kacheln | Claude | Erledigt (2026-05-28) – PR #25 gemergt |
+| Positionspapier: Grundstruktur + Kap. 3 und 4 ausarbeiten | Claude | Erledigt (2026-06-03) – PR #26 offen |
+| Positionspapier: IQWiG-Feedback (Klaus Koch) einarbeiten | Claude | Erledigt (2026-06-03) – PR #26 aktualisiert, v0.2 |
+| Positionspapier: HO-Feedback (Henrik Ohlms) einarbeiten | Claude | Erledigt (2026-06-08) – PR #26 aktualisiert, v0.3 |
+| Positionspapier: msusky-Feedback einarbeiten (14 Kommentare) | Claude | Erledigt (2026-06-08) – PR #26 aktualisiert, v0.4 |
+| Positionspapier: LSR-Feedback (20 Kommentare aus v0.3-DOCX) einarbeiten | Claude | Erledigt (2026-06-09) – PR #26 aktualisiert |
+| Positionspapier: Zusammenführung mit v0.4.1 (Ralf) – Kap. 4.1 + 4.2 | Claude | Erledigt (2026-06-09) – PR #26 aktualisiert, v0.5 |
 
 ---
 
@@ -233,17 +242,57 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Schritte 7–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
 
-### Positionspapier
-- `forderungen_praeklinisch.md` enthält alle Forderungen aus Schritte 1–6 in drei Varianten: Einzelpunkte, Kernforderungen mit Bestandsaufnahme, Fließtext
-- Struktur: je Forderung „Was existiert → Was fehlt → Was wir fordern"
-- Nächster Schritt: Forderungen für die klinische Phase (Schritte 7–25) nach Befüllung der Ist-Analyse ergänzen
+### Positionspapier (Session 2026-06-03)
+- Zwei AG-Dokumente (`Agenda Positionspapier.docx`, `Forderungen.docx`) als Markdown konvertiert
+- `positionspapier.md` angelegt: alle 6 Kapitel, Kap. 3 und 4 vollständig ausgearbeitet
+- Kap. 3: Grundprinzipien, Prozessmodell, Domänen, Datenräume, Akteure, interaktives Schaubild
+- Kap. 4.3: 12 analysierte Prozessschritte aus 3 UAGs (je eine je Phase)
+- Kap. 4.4: Ist-Analyse + Use Case für alle 12 Schritte
+- Kap. 5+6: Vorschläge der UAG für Plenum — nicht unsere Kapitel
+- Kap. 1, 2, 4.1, 4.2: Platzhalter — obliegen dem Plenum
+- QS-Runde abgeschlossen: Abkürzungen eingeführt, Dopplungen bereinigt, Zählfehler korrigiert
+- PR #26 offen, noch nicht gemergt
+
+### IQWiG-Feedback (Session 2026-06-03, II)
+- Erste Rückmeldung von Klaus Koch (IQWiG) über `positionspapier_IQWiG.docx` mit 12 Kommentaren ausgewertet
+- Kernforderung IQWiG: Patientenberatung/-aufklärung und Gesundheitsinformationen als Datenobjekte im Modell verankern
+- Akteur „Ersteller von Gesundheitsinformationen" (§ 139a SGB V) ergänzt
+- Informationsdomäne „Dokumente" um Gesundheitsinformationen erweitert
+- Schritte 8, 13, 19, 21: Lückenabschnitte um Gesundheitsinformationen-Dimension ergänzt
+- Kap. 3.2: Prozessbegleitende Elemente (Querschnittsthema) eingeführt
+- Kap. 4.4: Neuer Abschnitt Querschnittsthema Patientenberatung + Plenum-Hinweis zu Option 2 (eigener Prozessschritt)
+- Kap. 5.2: § 395 SGB V und LOINC-Verknüpfung ergänzt
+- Begriff „Quelle der Wahrheit" → „verbindlicher Referenzdatensatz" (konsistent an 3 Stellen)
+- `positionspapier.md` auf v0.2 hochgesetzt, DOCX lokal neu erzeugt
+- PR #26 aktualisiert
+
+### HO-Feedback (Session 2026-06-08)
+- Rückmeldung von Henrik Ohlms (HO) über `positionspapier_HO.docx` mit 4 Kommentaren ausgewertet
+- Kommentar #29: ISiK-Formulierung auf „durchsetzen" umgestellt (Standard gilt bereits) — Schritt 7 + Kap. 5.1
+- Kommentar #32: Ist-Analyse-Kontext klargestellt: „Im heutigen Ist-Zustand gilt das KIS als führendes System..." — kein echter Widerspruch zu Grundprinzip
+- Kommentar #38: PDF-Fallback als explizite Übergangslösung formuliert (nicht als gleichwertige Alternative)
+- Kommentar #39: „Datenhoheit beim Krankenhaus" ersetzt durch „Keine Sekundärnutzung und keine proprietäre Bindung" — Widerspruch zu Grundprinzip aufgelöst; AG-Hinweis zur Prüfung ergänzt
+- `positionspapier.md` auf v0.3 hochgesetzt, DOCX lokal neu erzeugt
+- Änderungshistorie als eigener Abschnitt am Ende des Dokuments ergänzt
+- PR #26 aktualisiert
+
+### msusky-Feedback (Session 2026-06-08, II)
+- Rückmeldung von msusky über PR #26 mit 14 Inline-Kommentaren eingearbeitet
+- Grundprinzipien Kap. 3.2: Terminologie auf „Datenobjekte" vereinheitlicht; Grundprinzip 4 umbenannt in „Strukturierte Datenobjekte vor dokumentenbasierter Darstellung"; Lebenszyklus (E/V/G) von Bereitstellung/Nutzung getrennt; Operation als Verb des Prozessschritts präzisiert
+- Kap. 3.3: Überschrift um „Datenräume und Akteure" ergänzt
+- Kap. 4.3: Auswahlkriterien der Prozessschritte korrigiert — Longlist 80+ Schritte, zweistufige Auswahl, drei UAG-Methoden
+- Kap. 4.4: Einheitliche Zwischenüberschriften (Ist-Zustand / Lücke / Use Case / Forderung) in allen 12 Schritten + Querschnittsthema
+- Schritt 6: Fokus auf Consent Management geschärft; datenschutzrechtliche vs. medizinrechtliche Einwilligung getrennt; Use Case auf ePA-Zugriff/Widerspruch neu geschrieben
+- Schritt 13: Lücke in zwei getrennte Probleme aufgeteilt (Redundanz/Architektur + Workflow/Ethik); Use Case ergänzt
+- Schritt 21: Redundanzen zu Schritt 6 und 13 entfernt; Fokus auf Strukturdaten statt Dokumente
+- Kap. 5: „Keine kommerzielle Sekundärnutzung" (Abgrenzung zu GDNG-Forschungszwecken)
+- `positionspapier.md` auf v0.4 hochgesetzt; DOCX lokal neu erzeugen
+- PR #26 kommentiert — msusky per GitHub-Benachrichtigung informiert
 
 ### UAG Klinische Prozesse (Session 2026-05-28)
 - Schritte 7, 8 und 13 mit UAG-Ergebnissen befüllt (`ist`, `luecke`, `forderungen`)
-- UAG hat die Methode angewendet und drei Prozesse als Beispiele ausgearbeitet: Terminbuchung → Schritt 7, Administrative Aufnahme → Schritt 8, Informationsbereitstellung → Schritt 13
 - UAG-Fazit: Methode funktioniert; nicht alle Schritte konnten bearbeitet werden
 - UAG empfiehlt Differenzierung Patientenportal vs. Zuweiserportal → als neuer Abschnitt 9.3 ins Arbeitsdokument übernommen
-- Weiterer AK zur Vertiefung dieser Differenzierung empfohlen
 
 ### Im Dokument
 - Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
@@ -254,6 +303,11 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Standards prüfen: FHIR, IHE, HL7 – welche erfüllen die Anforderungen A1-A3?
 - Impulse aus dem Ausland: Dänemark, Estland, Niederlande
 - Pilotprozesse definieren für einen Proof of Concept
+
+### Offene Plenumsentscheidung: Querschnittsthema Patientenberatung
+- Kap. 4.4 enthält Querschnittsthema + Plenum-Hinweis
+- Frage: Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell aufgenommen werden?
+- Bei Ja: Ergänzung in `patientenpfad_data.js` und ggf. Renummerierung erforderlich
 
 ---
 
