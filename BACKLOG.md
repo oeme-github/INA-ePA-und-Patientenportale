@@ -2,52 +2,60 @@
 
 ## Letzter Stand
 
-**Positionspapier:** v0.5 (2026-06-09)
-**Zuletzt abgeschlossen:** LSR-Feedback (20 Kommentare) + Zusammenführung mit v0.4.1 (Kap. 4.1 + 4.2, Ralf)
+**Positionspapier:** Abgeschlossen und eingereicht (2026-07-10, manuell durch die AG außerhalb dieses Repos)
+**Projektfokus jetzt:** Tooling — Prozesslandkarte als Multi-User-Web-Tool für weitere Arbeitsgruppen (siehe unten)
 
 ---
 
-## Positionspapier – nächste Schritte
+## Positionspapier – abgeschlossen (2026-07-10)
 
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
 | P01 | PR #26 mergen (sobald Review abgeschlossen) | Hoch | ✅ Erledigt (2026-06-19) |
-| P02 | Kapitel 1, 2, 4.1, 4.2 vom Plenum einarbeiten (Platzhalter) | Hoch | 📋 Offen |
-| P03 | Plenumsentscheidung: Querschnittsthema Patientenberatung als eigenständiger Prozessschritt? | Hoch | 📋 Offen |
-| P04 | Bei P03 = Ja: Schritt in `patientenpfad_data.js` ergänzen + Renummerierung | Mittel | ⏭ Wartet auf P03 |
-| P05 | Weiteres Feedback-Runden einarbeiten (nächste Reviewer) | Mittel | 📋 Offen |
+| P02 | Kapitel 1, 2, 4.1, 4.2 vom Plenum einarbeiten (Platzhalter) | Hoch | ⏹ Obsolet — AG hat außerhalb des Repos fertiggestellt |
+| P03 | Plenumsentscheidung: Querschnittsthema Patientenberatung als eigenständiger Prozessschritt? | Hoch | ⏹ Obsolet — liegt jetzt beim Plenum, nicht mehr Teil dieses Repos |
+| P04 | Bei P03 = Ja: Schritt in `patientenpfad_data.js` ergänzen + Renummerierung | Mittel | ⏹ Obsolet (siehe P03) |
+| P05 | Weiteres Feedback-Runden einarbeiten (nächste Reviewer) | Mittel | ⏹ Obsolet — Dokument-Track geschlossen |
 
-**Status-Legende:** 📋 Offen · 🔄 In Bearbeitung · ✅ Erledigt · ⏭ Wartet auf Bedingung
+**Status-Legende:** 📋 Offen · 🔄 In Bearbeitung · ✅ Erledigt · ⏭ Wartet auf Bedingung · ⏹ Obsolet
 
 ---
 
-## Datenpflege – Ist-Analyse
+## Multi-User-Web-Tool – nächste Schritte (ab Session 2026-07-10)
+
+Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: Postgres-BaaS (Referenz Supabase), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
 
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
-| D01 | Schritte 9–12 (Präklinisch) mit `ist`/`luecke`/`forderungen` befüllen (UAG-Ergebnisse) | Mittel | 📋 Offen |
-| D02 | Schritte 14–25 (Klinisch + Post) mit `ist`/`luecke`/`forderungen` befüllen | Mittel | 📋 Offen |
-| D03 | `ANLEITUNG_EDITOR.md` an relevante AG-Mitglieder weitergeben | Niedrig | 📋 Offen |
+| T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | 🔄 In Bearbeitung |
+| T02 | Supabase-Projekt anlegen (oder alternative Postgres-BaaS final entscheiden) | Hoch | 📋 Offen |
+| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren | Hoch | ⏭ Wartet auf T02 |
+| T04 | Viewer: Datenquelle von `<script src="patientenpfad_data.js">` auf Datenbank-Query umstellen | Hoch | ⏭ Wartet auf T02/T03 |
+| T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ⏭ Wartet auf T04 |
+| T06 | Editor: Speichern von GitHub-PUT-Flow auf Datenbank-Write + Row-Level-Security umstellen | Hoch | ⏭ Wartet auf T02/T03 |
+| T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ⏭ Wartet auf T06 |
+| T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ⏭ Wartet auf T02 |
+| T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | 📋 Offen |
+| T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 📋 Offen |
+
+**Offene Entscheidungen (siehe KONTEXT.md):** Wer hostet langfristig (Nutzer vs. gematik)? Finale SSO-Wahl? Ist ein Git-artiges Audit-/Versionsprotokoll ein hartes Anforderungskriterium?
 
 ---
 
-## Inhaltlich – offen
+## Inhaltliche Punkte – zurückgestellt (2026-07-10)
 
-| ID | Aufgabe | Priorität | Status |
-|----|---------|-----------|--------|
-| I01 | Standards prüfen: FHIR, IHE, HL7 – welche erfüllen Anforderungen A1–A3? | Niedrig | 📋 Offen |
-| I02 | Impulse aus dem Ausland: Dänemark, Estland, Niederlande | Niedrig | 📋 Offen |
-| I03 | Pilotprozesse für Proof of Concept definieren | Niedrig | 📋 Offen |
-| I04 | Matrix (Kap. 7 Arbeitsdokument) in Gruppe weiter diskutieren und verfeinern | Niedrig | 📋 Offen |
+Die AG macht inhaltlich nicht weiter (Positionspapier ist eingereicht). Die folgenden Punkte betrafen den Dokument-/Datenpflege-Track und werden nicht mehr aktiv verfolgt, solange der Fokus auf dem Tooling liegt:
 
----
-
-## Offene Fragen / Entscheidungen
-
-| ID | Frage | Status |
-|----|-------|--------|
-| F01 | Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell? (Plenum) | 📋 Offen |
-| F02 | Wann ist PR #26 bereit zum Mergen? (Review-Stand msusky / weitere Reviewer?) | 📋 Offen |
+| ID | Aufgabe |
+|----|---------|
+| D01 | Schritte 9–12 (Präklinisch) mit `ist`/`luecke`/`forderungen` befüllen |
+| D02 | Schritte 14–25 (Klinisch + Post) mit `ist`/`luecke`/`forderungen` befüllen |
+| D03 | `ANLEITUNG_EDITOR.md` weitergeben — wird durch neuen Login-Flow (T08) ohnehin obsolet |
+| I01 | Standards prüfen: FHIR, IHE, HL7 – welche erfüllen Anforderungen A1–A3? |
+| I02 | Impulse aus dem Ausland: Dänemark, Estland, Niederlande |
+| I03 | Pilotprozesse für Proof of Concept definieren |
+| I04 | Matrix (Kap. 7 Arbeitsdokument) in Gruppe weiter diskutieren und verfeinern |
+| F01 | Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell? (Plenum) |
 
 ---
 
@@ -55,4 +63,4 @@
 
 - **Systemebene Kap. 8**: Weitere Ist-Analyse-Beispiele möglich — wartet auf AG-Input
 - **Lebenszyklus von Datenobjekten**: Bewusst ausgeklammert — kann später ergänzt werden
-- **Migration zu Webserver + JSON**: Migrationspfad offen gehalten, eigene spätere Session
+- **Migration zu Webserver + JSON**: durch Multi-User-Web-Tool-Vorhaben (siehe oben) ersetzt/überholt

@@ -20,7 +20,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-06-09 | Session 2026-06-09 abgeschlossen |
+| `KONTEXT.md` | – | 2026-07-10 | Positionspapier abgeschlossen; Architekturentscheidung Multi-User-Web-Tool |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -139,6 +139,40 @@ Die ePA ist heute dokumentenlastig. Das Ziel sind strukturierte Datenobjekte, di
 
 ---
 
+## Architekturentscheidung: Multi-User-Web-Tool (Session 2026-07-10)
+
+Ziel: Die interaktive Prozesslandkarte (`patientenpfad_interaktiv.html`, `patientenpfad_editor.html`, `patientenpfad_data.js`) soll auch von anderen Arbeitsgruppen genutzt werden können — als echtes mehrbenutzerfähiges Web-Tool statt der heutigen GitHub-Pages-Lösung (Viewer lädt eine statische JS-Datei, Editor schreibt per GitHub-REST-API mit persönlichem Access-Token zurück ins Repo).
+
+**Anforderungen laut Nutzer:**
+- Mehrbenutzerfähig, über das Web nutzbar (kein Fork/Kopie pro AG)
+- Authentifizierung statt PAT-Copy-Paste — Kandidaten: E-Mail/Magic-Link (Einstieg) und institutionelles SSO, plausibel Microsoft Entra ID (gematik nutzt SharePoint/M365)
+- Hosting-Träger noch offen (evtl. gematik langfristig, evtl. weiter der Nutzer selbst) — Architektur darf sich nicht darauf festlegen
+- **Erweiterbarkeit ist eines der zentralen Entwurfsziele, auch strukturell**: Andere AGs sollen nicht nur neue Domänen/Werte ergänzen können, sondern perspektivisch auch eigene Phasenanzahl/-namen oder eigene Datenraum-Achsen definieren — ohne Codeänderung
+
+**Gewählte Richtung:** Backend-as-a-Service auf Postgres-Basis (Referenz: Supabase) statt Eigenentwicklung von Auth/Backend-Server. Begründet durch: echte Mehrbenutzerfähigkeit + Rollen, eingebaute Auth mit E-Mail/Magic-Link UND späterer Enterprise-SSO-Option, Row-Level-Security für Rollen pro Arbeitsgruppe, selbst hostbar (Open Source) falls gematik später eigene Infrastruktur nutzen will, kein Vendor-Lock-in.
+
+Verworfen: (a) weiter Git-basiert nur mit OAuth statt PAT — löst die technische Hürde für nicht-technische AG-Mitglieder nicht und bringt keine echten Rollen; (b) volles Custom-Backend — mehr Aufwand für Funktionen, die eine BaaS-Lösung fertig mitbringt, passt nicht zum unklaren Hosting-/Budgetrahmen.
+
+**Datenmodell — generische mehrdimensionale Prozesskatalog-Engine:** Weil Erweiterbarkeit auch strukturell gelten soll, werden Phasen und Datenräume keine Sonderfälle mehr, sondern Instanzen desselben generischen Mechanismus wie Domänen/Akteure/Rechtsgrundlagen:
+- `workgroups` — eine Zeile pro Arbeitsgruppe/Mandant
+- `dimensions` — pro Workgroup: jede Kategorie/Achse (inkl. „Phase" und „Datenraum" selbst), mit Typ (Single-/Multi-Select/Freitext), Flag `ist_navigationsachse`, Reihenfolge, Farbe
+- `dimension_values` — Werte innerhalb einer Dimension (heutige Auswahllisten + heutige Phasen-/Datenraum-Werte)
+- `process_steps` — minimale Kernspalten (`nr`, `titel`, Freitext) + Zuordnung zu Dimension-Werten
+- `memberships` — `user_id × workgroup_id × Rolle (viewer/editor/admin)`
+
+Migration: heutige `patientenpfad_data.js` wird zu Seed-Daten der ersten Workgroup, `meta` wird zu den ersten `dimensions`/`dimension_values` — kein inhaltlicher Verlust.
+
+**Phasierung:**
+1. Generisches Datenmodell steht, heutige AG als erste Workgroup 1:1 abgebildet (keine Regression)
+2. Viewer/Editor rendern Tabs/Filter/Formulare/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert
+3. Editor bekommt eine Verwaltungsoberfläche, mit der eine AG selbst neue Dimensionen anlegt
+
+**Offene Punkte:**
+- Wer hostet/betreibt langfristig (Nutzer selbst vs. gematik)
+- Finale Wahl des SSO-Providers/-Protokolls
+- Ob ein Git-artiges Audit-/Versionsprotokoll (heute „gratis" durch Commits) ein hartes Anforderungskriterium ist — vor der Datenmodell-Umsetzung klären
+- Vollständiger Plan liegt unter `/home/oeme/.claude/plans/transient-finding-cat.md` (lokale Planungsdatei, nicht im Repo)
+
 ## Geplante Aufgaben
 
 | Aufgabe | Wer | Status |
@@ -242,6 +276,9 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - Schritte 7–25: Felder `ist`, `luecke`, `forderungen` noch leer – Befüllung in weiteren UAG-Sitzungen
 - Editor-Anleitung (`ANLEITUNG_EDITOR.md`) an AG-Mitglieder weitergeben, die Daten pflegen sollen
 
+### Positionspapier abgeschlossen (Session 2026-07-10)
+Das Positionspapier wurde von der AG manuell (außerhalb dieses Repos) überarbeitet und am 2026-07-10 beim Plenum eingereicht. Der Dokument-Track ist damit abgeschlossen — `positionspapier.md` in diesem Repo (Stand v0.5, 2026-06-09) wird nicht mehr mit der eingereichten Fassung abgeglichen, offene Punkte wie Kap. 1/2-Platzhalter oder die Datenhoheits-Frage (Kap. 4.1.2 ↔ 5.1) werden nicht weiterverfolgt, sofern nicht explizit neu aufgegriffen. Der Projektfokus liegt ab jetzt vollständig auf dem Tooling (Prozesslandkarte).
+
 ### Positionspapier (Session 2026-06-03)
 - Zwei AG-Dokumente (`Agenda Positionspapier.docx`, `Forderungen.docx`) als Markdown konvertiert
 - `positionspapier.md` angelegt: alle 6 Kapitel, Kap. 3 und 4 vollständig ausgearbeitet
@@ -294,20 +331,12 @@ Die Datenstruktur selbst ändert sich beim Übergang **nicht**. Der Wechsel auf 
 - UAG-Fazit: Methode funktioniert; nicht alle Schritte konnten bearbeitet werden
 - UAG empfiehlt Differenzierung Patientenportal vs. Zuweiserportal → als neuer Abschnitt 9.3 ins Arbeitsdokument übernommen
 
-### Im Dokument
-- Systemebene (Kap. 8) könnte um weitere Ist-Analyse-Beispiele ergänzt werden
-- Lebenszyklus von Datenobjekten wurde diskutiert, aber bewusst ausgeklammert – kann später ergänzt werden
-- Die Matrix (Kap. 7) soll in der Gruppe weiter diskutiert und verfeinert werden
+### Im Dokument, Inhaltlich, Offene Plenumsentscheidung — geschlossen (2026-07-10)
+Die folgenden drei Abschnitte betrafen den Dokument-Track des Positionspapiers und werden nicht weiterverfolgt, da die AG das Papier manuell außerhalb dieses Repos fertiggestellt und eingereicht hat (siehe „Positionspapier abgeschlossen" oben). Als historisches Protokoll belassen:
 
-### Inhaltlich
-- Standards prüfen: FHIR, IHE, HL7 – welche erfüllen die Anforderungen A1-A3?
-- Impulse aus dem Ausland: Dänemark, Estland, Niederlande
-- Pilotprozesse definieren für einen Proof of Concept
-
-### Offene Plenumsentscheidung: Querschnittsthema Patientenberatung
-- Kap. 4.4 enthält Querschnittsthema + Plenum-Hinweis
-- Frage: Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell aufgenommen werden?
-- Bei Ja: Ergänzung in `patientenpfad_data.js` und ggf. Renummerierung erforderlich
+- **Im Dokument:** Systemebene (Kap. 8) weitere Ist-Analyse-Beispiele; Lebenszyklus von Datenobjekten bewusst ausgeklammert; Matrix (Kap. 7) zur weiteren Diskussion vorgesehen
+- **Inhaltlich:** Standards-Prüfung FHIR/IHE/HL7 gegen A1-A3; internationale Impulse (Dänemark, Estland, Niederlande) — teilweise bereits in Kap. 4.2 der eingereichten Fassung eingeflossen; Pilotprozesse für Proof of Concept
+- **Offene Plenumsentscheidung Querschnittsthema Patientenberatung:** Ob „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell soll — Entscheidung liegt beim Plenum, nicht mehr Gegenstand dieses Repos
 
 ---
 
