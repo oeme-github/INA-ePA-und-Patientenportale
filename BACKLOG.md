@@ -25,18 +25,21 @@
 
 Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: Postgres-BaaS (Referenz Supabase), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
 
+**⚠ Harte Randbedingung:** Das bestehende Tool (`patientenpfad_interaktiv.html`, `patientenpfad_editor.html`, `patientenpfad_data.js`) ist im Wirkbetrieb der AG und darf durch die folgenden Aufgaben nicht beeinträchtigt werden. Entwicklung erfolgt additiv (neue Dateien/Verzeichnisse), keine Änderung der produktiven Dateien "in place". Umschaltung erst nach Parallelbetrieb/Validierung (siehe T11).
+
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
 | T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | 🔄 In Bearbeitung |
 | T02 | Supabase-Projekt anlegen (oder alternative Postgres-BaaS final entscheiden) | Hoch | 📋 Offen |
-| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren | Hoch | ⏭ Wartet auf T02 |
-| T04 | Viewer: Datenquelle von `<script src="patientenpfad_data.js">` auf Datenbank-Query umstellen | Hoch | ⏭ Wartet auf T02/T03 |
+| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | ⏭ Wartet auf T02 |
+| T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | ⏭ Wartet auf T02/T03 |
 | T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ⏭ Wartet auf T04 |
-| T06 | Editor: Speichern von GitHub-PUT-Flow auf Datenbank-Write + Row-Level-Security umstellen | Hoch | ⏭ Wartet auf T02/T03 |
+| T06 | Neuer, separater Editor-Prototyp mit Datenbank-Write + Row-Level-Security (bestehender GitHub-PUT-Editor bleibt parallel nutzbar) | Hoch | ⏭ Wartet auf T02/T03 |
 | T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ⏭ Wartet auf T06 |
 | T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ⏭ Wartet auf T02 |
 | T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | 📋 Offen |
 | T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 📋 Offen |
+| T11 | Cutover: Bestandstool erst ablösen/umleiten, nachdem neues Tool im Parallelbetrieb validiert ist (Datenabgleich, AG-Freigabe) | Hoch | 📋 Offen |
 
 **Offene Entscheidungen (siehe KONTEXT.md):** Wer hostet langfristig (Nutzer vs. gematik)? Finale SSO-Wahl? Ist ein Git-artiges Audit-/Versionsprotokoll ein hartes Anforderungskriterium?
 

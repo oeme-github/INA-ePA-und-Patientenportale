@@ -149,6 +149,13 @@ Ziel: Die interaktive Prozesslandkarte (`patientenpfad_interaktiv.html`, `patien
 - Hosting-Träger noch offen (evtl. gematik langfristig, evtl. weiter der Nutzer selbst) — Architektur darf sich nicht darauf festlegen
 - **Erweiterbarkeit ist eines der zentralen Entwurfsziele, auch strukturell**: Andere AGs sollen nicht nur neue Domänen/Werte ergänzen können, sondern perspektivisch auch eigene Phasenanzahl/-namen oder eigene Datenraum-Achsen definieren — ohne Codeänderung
 
+**Harte Randbedingung: Das bestehende Tool ist im Wirkbetrieb (Session 2026-07-10)**
+`patientenpfad_interaktiv.html`, `patientenpfad_editor.html` und `patientenpfad_data.js` werden aktiv von der AG genutzt und dürfen durch die Weiterentwicklung nicht beeinträchtigt werden. Konsequenzen für die Umsetzung:
+- Diese drei Dateien bleiben unverändert nutzbar (GitHub Pages + PAT-Editor-Flow), bis das neue System nachweislich gleichwertig ist — kein Umbau "in place".
+- Das neue Multi-User-Tool wird additiv entwickelt (neue Dateien/Verzeichnisse wie `supabase/`, perspektivisch ein eigenes Frontend), nicht durch Modifikation der produktiven Dateien.
+- Umschaltung (Cutover) erst nach Parallelbetrieb/Validierung, mit Rückfalloption auf das bestehende Tool.
+- Datenpflege der AG läuft in der Zwischenzeit normal über den heutigen Editor weiter — die künftige Migration (T03) muss auch nachträglich gepflegte Schritte erfassen, nicht nur den heutigen Stand von `patientenpfad_data.js`.
+
 **Gewählte Richtung:** Backend-as-a-Service auf Postgres-Basis (Referenz: Supabase) statt Eigenentwicklung von Auth/Backend-Server. Begründet durch: echte Mehrbenutzerfähigkeit + Rollen, eingebaute Auth mit E-Mail/Magic-Link UND späterer Enterprise-SSO-Option, Row-Level-Security für Rollen pro Arbeitsgruppe, selbst hostbar (Open Source) falls gematik später eigene Infrastruktur nutzen will, kein Vendor-Lock-in.
 
 Verworfen: (a) weiter Git-basiert nur mit OAuth statt PAT — löst die technische Hürde für nicht-technische AG-Mitglieder nicht und bringt keine echten Rollen; (b) volles Custom-Backend — mehr Aufwand für Funktionen, die eine BaaS-Lösung fertig mitbringt, passt nicht zum unklaren Hosting-/Budgetrahmen.
