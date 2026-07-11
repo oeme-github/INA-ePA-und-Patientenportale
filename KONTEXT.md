@@ -256,6 +256,39 @@ supabase/postgres-Image mitbringt, wir aber nicht nutzen) bekommen neue
 Nutzer ein JWT mit `role:""`, und PostgREST kann nicht per `SET ROLE`
 wechseln. Behoben über `supabase/post-auth-init.sql` (bereits committed).
 
+### T05 abgeschlossen: Viewer dynamisch aus dimensions (Session 2026-07-11)
+
+`viewer-db/index.html` rendert jetzt nichts mehr hart codiert. Ableitung aus
+den geladenen `dimensions` (siehe `setupDimensions()`):
+- Navigations-Dimensionen (`ist_navigationsachse=true`): `single_select` →
+  Tab-Leiste (wie bisher „Phase") + Sektionsgruppierung; `multi_select` →
+  Toggle-Filter (wie bisher „Datenraum"). Beliebig viele/wenige möglich, nicht
+  auf genau 2 festgelegt.
+- Alle anderen Auswahl-Dimensionen: die ersten zwei `multi_select` erscheinen
+  kompakt auf der Karte (Vorschau), alle `single_select` als Kopf-Chips, der
+  Rest (weitere `multi_select` + alle `text`-Dimensionen) nur in der
+  aufgeklappten Detailansicht — generische Regel über `reihenfolge`, nicht
+  über Feldnamen.
+- Farben: `dimension_values.farbe` (ein Akzent-Hex) wird per `chipStyle()` zu
+  Hintergrund/Text/Rand aufgehellt/abgedunkelt; fehlt `farbe`, greift ein
+  deterministischer Hash auf eine Fallback-Palette. `phase`/`datenraum`/
+  `struktur` bekommen im Seed-Skript jetzt explizit die bisherigen Hex-Werte,
+  damit die Optik gegenüber dem alten Viewer erhalten bleibt.
+- Matrix-Ansicht neu (Toggle „Karten"/„Matrix"): zwei frei wählbare
+  Dimensionen als Achsen (Dropdowns), Zellen zählen Prozessschritte mit
+  beiden Werten — ersetzt die bisherige fest verdrahtete Domäne×Datenraum-
+  Matrix durch eine generische Variante.
+
+Per Headless-Chrome verifiziert: Tabs/Filter/Farben/Kartenlayout sehen dem
+Ist-Zustand sehr ähnlich (bewusst kein pixelgenauer Nachbau, da eine
+generische Regel niemals 1:1 eine hart codierte Sonderbehandlung treffen
+kann), Suche inkl. Highlighting über alle Dimensionen, Datenraum-Filter
+(Dimmen), Matrix-Ansicht (Domäne × Datenraum als Default-Achsen) — alles
+funktional bestätigt.
+
+`seed_ak_patientenportale.py` erweitert: `dimension_values`-Farbe ist jetzt
+optional als drittes Tupel-Element pro Wert angebbar.
+
 ## Geplante Aufgaben
 
 | Aufgabe | Wer | Status |

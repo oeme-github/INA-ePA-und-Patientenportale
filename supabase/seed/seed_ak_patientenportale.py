@@ -54,38 +54,44 @@ def load_source_data() -> dict:
 
 
 # (dimension_key, label, typ, ist_navigationsachse, reihenfolge, values)
-# values: Liste von (wert_key, label) in Anzeigereihenfolge, oder None
-# (dann aus meta[meta_key] übernommen, values = Text selbst als key).
+# values: Liste von (wert_key, label) oder (wert_key, label, farbe) in
+# Anzeigereihenfolge, oder None (dann aus meta[meta_key] übernommen, values
+# = Text selbst als key, ohne feste Farbe — der Viewer weist dann per Hash
+# einen Wert aus einer Fallback-Palette zu, siehe viewer-db/index.html).
+#
+# farbe ist ein einzelner Akzent-Hex-Wert (nicht Hintergrund/Text/Rand
+# einzeln) – der Viewer leitet daraus Hintergrund/Textfarbe ab (chipStyle()),
+# damit eine Farbe pro Wert reicht, egal welche AG sie später vergibt.
 def build_dimension_specs(meta: dict) -> list:
     def from_meta(meta_key):
         return [(v, v) for v in meta[meta_key]]
 
     return [
         ("phase", "Phase", "single_select", True, 1, [
-            ("vor", "Vor dem Krankenhaus"),
-            ("im", "Im Krankenhaus"),
-            ("nach", "Nach dem Krankenhaus"),
+            ("vor", "Vor dem Krankenhaus", "#059669"),
+            ("im", "Im Krankenhaus", "#4F46E5"),
+            ("nach", "Nach dem Krankenhaus", "#B45309"),
         ]),
         ("datenraum", "Datenraum", "multi_select", True, 2, [
-            ("portal", "Patientenportal"),
-            ("versorgung", "Versorgungssysteme (KIS/PVS)"),
-            ("epa", "elektronische Patientenakte (ePA)"),
-            ("ehds", "European Health Data Space (EHDS)"),
+            ("portal", "Patientenportal", "#3B82F6"),
+            ("versorgung", "Versorgungssysteme (KIS/PVS)", "#10B981"),
+            ("epa", "elektronische Patientenakte (ePA)", "#7C3AED"),
+            ("ehds", "European Health Data Space (EHDS)", "#EF4444"),
         ]),
         ("domaene", "Domäne", "single_select", False, 3, from_meta("domaenen")),
         ("akteur", "Akteur", "multi_select", False, 4, from_meta("akteure")),
         ("objekt", "Datenobjekt", "multi_select", False, 5, from_meta("datenobjekte")),
         ("operation", "Operation", "multi_select", False, 6, [
-            ("E", "Erzeugt"),
-            ("V", "Verändert"),
-            ("G", "Gelöscht"),
+            ("E", "Erzeugt", "#4F46E5"),
+            ("V", "Verändert", "#B45309"),
+            ("G", "Gelöscht", "#DC2626"),
         ]),
         ("gesetz", "Rechtsgrundlage", "multi_select", False, 7, from_meta("rechtsgrundlagen")),
         ("standard", "Standard", "multi_select", False, 8, from_meta("standards")),
         ("struktur", "Struktur", "single_select", False, 9, [
-            ("unstrukturiert", "Unstrukturiert"),
-            ("teilstrukturiert", "Teilstrukturiert"),
-            ("strukturiert", "Strukturiert"),
+            ("unstrukturiert", "Unstrukturiert", "#EF4444"),
+            ("teilstrukturiert", "Teilstrukturiert", "#F59E0B"),
+            ("strukturiert", "Strukturiert", "#10B981"),
         ]),
         ("detail", "Detail", "text", False, 10, None),
         ("ist", "Ist-Zustand", "text", False, 11, None),
@@ -125,16 +131,19 @@ def upsert_dimensions(cur, workgroup_id: str, specs: list) -> dict:
         dim_id = cur.fetchone()[0]
         value_ids = {}
         if values:
-            for i, (v_key, v_label) in enumerate(values, start=1):
+            for i, value_spec in enumerate(values, start=1):
+                v_key, v_label, *rest = value_spec
+                v_farbe = rest[0] if rest else None
                 cur.execute(
                     """
-                    insert into dimension_values (dimension_id, key, label, reihenfolge)
-                    values (%s, %s, %s, %s)
+                    insert into dimension_values (dimension_id, key, label, reihenfolge, farbe)
+                    values (%s, %s, %s, %s, %s)
                     on conflict (dimension_id, key) do update
-                        set label = excluded.label, reihenfolge = excluded.reihenfolge
+                        set label = excluded.label, reihenfolge = excluded.reihenfolge,
+                            farbe = excluded.farbe
                     returning id
                     """,
-                    (dim_id, v_key, v_label, i),
+                    (dim_id, v_key, v_label, i, v_farbe),
                 )
                 value_ids[v_key] = cur.fetchone()[0]
         result[key] = {"id": dim_id, "values": value_ids}

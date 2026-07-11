@@ -18,10 +18,6 @@
       --r-sm: 6px;
       --r-md: 8px;
       --r-lg: 12px;
-
-      --phase-vor:  #059669;
-      --phase-im:   #4F46E5;
-      --phase-nach: #B45309;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,10 +94,35 @@
       font-size: 12px; font-weight: 500; cursor: pointer; transition: opacity 0.12s; opacity: 0.35;
     }
     .dr-toggle.active { opacity: 1; }
-    .dr-portal     { background: #DBEAFE; color: #1E40AF; border-color: #3B82F6; }
-    .dr-versorgung { background: #D1FAE5; color: #065F46; border-color: #10B981; }
-    .dr-epa        { background: #EDE9FE; color: #4C1D95; border-color: #7C3AED; }
-    .dr-ehds       { background: #FEE2E2; color: #7F1D1D; border-color: #EF4444; }
+
+    /* ── Generische Chips (Farbe kommt inline aus dimension_values.farbe) ── */
+    .chip {
+      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
+      margin-right: 4px; margin-bottom: 4px;
+    }
+    .chip-sm { padding: 2px 8px; border-radius: 20px; font-size: 11px; margin: 0 4px 4px 0; }
+    .card-tags-primary, .card-tags-secondary { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .card-tags-secondary { font-size: 12px; color: var(--c-text-3); }
+
+    .view-switch { display: flex; gap: 4px; margin-left: auto; }
+    .view-btn {
+      padding: 4px 12px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: transparent; color: var(--c-text-3); font-size: 12px; font-weight: 500; cursor: pointer;
+    }
+    .view-btn.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+
+    .matrix-controls select {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px;
+      font-family: inherit; background: var(--c-surface);
+    }
+    .matrix-table { border-collapse: collapse; background: var(--c-surface); font-size: 12px; }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid var(--c-border-1); padding: 6px 10px; text-align: center; min-width: 40px;
+    }
+    .matrix-table th { background: #F9FAFB; font-weight: 600; color: var(--c-text-2); font-size: 11px; }
+    .matrix-table th:first-child, .matrix-table td:first-child { text-align: left; font-weight: 500; }
+    .matrix-table td.matrix-hit { background: #EFF6FF; color: #1E40AF; font-weight: 700; }
+    .matrix-wrap { overflow-x: auto; }
 
     .search-input {
       flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid var(--c-border-2);
@@ -122,13 +143,7 @@
       display: flex; align-items: center; gap: 12px; padding: 10px 16px;
       border-radius: var(--r-md); margin-bottom: 14px; border-left: 4px solid transparent;
     }
-    .phase-section-header.phase-vor  { background: #F0FDF4; border-color: var(--phase-vor); }
-    .phase-section-header.phase-im   { background: #F5F3FF; border-color: var(--phase-im); }
-    .phase-section-header.phase-nach { background: #FFFBEB; border-color: var(--phase-nach); }
     .phase-section-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-    .phase-section-header.phase-vor  .phase-section-title { color: #065F46; }
-    .phase-section-header.phase-im   .phase-section-title { color: #3730A3; }
-    .phase-section-header.phase-nach .phase-section-title { color: #78350F; }
     .phase-section-count { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--c-text-4); }
 
     .phase-section-grid {
@@ -144,26 +159,11 @@
     .prozess-card.dimmed { opacity: 0.18; pointer-events: none; }
     .prozess-card.open { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-    .phase-vor  { border-left: 3px solid var(--phase-vor); }
-    .phase-im   { border-left: 3px solid var(--phase-im); }
-    .phase-nach { border-left: 3px solid var(--phase-nach); }
-
-    .card-meta { display: flex; justify-content: flex-end; margin-bottom: 6px; }
-    .card-nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .card-meta-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .card-nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); white-space: nowrap; }
     .card-titel { font-size: 14px; font-weight: 600; color: var(--c-text-1); line-height: 1.35; margin-bottom: 5px; }
-    .card-akteur { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-    .akteur-tag {
-      display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
-      background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE;
-    }
-    .card-objekt { font-size: 12px; color: var(--c-text-3); margin-bottom: 10px; }
-    .card-op {
-      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
-      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2);
-      margin-left: 4px; vertical-align: middle;
-    }
     .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
-    .dr-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
 
     .detail-box {
       margin-top: 12px; border-top: 1px solid var(--c-border-1); padding-top: 12px;
@@ -174,25 +174,6 @@
       font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
       color: var(--c-text-4); margin-bottom: 6px;
     }
-    .domaene-chip {
-      display: inline-block; padding: 3px 10px; border-radius: var(--r-sm); font-size: 12px; font-weight: 500;
-      background: #FEF9C3; color: #713F12; border: 1px solid #FDE68A;
-    }
-    .gesetz-chip {
-      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
-      background: #F0FDF4; color: #14532D; border: 1px solid #BBF7D0; margin-right: 4px; margin-bottom: 4px;
-    }
-    .standard-chip {
-      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
-      background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; margin-right: 4px; margin-bottom: 4px;
-    }
-    .struktur-badge {
-      display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 10px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.04em; margin-left: 6px; vertical-align: middle;
-    }
-    .struktur-strukturiert     { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
-    .struktur-teilstrukturiert { background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; }
-    .struktur-unstrukturiert   { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
 
     .empty-hint {
       background: var(--c-surface); border: 1px dashed var(--c-border-2); border-radius: var(--r-lg);
@@ -250,7 +231,7 @@
     <div class="page-header">
       <div>
         <h1>Patientenpfad – Interaktive Prozesskarte <span class="badge-proto">DB-Prototyp</span></h1>
-        <p>T04: gleiche Ansicht wie <code>patientenpfad_interaktiv.html</code>, Daten aber live aus Postgres über PostgREST statt aus <code>patientenpfad_data.js</code>.</p>
+        <p>T05: Tabs/Filter/Kartenfelder/Matrix-Achsen werden dynamisch aus <code>dimensions</code>/<code>dimension_values</code> gerendert, nicht mehr hart codiert. Datenquelle live per PostgREST statt <code>patientenpfad_data.js</code>.</p>
       </div>
       <div class="session-box">
         <div>Angemeldet als <span class="email" id="session-email"></span></div>
@@ -259,20 +240,18 @@
     </div>
 
     <div class="toolbar">
+      <div id="toolbar-nav-rows"></div>
       <div class="filter-row">
-        <span class="filter-label">Phase</span>
-        <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
-        <button class="phase-tab" onclick="setPhase('vor')"><span class="dot" style="background:var(--phase-vor)"></span>Vor</button>
-        <button class="phase-tab" onclick="setPhase('im')"><span class="dot" style="background:var(--phase-im)"></span>Im</button>
-        <button class="phase-tab" onclick="setPhase('nach')"><span class="dot" style="background:var(--phase-nach)"></span>Nach</button>
+        <input type="search" id="search" class="search-input" placeholder="Suche …" oninput="onSearch(this.value)">
+        <div class="view-switch">
+          <button id="view-cards-btn" class="view-btn active" onclick="setView('cards')">Karten</button>
+          <button id="view-matrix-btn" class="view-btn" onclick="setView('matrix')">Matrix</button>
+        </div>
       </div>
-      <div class="filter-row">
-        <span class="filter-label">Datenraum</span>
-        <button class="dr-toggle dr-portal active"     data-dr="portal"     onclick="toggleDR('portal')">Portal</button>
-        <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
-        <button class="dr-toggle dr-epa active"        data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
-        <button class="dr-toggle dr-ehds active"       data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
-        <input type="search" id="search" class="search-input" placeholder="Suche in Titel, Akteur, Objekt, Detail …" oninput="onSearch(this.value)">
+      <div class="filter-row matrix-controls" id="matrix-controls" style="display:none;">
+        <span class="filter-label">Matrix-Achsen</span>
+        X: <select id="matrix-x-select" onchange="onMatrixAxisChange()"></select>
+        Y: <select id="matrix-y-select" onchange="onMatrixAxisChange()"></select>
       </div>
     </div>
 
@@ -289,16 +268,58 @@
   const GOTRUE_URL = 'http://localhost:9999';
   const REST_URL   = 'http://localhost:8001';
 
-  const phaseLabel  = { vor: 'Vor dem Krankenhaus', im: 'Im Krankenhaus', nach: 'Nach dem Krankenhaus' };
-  const phaseBorder = { vor: 'phase-vor', im: 'phase-im', nach: 'phase-nach' };
-  const drLabel      = { portal: 'Portal', versorgung: 'Versorgung', epa: 'ePA', ehds: 'EHDS' };
-  const drBadgeClass = { portal: 'dr-portal', versorgung: 'dr-versorgung', epa: 'dr-epa', ehds: 'dr-ehds' };
+  // ── Farben ───────────────────────────────────────────────────────
+  // dimension_values.farbe ist ein einzelner Akzent-Hex-Wert; Hintergrund/
+  // Text werden daraus abgeleitet (chipStyle). Fehlt farbe (z.B. bei Werten,
+  // die eine AG selbst ergänzt), wird deterministisch aus einer
+  // Fallback-Palette gewählt, damit jede Dimension trotzdem konsistent
+  // eingefärbt ist.
+  const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
+
+  function hashColor(key) {
+    let h = 0;
+    for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return FALLBACK_PALETTE[h % FALLBACK_PALETTE.length];
+  }
+
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const n = parseInt(full, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function mix(a, b, t) { return a.map((c, i) => Math.round(c + (b[i] - c) * t)); }
+  function rgbCss([r, g, b]) { return `rgb(${r},${g},${b})`; }
+
+  function colorOf(value) { return value.farbe || hashColor(value.key); }
+
+  function chipStyle(hex) {
+    const rgb = hexToRgb(hex);
+    const bg = mix(rgb, [255, 255, 255], 0.85);
+    const text = mix(rgb, [0, 0, 0], 0.45);
+    return `background:${rgbCss(bg)};color:${rgbCss(text)};border:1px solid ${hex};`;
+  }
+
+  // ── Dimensionen-Zustand (aus der DB geladen, siehe loadDimensions) ──
+  let dims = [];                 // alle Dimensionen der Workgroup, sortiert nach reihenfolge
+  let dimsByKey = {};
+  let navSingle = [];             // Navigations-Dimensionen, single_select (→ Tab-Leisten)
+  let navMulti = [];              // Navigations-Dimensionen, multi_select (→ Toggle-Filter)
+  let sectionDim = null;          // erste navSingle-Dimension: gruppiert wie bisher "Phase"
+  let extraNavSingle = [];        // weitere navSingle-Dimensionen (selten): wirken wie Filter, nicht wie Sektionen
+  let previewMultiDims = [];      // erste 2 multi_select-Nicht-Nav-Dimensionen: kompakte Vorschau auf der Karte
+  let previewSingleDims = [];     // alle single_select-Nicht-Nav-Dimensionen: Chips im Kartenkopf
+  let detailDims = [];            // alles andere (weitere multi_select + alle text-Dimensionen): nur in der Detailansicht
+
+  let activeNavSingle = {};       // { [dimKey]: 'alle' | valueKey }
+  let activeNavMulti = {};        // { [dimKey]: Set(valueKey) }
 
   let data = [];
-  let activePhase = 'alle';
-  let activeDR = new Set(['portal', 'versorgung', 'epa', 'ehds']);
   let searchTerm = '';
   let openCard = null;
+  let view = 'cards';             // 'cards' | 'matrix'
+  let matrixX = null;
+  let matrixY = null;
 
   // ── Auth ─────────────────────────────────────────────────────────
   function getToken() { return sessionStorage.getItem('access_token'); }
@@ -344,10 +365,45 @@
     }
   });
 
-  // ── Daten laden + transformieren ────────────────────────────────
-  // Phase 1 (siehe KONTEXT.md): Struktur ist noch hart codiert wie im
-  // bestehenden Viewer (feste Felder/Phasen/Datenräume). Die dynamische
-  // Ableitung aus `dimensions` ist T05.
+  // ── Dimensionen laden (T05: Tabs/Filter/Kartenfelder/Matrix generisch
+  // aus dimensions/dimension_values statt hart codiert) ───────────────
+  async function loadDimensions() {
+    const res = await fetch(
+      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(key,label,farbe,reihenfolge)` +
+      `&order=reihenfolge&dimension_values.order=reihenfolge`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    if (!res.ok) throw new Error(`PostgREST-Fehler (Dimensionen, HTTP ${res.status})`);
+    return res.json();
+  }
+
+  function setupDimensions(loadedDims) {
+    dims = loadedDims.map(d => ({ ...d, values: d.dimension_values }));
+    dimsByKey = Object.fromEntries(dims.map(d => [d.key, d]));
+
+    const navDims = dims.filter(d => d.ist_navigationsachse);
+    navSingle = navDims.filter(d => d.typ === 'single_select');
+    navMulti = navDims.filter(d => d.typ === 'multi_select');
+    sectionDim = navSingle[0] || null;
+    extraNavSingle = navSingle.slice(1);
+
+    const nonNavSelectDims = dims.filter(d => !d.ist_navigationsachse && d.typ !== 'text');
+    previewMultiDims = nonNavSelectDims.filter(d => d.typ === 'multi_select').slice(0, 2);
+    previewSingleDims = nonNavSelectDims.filter(d => d.typ === 'single_select');
+    detailDims = dims.filter(d =>
+      !d.ist_navigationsachse && !previewMultiDims.includes(d) && !previewSingleDims.includes(d)
+    );
+
+    activeNavSingle = Object.fromEntries(navSingle.map(d => [d.key, 'alle']));
+    activeNavMulti = Object.fromEntries(navMulti.map(d => [d.key, new Set(d.values.map(v => v.key))]));
+
+    const axisDims = dims.filter(d => d.typ !== 'text');
+    matrixX = previewSingleDims[0]?.key || axisDims[0]?.key || null;
+    matrixY = navMulti[0]?.key || axisDims.find(d => d.key !== matrixX)?.key || null;
+  }
+
+  // ── Prozessschritte laden + auf dimsByKey abbilden ──────────────────
   function groupByDimension(rows) {
     const byDim = {};
     for (const row of rows) {
@@ -359,32 +415,17 @@
 
   function toStepRecord(step) {
     const byDim = groupByDimension(step.process_step_values);
-    const multi = (dim, field = 'label') => (byDim[dim] || []).map(r => r.dimension_values[field]);
-    const single = (dim, field = 'label') => (byDim[dim] || [])[0]?.dimension_values?.[field] ?? '';
-    const text = (dim) => (byDim[dim] || [])[0]?.text_value ?? '';
-
-    return {
-      nr: step.nr,
-      titel: step.titel,
-      phase: single('phase', 'key'),
-      dr: multi('datenraum', 'key'),
-      akteur: multi('akteur'),
-      objekt: multi('objekt'),
-      op: multi('operation', 'key').join(', '),
-      domäne: single('domaene'),
-      gesetze: multi('gesetz'),
-      standards: multi('standard'),
-      struktur: single('struktur', 'key'),
-      detail: text('detail'),
-      ist: text('ist'),
-      luecke: text('luecke'),
-      forderungen: text('forderungen'),
-    };
+    const values = {};
+    for (const dim of dims) {
+      const rows = byDim[dim.key] || [];
+      values[dim.key] = dim.typ === 'text' ? (rows[0]?.text_value ?? '') : rows.map(r => r.dimension_values);
+    }
+    return { nr: step.nr, titel: step.titel, values };
   }
 
   async function loadData() {
     const res = await fetch(
-      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label))&order=nr`,
+      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe))&order=nr`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
     if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
@@ -399,28 +440,76 @@
     document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
     document.getElementById('counter').textContent = 'lädt …';
     try {
+      setupDimensions(await loadDimensions());
       data = await loadData();
     } catch (err) {
-      document.getElementById('karten').innerHTML =
-        `<div class="empty-hint">${err.message}</div>`;
+      document.getElementById('karten').innerHTML = `<div class="empty-hint">${escapeHtml(err.message)}</div>`;
       document.getElementById('counter').textContent = '';
       return;
     }
+    renderToolbar();
     render();
   }
 
-  // ── Filter/Suche ─────────────────────────────────────────────────
-  function setPhase(phase) {
-    activePhase = phase;
-    document.querySelectorAll('.phase-tab').forEach((t, i) => {
-      t.classList.toggle('active', ['alle', 'vor', 'im', 'nach'][i] === phase);
+  // ── Toolbar (einmalig aus dims gebaut, siehe startApp) ──────────────
+  function renderToolbar() {
+    const rows = [];
+
+    for (const dim of navSingle) {
+      const tabs = [`<button class="phase-tab active" data-dim="${dim.key}" data-val="alle" onclick="setNavSingle('${dim.key}','alle')">Alle</button>`]
+        .concat(dim.values.map(v => `
+          <button class="phase-tab" data-dim="${dim.key}" data-val="${v.key}" onclick="setNavSingle('${dim.key}','${v.key}')">
+            <span class="dot" style="background:${colorOf(v)}"></span>${escapeHtml(v.label)}
+          </button>`));
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
+    }
+
+    for (const dim of navMulti) {
+      const toggles = dim.values.map(v => `
+        <button class="dr-toggle active" data-dim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"
+                onclick="toggleNavMulti('${dim.key}','${v.key}')">${escapeHtml(v.label)}</button>`);
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
+    }
+
+    document.getElementById('toolbar-nav-rows').innerHTML = rows.join('');
+
+    const axisDims = dims.filter(d => d.typ !== 'text');
+    const axisOptions = axisDims.map(d => `<option value="${d.key}">${escapeHtml(d.label)}</option>`).join('');
+    const xSelect = document.getElementById('matrix-x-select');
+    const ySelect = document.getElementById('matrix-y-select');
+    xSelect.innerHTML = axisOptions;
+    ySelect.innerHTML = axisOptions;
+    xSelect.value = matrixX;
+    ySelect.value = matrixY;
+  }
+
+  function setNavSingle(dimKey, value) {
+    activeNavSingle[dimKey] = value;
+    document.querySelectorAll(`.phase-tab[data-dim="${dimKey}"]`).forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === value);
     });
     render();
   }
 
-  function toggleDR(dr) {
-    if (activeDR.has(dr)) activeDR.delete(dr); else activeDR.add(dr);
-    document.querySelector(`.dr-toggle[data-dr="${dr}"]`).classList.toggle('active', activeDR.has(dr));
+  function toggleNavMulti(dimKey, valueKey) {
+    const set = activeNavMulti[dimKey];
+    if (set.has(valueKey)) set.delete(valueKey); else set.add(valueKey);
+    document.querySelector(`.dr-toggle[data-dim="${dimKey}"][data-val="${valueKey}"]`)
+      .classList.toggle('active', set.has(valueKey));
+    render();
+  }
+
+  function setView(next) {
+    view = next;
+    document.getElementById('view-cards-btn').classList.toggle('active', view === 'cards');
+    document.getElementById('view-matrix-btn').classList.toggle('active', view === 'matrix');
+    document.getElementById('matrix-controls').style.display = view === 'matrix' ? 'flex' : 'none';
+    render();
+  }
+
+  function onMatrixAxisChange() {
+    matrixX = document.getElementById('matrix-x-select').value;
+    matrixY = document.getElementById('matrix-y-select').value;
     render();
   }
 
@@ -448,71 +537,109 @@
   function matchesSearch(d) {
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
-    return (
-      d.titel.toLowerCase().includes(q) ||
-      d.akteur.join(', ').toLowerCase().includes(q) ||
-      d.objekt.join(' · ').toLowerCase().includes(q) ||
-      (d.detail || '').toLowerCase().includes(q)
-    );
+    const haystack = [d.titel, ...Object.values(d.values).flatMap(v =>
+      Array.isArray(v) ? v.map(x => x.label) : [v]
+    )].join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  // ── Sichtbarkeit (Dimmen) über die Nav-Multi-/zusätzliche Nav-Single-Filter ──
+  function isDimmedByNav(d) {
+    for (const dim of navMulti) {
+      const active = activeNavMulti[dim.key];
+      const stepVals = (d.values[dim.key] || []).map(v => v.key);
+      if (!stepVals.some(v => active.has(v))) return true;
+    }
+    for (const dim of extraNavSingle) {
+      const active = activeNavSingle[dim.key];
+      if (active !== 'alle') {
+        const stepVal = (d.values[dim.key] || [])[0]?.key;
+        if (stepVal !== active) return true;
+      }
+    }
+    return false;
   }
 
   // ── Karte als HTML ───────────────────────────────────────────────
   function renderCard(d) {
-    const hasDR = d.dr.some(r => activeDR.has(r));
-    const dimmed = !hasDR;
+    const dimmed = isDimmedByNav(d);
     const isOpen = openCard === d.nr;
 
-    const drBadges = d.dr.map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`).join('');
+    const headerChips = previewSingleDims.map(dim => {
+      const v = (d.values[dim.key] || [])[0];
+      return v ? `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>` : '';
+    }).join('');
+
+    const previewRows = previewMultiDims.map((dim, i) => {
+      const vals = d.values[dim.key] || [];
+      if (!vals.length) return '';
+      const cls = i === 0 ? 'card-tags-primary' : 'card-tags-secondary';
+      return `<div class="${cls}">${vals.map(v =>
+        `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`
+      ).join('')}</div>`;
+    }).join('');
+
+    const navBadges = navMulti.flatMap(dim => (d.values[dim.key] || []).map(v =>
+      `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`
+    )).join('');
 
     let detailHtml = '';
     if (isOpen) {
-      const domaene = d.domäne
-        ? `<span class="domaene-chip">${escapeHtml(d.domäne)}</span>`
-        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-      const gesetze = (d.gesetze || []).length
-        ? d.gesetze.map(g => `<span class="gesetz-chip">${escapeHtml(g)}</span>`).join('')
-        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-      const standards = (d.standards || []).length
-        ? d.standards.map(s => `<span class="standard-chip">${highlight(s, searchTerm)}</span>`).join('')
-        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
-
-      const section = (label, value) => value
-        ? `<div class="detail-section"><div class="detail-section-label">${label}</div><div style="white-space:pre-line;">${highlight(value, searchTerm)}</div></div>`
-        : '';
-
-      detailHtml = `
-        <div class="detail-box">
-          <div>${highlight(d.detail, searchTerm)}</div>
-          <div class="detail-section">
-            <div class="detail-section-label">Informationsdomäne</div>
-            ${domaene}
-          </div>
-          <div class="detail-section">
-            <div class="detail-section-label">Rechtsgrundlagen</div>
-            <div>${gesetze}</div>
-          </div>
-          <div class="detail-section">
-            <div class="detail-section-label">Standards</div>
-            <div>${standards}</div>
-          </div>
-          ${section('Was ist da?', d.ist)}
-          ${section('Was fehlt?', d.luecke)}
-          ${section('Forderungen', d.forderungen)}
-        </div>`;
+      const sections = detailDims.map(dim => {
+        if (dim.typ === 'text') {
+          const text = d.values[dim.key];
+          if (!text) return '';
+          return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div>
+                    <div style="white-space:pre-line;">${highlight(text, searchTerm)}</div></div>`;
+        }
+        const vals = d.values[dim.key] || [];
+        const inner = vals.length
+          ? vals.map(v => `<span class="chip" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`).join('')
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+        return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div><div>${inner}</div></div>`;
+      }).join('');
+      detailHtml = `<div class="detail-box">${sections}</div>`;
     }
 
+    const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
+    const borderStyle = sectionValue ? `border-left:3px solid ${colorOf(sectionValue)};` : '';
+
     return `
-      <div class="prozess-card ${phaseBorder[d.phase] || ''} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
+      <div class="prozess-card ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}" style="${borderStyle}"
            data-nr="${d.nr}" onclick="toggleDetail(${d.nr})">
-        <div class="card-meta"><span class="card-nr">#${String(d.nr).padStart(2, '0')}</span></div>
-        <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
-        ${d.akteur.length ? `<div class="card-akteur">${d.akteur.map(a => `<span class="akteur-tag">${highlight(a, searchTerm)}</span>`).join('')}</div>` : ''}
-        <div class="card-objekt">
-          ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${escapeHtml(d.op)}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
+        <div class="card-meta">
+          <span class="card-meta-chips">${headerChips}</span>
+          <span class="card-nr">#${String(d.nr).padStart(2, '0')}</span>
         </div>
-        <div class="card-badges">${drBadges}</div>
+        <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
+        ${previewRows}
+        <div class="card-badges">${navBadges}</div>
         ${detailHtml}
       </div>`;
+  }
+
+  // ── Matrix-Ansicht: zwei frei wählbare Dimensionen als Achsen ───────
+  function renderMatrix() {
+    const xDim = dimsByKey[matrixX];
+    const yDim = dimsByKey[matrixY];
+    if (!xDim || !yDim) return '<div class="empty-hint">Keine Achsen wählbar.</div>';
+
+    const visible = data.filter(matchesSearch);
+    const countFor = (xv, yv) => visible.filter(d =>
+      (d.values[xDim.key] || []).some(v => v.key === xv.key) &&
+      (d.values[yDim.key] || []).some(v => v.key === yv.key)
+    ).length;
+
+    const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
+    const body = xDim.values.map(xv => {
+      const cells = yDim.values.map(yv => {
+        const c = countFor(xv, yv);
+        return `<td class="${c ? 'matrix-hit' : ''}">${c || ''}</td>`;
+      }).join('');
+      return `<tr><th>${escapeHtml(xv.label)}</th>${cells}</tr>`;
+    }).join('');
+
+    return `<div class="matrix-wrap"><table class="matrix-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
   }
 
   // ── Render ───────────────────────────────────────────────────────
@@ -526,25 +653,41 @@
       return;
     }
 
-    const phases = activePhase === 'alle' ? ['vor', 'im', 'nach'] : [activePhase];
+    if (view === 'matrix') {
+      document.getElementById('counter').innerHTML =
+        `<strong>${data.filter(matchesSearch).length} von ${data.length}</strong> Prozessschritten in der Matrix`;
+      document.getElementById('karten').innerHTML = renderMatrix();
+      return;
+    }
+
+    const sections = sectionDim
+      ? (activeNavSingle[sectionDim.key] === 'alle' ? sectionDim.values : sectionDim.values.filter(v => v.key === activeNavSingle[sectionDim.key]))
+      : [null];
     let totalVisible = 0;
 
-    const sectionsHtml = phases.map(phase => {
-      const phaseDaten = data.filter(d => d.phase === phase).filter(matchesSearch);
-      const visibleCount = phaseDaten.filter(d => d.dr.some(r => activeDR.has(r))).length;
+    const sectionsHtml = sections.map(sectionValue => {
+      const sectionSteps = sectionValue
+        ? data.filter(d => (d.values[sectionDim.key] || [])[0]?.key === sectionValue.key).filter(matchesSearch)
+        : data.filter(matchesSearch);
+      const visibleCount = sectionSteps.filter(d => !isDimmedByNav(d)).length;
       totalVisible += visibleCount;
 
-      const countLabel = visibleCount === phaseDaten.length
-        ? `${phaseDaten.length} Schritte`
-        : `${visibleCount} von ${phaseDaten.length} Schritten sichtbar`;
+      const countLabel = visibleCount === sectionSteps.length
+        ? `${sectionSteps.length} Schritte`
+        : `${visibleCount} von ${sectionSteps.length} Schritten sichtbar`;
+
+      const headerStyle = sectionValue ? chipStyle(colorOf(sectionValue)) : '';
+      const header = sectionValue
+        ? `<div class="phase-section-header" style="${headerStyle}border-left-color:${colorOf(sectionValue)};">
+             <span class="phase-section-title">${escapeHtml(sectionValue.label)}</span>
+             <span class="phase-section-count">${countLabel}</span>
+           </div>`
+        : '';
 
       return `
         <div class="phase-section">
-          <div class="phase-section-header ${phaseBorder[phase]}">
-            <span class="phase-section-title">${phaseLabel[phase]}</span>
-            <span class="phase-section-count">${countLabel}</span>
-          </div>
-          <div class="phase-section-grid">${phaseDaten.map(renderCard).join('')}</div>
+          ${header}
+          <div class="phase-section-grid">${sectionSteps.map(renderCard).join('')}</div>
         </div>`;
     }).join('');
 
