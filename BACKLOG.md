@@ -66,6 +66,26 @@ eingeholt werden kann — sie ersetzt sie nicht.
 - [ ] **Rückfallplan dokumentiert:** Wie kommt die AG zurück zum alten Tool, falls das neue nach dem Umstieg Probleme zeigt?
 - [ ] **Kommunikation an die AG:** Wer informiert wann über den Wechsel (neue URL, neuer Login-Weg)?
 
+### Viewer-Abgleich: viewer-db vs. patientenpfad_interaktiv.html (Session 2026-07-11)
+
+Optischer/funktionaler Abgleich zwischen dem Bestands-Viewer und `viewer-db`
+(Screenshots nebeneinander, Original vs. dynamisches Rendering aus T05).
+Nebenbefund dabei behoben: eine übrig gebliebene Test-Dimension ("Test") und
+ein Test-Phasenwert ("test") aus einer früheren Browser-Testsession haben
+den Viewer auf 0/25 sichtbare Schritte gebracht — aus der DB gelöscht,
+Datenabgleich (`reconcile_with_data_js.py`) läuft wieder grün.
+
+| ID | Aufgabe | Priorität | Status |
+|----|---------|-----------|--------|
+| V01 | Struktur-Filter ergänzen (klickbare Chips strukturiert/teilstrukturiert/unstrukturiert) | Mittel | 📋 Offen |
+| V02 | Rechtsgrundlage-Filter ergänzen — Original gruppiert 37 Einzelgesetze automatisch in ~13 Kategorien (Regex auf `§`/`Art.`/`Abs.`); Design-Frage, ob generisch nachbaubar oder eigene "Übergruppe"-Dimension nötig | Mittel | 📋 Offen |
+| V03 | Standard-Filter ergänzen — analog zu V02, Original gruppiert per hart codierten `startsWith`-Regeln ("HL7 FHIR", "IHE", "gematik", "Terminologien", "Sonstige") | Mittel | 📋 Offen |
+| V04 | Export-Toolbar ergänzen: "Alle aufklappen", PDF/CSV/JSON | Niedrig | 📋 Offen |
+| V05 | Kopfzeile/Breadcrumb ergänzen ("Akteur × Prozess → Datenobjekt · 25 Schritte · 3 Phasen · 4 Datenräume · AK Patientenportale ↗") | Niedrig | 📋 Offen |
+| V06 | Matrix: Zellen sollen Schritt-Titel zeigen (anklickbar, farbcodiert nach Phase) statt nur Zahlen | Mittel | 📋 Offen |
+| V07 | Suchumfang klären: aktuell durchsucht `viewer-db` alle Felder (auch Ist/Lücke/Forderungen), Original nur Titel/Akteur/Objekt/Detail — gewollt oder angleichen? | Niedrig | 📋 Offen |
+| V08 | Operation-Badge ("E"/"E,V") zusätzlich auf der geschlossenen Karte anzeigen, nicht nur im aufgeklappten Detail | Niedrig | 📋 Offen |
+
 ---
 
 ## Inhaltliche Punkte – zurückgestellt (2026-07-10)
