@@ -74,6 +74,58 @@ python3 seed_ak_patientenportale.py
   stderr. Bekannter Fall: Schritt 3 referenziert `HL7 FHIR R4 (Patient)`,
   fehlt in `meta.standards`.
 
+## Viewer-Prototyp gegen die Datenbank (T04)
+
+`../viewer-db/index.html` ist ein separater, eigenständiger Viewer-Prototyp
+(gleiche Optik/Filter/Kartenlogik wie `patientenpfad_interaktiv.html`), der
+Daten aber live per PostgREST aus der Datenbank lädt statt aus
+`patientenpfad_data.js`. Die produktiven Dateien (`patientenpfad_interaktiv.html`,
+`patientenpfad_editor.html`, `patientenpfad_data.js`) bleiben dabei unangetastet.
+
+Start (beliebiger statischer Webserver genügt, kein Build-Schritt):
+
+```bash
+cd viewer-db
+python3 -m http.server 8090
+# im Browser: http://localhost:8090/
+```
+
+Der Prototyp braucht eine echte Anmeldung (GoTrue) UND eine Mitgliedschaft
+(`memberships`-Zeile) in einer Workgroup, sonst blendet RLS alle Daten aus.
+Demo-Zugang anlegen (einmalig, nach `docker compose up -d auth`):
+
+```bash
+# 1) Nutzer registrieren (löst Bestätigungsmail an Mailpit aus)
+curl -X POST http://localhost:9999/signup -H "Content-Type: application/json" \
+  -d '{"email":"demo@prozesslandkarte.local","password":"demo-passwort-123"}'
+
+# 2) Bestätigungscode aus Mailpit holen (http://localhost:8026) und verifizieren
+curl -X POST http://localhost:9999/verify -H "Content-Type: application/json" \
+  -d '{"type":"signup","email":"demo@prozesslandkarte.local","token":"<code aus Mailpit>"}'
+
+# 3) Mitgliedschaft als viewer in ak-patientenportale anlegen
+docker compose exec -T db psql -U postgres -d postgres -c "
+  insert into memberships (user_id, workgroup_id, rolle)
+  select id, (select id from workgroups where key='ak-patientenportale'), 'viewer'
+  from auth.users where email='demo@prozesslandkarte.local';
+"
+```
+
+Login im Prototyp mit `demo@prozesslandkarte.local` / `demo-passwort-123`.
+`GOTRUE_URL`/`REST_URL` sind oben in `viewer-db/index.html` als Konstanten
+hinterlegt (Default: die Ports aus diesem Stack) – bei abweichenden Ports
+dort anpassen.
+
+Getestet (Headless-Chrome-Screenshots, Session 2026-07-11): Login, alle 25
+Prozessschritte über alle drei Phasen, Karten-Detail-Aufklappen (Domäne/
+Rechtsgrundlagen/Standards/Ist/Lücke/Forderungen), Freitextsuche mit
+Highlighting, Datenraum-Filter (Dimmen nicht passender Karten), Logout,
+Fehlermeldung bei falschem Passwort.
+
+Phase 1 (siehe KONTEXT.md): Struktur ist bewusst noch hart codiert wie im
+bestehenden Viewer (feste Phasen/Datenräume/Felder) – die dynamische
+Ableitung aus `dimensions` ist T05.
+
 ## Ports
 
 | Dienst | Port | Zweck |

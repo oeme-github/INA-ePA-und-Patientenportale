@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Viewer-Prototyp (Datenbank)</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+
+      --phase-vor:  #059669;
+      --phase-im:   #4F46E5;
+      --phase-nach: #B45309;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text-1);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .page-header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+    .page-header p { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+    .page-header .badge-proto {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #FEF3C7;
+      color: #78350F;
+      border: 1px solid #FCD34D;
+      vertical-align: middle;
+    }
+
+    .session-box { font-size: 12px; color: var(--c-text-3); text-align: right; white-space: nowrap; }
+    .session-box .email { color: var(--c-text-2); font-weight: 600; }
+    .btn-link {
+      background: none; border: none; color: #4F46E5; font-size: 12px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-top: 4px;
+    }
+    .btn-link:hover { text-decoration: underline; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 12px 24px;
+      display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .filter-label {
+      font-size: 11px; font-weight: 600; color: var(--c-text-4);
+      text-transform: uppercase; letter-spacing: 0.06em; min-width: 90px;
+    }
+
+    .phase-tab {
+      padding: 5px 13px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: transparent; color: var(--c-text-3); cursor: pointer;
+      font-size: 12px; font-weight: 500; transition: all 0.12s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .phase-tab:hover:not(.active) { border-color: var(--c-border-3); color: var(--c-text-2); }
+    .phase-tab.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+    .phase-tab .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    .dr-toggle {
+      padding: 4px 11px; border-radius: 20px; border: 1px solid transparent;
+      font-size: 12px; font-weight: 500; cursor: pointer; transition: opacity 0.12s; opacity: 0.35;
+    }
+    .dr-toggle.active { opacity: 1; }
+    .dr-portal     { background: #DBEAFE; color: #1E40AF; border-color: #3B82F6; }
+    .dr-versorgung { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+    .dr-epa        { background: #EDE9FE; color: #4C1D95; border-color: #7C3AED; }
+    .dr-ehds       { background: #FEE2E2; color: #7F1D1D; border-color: #EF4444; }
+
+    .search-input {
+      flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid var(--c-border-2);
+      border-radius: var(--r-sm); font-size: 13px; font-family: inherit;
+      color: var(--c-text-1); background: var(--c-surface); transition: border-color 0.12s;
+    }
+    .search-input:focus { outline: none; border-color: var(--c-border-3); }
+    .search-input::placeholder { color: var(--c-text-4); }
+    mark { background: #FEF08A; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+    /* ── Hauptbereich ── */
+    .main { padding: 20px 24px; }
+    .counter { font-size: 12px; color: var(--c-text-3); margin-bottom: 14px; }
+    .counter strong { color: var(--c-text-2); font-weight: 600; }
+
+    .phase-section { margin-bottom: 32px; }
+    .phase-section-header {
+      display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+      border-radius: var(--r-md); margin-bottom: 14px; border-left: 4px solid transparent;
+    }
+    .phase-section-header.phase-vor  { background: #F0FDF4; border-color: var(--phase-vor); }
+    .phase-section-header.phase-im   { background: #F5F3FF; border-color: var(--phase-im); }
+    .phase-section-header.phase-nach { background: #FFFBEB; border-color: var(--phase-nach); }
+    .phase-section-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .phase-section-header.phase-vor  .phase-section-title { color: #065F46; }
+    .phase-section-header.phase-im   .phase-section-title { color: #3730A3; }
+    .phase-section-header.phase-nach .phase-section-title { color: #78350F; }
+    .phase-section-count { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--c-text-4); }
+
+    .phase-section-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;
+    }
+
+    .prozess-card {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 14px 16px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s, opacity 0.15s;
+      position: relative;
+    }
+    .prozess-card:hover { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .prozess-card.dimmed { opacity: 0.18; pointer-events: none; }
+    .prozess-card.open { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .phase-vor  { border-left: 3px solid var(--phase-vor); }
+    .phase-im   { border-left: 3px solid var(--phase-im); }
+    .phase-nach { border-left: 3px solid var(--phase-nach); }
+
+    .card-meta { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+    .card-nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); }
+    .card-titel { font-size: 14px; font-weight: 600; color: var(--c-text-1); line-height: 1.35; margin-bottom: 5px; }
+    .card-akteur { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .akteur-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE;
+    }
+    .card-objekt { font-size: 12px; color: var(--c-text-3); margin-bottom: 10px; }
+    .card-op {
+      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2);
+      margin-left: 4px; vertical-align: middle;
+    }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+    .dr-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+
+    .detail-box {
+      margin-top: 12px; border-top: 1px solid var(--c-border-1); padding-top: 12px;
+      font-size: 13px; color: var(--c-text-2); line-height: 1.65;
+    }
+    .detail-section { margin-top: 12px; }
+    .detail-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--c-text-4); margin-bottom: 6px;
+    }
+    .domaene-chip {
+      display: inline-block; padding: 3px 10px; border-radius: var(--r-sm); font-size: 12px; font-weight: 500;
+      background: #FEF9C3; color: #713F12; border: 1px solid #FDE68A;
+    }
+    .gesetz-chip {
+      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
+      background: #F0FDF4; color: #14532D; border: 1px solid #BBF7D0; margin-right: 4px; margin-bottom: 4px;
+    }
+    .standard-chip {
+      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
+      background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; margin-right: 4px; margin-bottom: 4px;
+    }
+    .struktur-badge {
+      display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em; margin-left: 6px; vertical-align: middle;
+    }
+    .struktur-strukturiert     { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .struktur-teilstrukturiert { background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; }
+    .struktur-unstrukturiert   { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
+
+    .empty-hint {
+      background: var(--c-surface); border: 1px dashed var(--c-border-2); border-radius: var(--r-lg);
+      padding: 24px; text-align: center; color: var(--c-text-3); font-size: 13px;
+    }
+
+    /* ── Login ── */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-box {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 28px 28px 24px; width: 100%; max-width: 340px;
+    }
+    .login-box h1 { font-size: 16px; margin-bottom: 4px; }
+    .login-box p.hint { font-size: 12px; color: var(--c-text-3); margin-bottom: 18px; }
+    .login-box label { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-2); margin: 12px 0 4px; }
+    .login-box input {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit;
+    }
+    .login-box input:focus { outline: none; border-color: var(--c-border-3); }
+    .login-box button {
+      margin-top: 18px; width: 100%; padding: 8px 10px; border: none; border-radius: var(--r-sm);
+      background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-error {
+      margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
+      border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login-Screen ─────────────────────────────────────────────── -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <h1>Patientenpfad – Viewer-Prototyp</h1>
+      <p class="hint">Anmeldung gegen den lokalen Auth-Dienst (GoTrue). Zugriff auf Prozessschritte
+        hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).</p>
+      <form id="login-form">
+        <label for="login-email">E-Mail</label>
+        <input type="email" id="login-email" autocomplete="username" required>
+        <label for="login-password">Passwort</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+        <button type="submit" id="login-submit">Anmelden</button>
+      </form>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- ── App (nach Login) ─────────────────────────────────────────── -->
+  <div id="app" style="display:none;">
+    <div class="page-header">
+      <div>
+        <h1>Patientenpfad – Interaktive Prozesskarte <span class="badge-proto">DB-Prototyp</span></h1>
+        <p>T04: gleiche Ansicht wie <code>patientenpfad_interaktiv.html</code>, Daten aber live aus Postgres über PostgREST statt aus <code>patientenpfad_data.js</code>.</p>
+      </div>
+      <div class="session-box">
+        <div>Angemeldet als <span class="email" id="session-email"></span></div>
+        <button class="btn-link" onclick="logout()">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="filter-row">
+        <span class="filter-label">Phase</span>
+        <button class="phase-tab active" onclick="setPhase('alle')">Alle Phasen</button>
+        <button class="phase-tab" onclick="setPhase('vor')"><span class="dot" style="background:var(--phase-vor)"></span>Vor</button>
+        <button class="phase-tab" onclick="setPhase('im')"><span class="dot" style="background:var(--phase-im)"></span>Im</button>
+        <button class="phase-tab" onclick="setPhase('nach')"><span class="dot" style="background:var(--phase-nach)"></span>Nach</button>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Datenraum</span>
+        <button class="dr-toggle dr-portal active"     data-dr="portal"     onclick="toggleDR('portal')">Portal</button>
+        <button class="dr-toggle dr-versorgung active" data-dr="versorgung" onclick="toggleDR('versorgung')">Versorgung</button>
+        <button class="dr-toggle dr-epa active"        data-dr="epa"        onclick="toggleDR('epa')">ePA</button>
+        <button class="dr-toggle dr-ehds active"       data-dr="ehds"       onclick="toggleDR('ehds')">EHDS</button>
+        <input type="search" id="search" class="search-input" placeholder="Suche in Titel, Akteur, Objekt, Detail …" oninput="onSearch(this.value)">
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="counter" id="counter">lädt …</div>
+      <div id="karten"></div>
+    </div>
+  </div>
+
+<script>
+  // ── Konfiguration ────────────────────────────────────────────────
+  // Lokaler Dev-Stack aus ../supabase/docker-compose.yml (siehe dort für
+  // DB_PORT/REST_PORT o.ä.). Für einen anderen Host/andere Ports anpassen.
+  const GOTRUE_URL = 'http://localhost:9999';
+  const REST_URL   = 'http://localhost:8001';
+
+  const phaseLabel  = { vor: 'Vor dem Krankenhaus', im: 'Im Krankenhaus', nach: 'Nach dem Krankenhaus' };
+  const phaseBorder = { vor: 'phase-vor', im: 'phase-im', nach: 'phase-nach' };
+  const drLabel      = { portal: 'Portal', versorgung: 'Versorgung', epa: 'ePA', ehds: 'EHDS' };
+  const drBadgeClass = { portal: 'dr-portal', versorgung: 'dr-versorgung', epa: 'dr-epa', ehds: 'dr-ehds' };
+
+  let data = [];
+  let activePhase = 'alle';
+  let activeDR = new Set(['portal', 'versorgung', 'epa', 'ehds']);
+  let searchTerm = '';
+  let openCard = null;
+
+  // ── Auth ─────────────────────────────────────────────────────────
+  function getToken() { return sessionStorage.getItem('access_token'); }
+
+  async function login(email, password) {
+    const res = await fetch(`${GOTRUE_URL}/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error_description || json.msg || 'Anmeldung fehlgeschlagen');
+    sessionStorage.setItem('access_token', json.access_token);
+    sessionStorage.setItem('user_email', json.user.email);
+    return json;
+  }
+
+  function logout() {
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_email');
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorBox = document.getElementById('login-error');
+    const submitBtn = document.getElementById('login-submit');
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Anmelden …';
+    try {
+      await login(email, password);
+      await startApp();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Anmelden';
+    }
+  });
+
+  // ── Daten laden + transformieren ────────────────────────────────
+  // Phase 1 (siehe KONTEXT.md): Struktur ist noch hart codiert wie im
+  // bestehenden Viewer (feste Felder/Phasen/Datenräume). Die dynamische
+  // Ableitung aus `dimensions` ist T05.
+  function groupByDimension(rows) {
+    const byDim = {};
+    for (const row of rows) {
+      const key = row.dimensions.key;
+      (byDim[key] ||= []).push(row);
+    }
+    return byDim;
+  }
+
+  function toStepRecord(step) {
+    const byDim = groupByDimension(step.process_step_values);
+    const multi = (dim, field = 'label') => (byDim[dim] || []).map(r => r.dimension_values[field]);
+    const single = (dim, field = 'label') => (byDim[dim] || [])[0]?.dimension_values?.[field] ?? '';
+    const text = (dim) => (byDim[dim] || [])[0]?.text_value ?? '';
+
+    return {
+      nr: step.nr,
+      titel: step.titel,
+      phase: single('phase', 'key'),
+      dr: multi('datenraum', 'key'),
+      akteur: multi('akteur'),
+      objekt: multi('objekt'),
+      op: multi('operation', 'key').join(', '),
+      domäne: single('domaene'),
+      gesetze: multi('gesetz'),
+      standards: multi('standard'),
+      struktur: single('struktur', 'key'),
+      detail: text('detail'),
+      ist: text('ist'),
+      luecke: text('luecke'),
+      forderungen: text('forderungen'),
+    };
+  }
+
+  async function loadData() {
+    const res = await fetch(
+      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label))&order=nr`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    if (!res.ok) throw new Error(`PostgREST-Fehler (HTTP ${res.status})`);
+    const steps = await res.json();
+    return steps.map(toStepRecord);
+  }
+
+  async function startApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
+    document.getElementById('counter').textContent = 'lädt …';
+    try {
+      data = await loadData();
+    } catch (err) {
+      document.getElementById('karten').innerHTML =
+        `<div class="empty-hint">${err.message}</div>`;
+      document.getElementById('counter').textContent = '';
+      return;
+    }
+    render();
+  }
+
+  // ── Filter/Suche ─────────────────────────────────────────────────
+  function setPhase(phase) {
+    activePhase = phase;
+    document.querySelectorAll('.phase-tab').forEach((t, i) => {
+      t.classList.toggle('active', ['alle', 'vor', 'im', 'nach'][i] === phase);
+    });
+    render();
+  }
+
+  function toggleDR(dr) {
+    if (activeDR.has(dr)) activeDR.delete(dr); else activeDR.add(dr);
+    document.querySelector(`.dr-toggle[data-dr="${dr}"]`).classList.toggle('active', activeDR.has(dr));
+    render();
+  }
+
+  function onSearch(value) {
+    searchTerm = value.trim();
+    render();
+  }
+
+  function toggleDetail(nr) {
+    openCard = openCard === nr ? null : nr;
+    render();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function highlight(text, term) {
+    const safe = escapeHtml(text || '');
+    if (!term) return safe;
+    const escTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp(`(${escTerm})`, 'ig'), '<mark>$1</mark>');
+  }
+
+  function matchesSearch(d) {
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      d.titel.toLowerCase().includes(q) ||
+      d.akteur.join(', ').toLowerCase().includes(q) ||
+      d.objekt.join(' · ').toLowerCase().includes(q) ||
+      (d.detail || '').toLowerCase().includes(q)
+    );
+  }
+
+  // ── Karte als HTML ───────────────────────────────────────────────
+  function renderCard(d) {
+    const hasDR = d.dr.some(r => activeDR.has(r));
+    const dimmed = !hasDR;
+    const isOpen = openCard === d.nr;
+
+    const drBadges = d.dr.map(r => `<span class="dr-badge ${drBadgeClass[r]}">${drLabel[r]}</span>`).join('');
+
+    let detailHtml = '';
+    if (isOpen) {
+      const domaene = d.domäne
+        ? `<span class="domaene-chip">${escapeHtml(d.domäne)}</span>`
+        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+      const gesetze = (d.gesetze || []).length
+        ? d.gesetze.map(g => `<span class="gesetz-chip">${escapeHtml(g)}</span>`).join('')
+        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+      const standards = (d.standards || []).length
+        ? d.standards.map(s => `<span class="standard-chip">${highlight(s, searchTerm)}</span>`).join('')
+        : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+
+      const section = (label, value) => value
+        ? `<div class="detail-section"><div class="detail-section-label">${label}</div><div style="white-space:pre-line;">${highlight(value, searchTerm)}</div></div>`
+        : '';
+
+      detailHtml = `
+        <div class="detail-box">
+          <div>${highlight(d.detail, searchTerm)}</div>
+          <div class="detail-section">
+            <div class="detail-section-label">Informationsdomäne</div>
+            ${domaene}
+          </div>
+          <div class="detail-section">
+            <div class="detail-section-label">Rechtsgrundlagen</div>
+            <div>${gesetze}</div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-section-label">Standards</div>
+            <div>${standards}</div>
+          </div>
+          ${section('Was ist da?', d.ist)}
+          ${section('Was fehlt?', d.luecke)}
+          ${section('Forderungen', d.forderungen)}
+        </div>`;
+    }
+
+    return `
+      <div class="prozess-card ${phaseBorder[d.phase] || ''} ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}"
+           data-nr="${d.nr}" onclick="toggleDetail(${d.nr})">
+        <div class="card-meta"><span class="card-nr">#${String(d.nr).padStart(2, '0')}</span></div>
+        <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
+        ${d.akteur.length ? `<div class="card-akteur">${d.akteur.map(a => `<span class="akteur-tag">${highlight(a, searchTerm)}</span>`).join('')}</div>` : ''}
+        <div class="card-objekt">
+          ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${escapeHtml(d.op)}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
+        </div>
+        <div class="card-badges">${drBadges}</div>
+        ${detailHtml}
+      </div>`;
+  }
+
+  // ── Render ───────────────────────────────────────────────────────
+  function render() {
+    if (!data.length) {
+      document.getElementById('counter').textContent = '';
+      document.getElementById('karten').innerHTML =
+        `<div class="empty-hint">Keine Prozessschritte sichtbar. Das kann heißen: die Arbeitsgruppe hat noch keine
+         Mitgliedschaft für diesen Nutzer (Row-Level-Security), oder es wurden noch keine Daten eingespielt
+         (siehe supabase/seed/).</div>`;
+      return;
+    }
+
+    const phases = activePhase === 'alle' ? ['vor', 'im', 'nach'] : [activePhase];
+    let totalVisible = 0;
+
+    const sectionsHtml = phases.map(phase => {
+      const phaseDaten = data.filter(d => d.phase === phase).filter(matchesSearch);
+      const visibleCount = phaseDaten.filter(d => d.dr.some(r => activeDR.has(r))).length;
+      totalVisible += visibleCount;
+
+      const countLabel = visibleCount === phaseDaten.length
+        ? `${phaseDaten.length} Schritte`
+        : `${visibleCount} von ${phaseDaten.length} Schritten sichtbar`;
+
+      return `
+        <div class="phase-section">
+          <div class="phase-section-header ${phaseBorder[phase]}">
+            <span class="phase-section-title">${phaseLabel[phase]}</span>
+            <span class="phase-section-count">${countLabel}</span>
+          </div>
+          <div class="phase-section-grid">${phaseDaten.map(renderCard).join('')}</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('counter').innerHTML =
+      `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
+    document.getElementById('karten').innerHTML = sectionsHtml;
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  if (getToken()) {
+    startApp();
+  }
+</script>
+</body>
+</html>

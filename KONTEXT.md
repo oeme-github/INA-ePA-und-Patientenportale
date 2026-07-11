@@ -20,9 +20,10 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02+T03: lokaler Stack aufgesetzt, patientenpfad_data.js als Seed migriert |
+| `KONTEXT.md` | – | 2026-07-11 | T02–T04: lokaler Stack, Seed-Migration, Viewer-Prototyp gegen die Datenbank |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
 | `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03) |
+| `viewer-db/index.html` | v1 | 2026-07-11 | Neu: Viewer-Prototyp gegen die Datenbank (T04) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -219,6 +220,41 @@ werden könnte.
 Da die AG weiterhin über den bestehenden Editor an `patientenpfad_data.js`
 arbeitet, ist das Skript bewusst erneut lauffähig — vor dem eigentlichen
 Cutover (T11) muss es noch einmal gegen den dann aktuellen Stand laufen.
+
+### T04 abgeschlossen: Viewer-Prototyp gegen die Datenbank (Session 2026-07-11)
+
+`viewer-db/index.html` — neue, eigenständige Datei (keine Änderung an
+`patientenpfad_interaktiv.html`). Optik/Filterlogik/Kartenaufbau bewusst am
+bestehenden Viewer orientiert (CSS-Klassen, Phase-Tabs, Datenraum-Toggles,
+Suche mit Highlighting, Detail-Aufklappen), aber Datenquelle ist jetzt
+`fetch()` gegen PostgREST statt `<script src="patientenpfad_data.js">`.
+
+Zusätzlich nötig: ein Login-Bildschirm (E-Mail/Passwort gegen GoTrue,
+`/token?grant_type=password`), da RLS ohne gültiges JWT + Mitgliedschaft
+alle Zeilen ausblendet. Das ist noch nicht T08 (der eigentliche
+Login-Bildschirm mit Magic-Link, Passwort-Reset etc.), sondern die minimale
+Authentifizierung, die der Prototyp braucht, um überhaupt Daten zu sehen —
+T08 wird das später ersetzen/ausbauen.
+
+Transformation: `process_steps` wird mit eingebetteten
+`process_step_values(dimensions(key), dimension_values(key,label))` per
+PostgREST-Resource-Embedding in einem Request geladen und im Browser zu
+einem Objekt pro Prozessschritt zusammengefasst (gruppiert nach
+`dimensions.key`) — funktional identisch zum alten `data`-Array aus
+`patientenpfad_data.js`.
+
+Getestet per Headless-Chrome (CDP, Screenshots): Login, alle 25
+Prozessschritte/3 Phasen, Karten-Detail, Freitextsuche mit Highlighting,
+Datenraum-Filter (Dimmen), Logout, Fehlermeldung bei falschem Passwort.
+Demo-Zugang (`demo@prozesslandkarte.local`, viewer-Rolle in
+`ak-patientenportale`) dokumentiert in `supabase/README.md`.
+
+Nebenbefund beim Testen: `GOTRUE_JWT_DEFAULT_GROUP_NAME` ist in dieser
+GoTrue-Version wirkungslos (reines Deprecation-Log) — ohne den
+Spalten-Default `auth.users.role = 'authenticated'` (den das volle
+supabase/postgres-Image mitbringt, wir aber nicht nutzen) bekommen neue
+Nutzer ein JWT mit `role:""`, und PostgREST kann nicht per `SET ROLE`
+wechseln. Behoben über `supabase/post-auth-init.sql` (bereits committed).
 
 ## Geplante Aufgaben
 
