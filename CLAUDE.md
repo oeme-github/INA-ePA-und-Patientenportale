@@ -105,6 +105,30 @@ Die vier Grundprinzipien (siehe README.md) gelten auch für technische Entscheid
 
 ---
 
+## Multi-User-Web-Tool (supabase/, viewer-db/, editor-db/, shared/)
+
+Paralleler, additiver Tooling-Track (siehe KONTEXT.md „Architekturentscheidung
+Multi-User-Web-Tool" und BACKLOG.md für Stand/nächste Schritte):
+
+**Harte Randbedingung:** `patientenpfad_interaktiv.html`, `patientenpfad_editor.html`
+und `patientenpfad_data.js` bleiben unangetastet, solange das neue Tool nicht
+nachweislich gleichwertig ist und die AG einem Cutover zugestimmt hat (T11 in
+BACKLOG.md). Vor jedem Commit in diesem Bereich `git status` auf diese drei
+Dateien prüfen — sie dürfen nicht auftauchen.
+
+**Dateien:**
+- `supabase/` — Postgres + PostgREST + GoTrue (Docker Compose), Schema-Migration, Seed-Skript (`seed/`), Datenabgleich (`seed/reconcile_with_data_js.py`)
+- `viewer-db/`, `editor-db/` — DB-gestützte Prototypen, rendern/generieren Felder dynamisch aus `dimensions`/`dimension_values`, nicht hart codiert
+- `shared/auth.js` — gemeinsamer Login (Magic-Link zuerst, Passwort-Fallback, SSO-Scaffolding), von beiden Prototypen per `<script src="../shared/auth.js">` eingebunden
+
+**Alles starten:** `./supabase/start.sh` (idempotent, ein Aufruf für den kompletten Stack inkl. Test-Zugänge). Details/Troubleshooting in `supabase/README.md`.
+
+**Wichtig für lokale Tests:** Viewer/Editor müssen aus dem Projekt-Wurzelverzeichnis
+heraus per Webserver bereitgestellt werden (nicht aus ihrem eigenen Unterordner),
+da beide `../shared/auth.js` referenzieren.
+
+---
+
 ## Allgemeine Regeln
 
 - `KONTEXT.md` ist die primäre Informationsquelle zu Beginn jeder Session
