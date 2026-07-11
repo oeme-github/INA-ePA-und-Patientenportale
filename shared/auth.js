@@ -73,12 +73,29 @@ async function verifyMagicLinkCode(code) {
   return json;
 }
 
+// ── Institutionelles SSO (T10, Kandidat Microsoft Entra ID) ─────────
+// GoTrue unterstützt Entra ID als externen OAuth-Provider fertig (Azure AD
+// v2-Endpoint) — siehe supabase/docker-compose.yml (GOTRUE_EXTERNAL_AZURE_*)
+// und supabase/.env.example. Was hier fehlt und NICHT lokal nachgebaut werden
+// kann: eine App-Registrierung im tatsächlichen Entra-ID-Tenant der
+// Organisation (Client-ID/-Secret, erlaubte Redirect-URIs) — das erfordert
+// Zugriff auf den Azure-AD-Tenant der gematik/des Krankenhauses und ist
+// bewusst nicht Teil dieses Prototyps. Der Redirect-Flow selbst
+// (/authorize → Microsoft-Login → zurück mit #access_token im Hash) ist
+// fertig verdrahtet und nutzt denselben tryConsumeUrlHashToken()-Pfad wie
+// der Magic-Link-Bonuspfad unten.
+function signInWithAzure() {
+  const redirectTo = location.origin + location.pathname;
+  location.href = `${GOTRUE_URL}/authorize?provider=azure&redirect_to=${encodeURIComponent(redirectTo)}`;
+}
+
 // Falls der Nutzer direkt auf den Link in der E-Mail klickt (statt den Code
 // manuell einzugeben): GoTrue leitet mit #access_token=...&... im URL-Hash
 // weiter (Implicit-Flow). Ohne pro Umgebung konfigurierten redirect_to lässt
 // sich das lokal nicht immer exakt treffen — der Code-Eingabe-Weg ist daher
 // der primäre, robuste Pfad; das hier ist ein Bonus für den Fall, dass die
-// Ports zufällig übereinstimmen.
+// Ports zufällig übereinstimmen. Derselbe Mechanismus verarbeitet auch die
+// Rückleitung von signInWithAzure() oben.
 function tryConsumeUrlHashToken() {
   if (!location.hash.includes('access_token')) return false;
   const params = new URLSearchParams(location.hash.slice(1));
@@ -91,12 +108,19 @@ function tryConsumeUrlHashToken() {
 }
 
 // ── Gemeinsamer Login-Bildschirm ────────────────────────────────────
-function initLoginScreen({ title, hint, onSuccess }) {
+function initLoginScreen({ title, hint, onSuccess, ssoAzureEnabled = false }) {
   const screen = document.getElementById('login-screen');
   screen.innerHTML = `
     <div class="login-box">
       <h1>${title}</h1>
       <p class="hint">${hint}</p>
+
+      ${ssoAzureEnabled ? `
+      <div id="sso-section">
+        <button id="sso-azure-btn" type="button">Mit Microsoft anmelden</button>
+      </div>
+      <p class="login-small-hint" style="text-align:center;margin:10px 0;">— oder —</p>
+      ` : ''}
 
       <div id="ml-request-section">
         <label for="ml-email">E-Mail</label>
@@ -128,6 +152,10 @@ function initLoginScreen({ title, hint, onSuccess }) {
   const errorBox = document.getElementById('login-error');
   const showError = (err) => { errorBox.textContent = err.message; errorBox.style.display = 'block'; };
   const clearError = () => { errorBox.style.display = 'none'; };
+
+  if (ssoAzureEnabled) {
+    document.getElementById('sso-azure-btn').addEventListener('click', signInWithAzure);
+  }
 
   async function withButton(btn, busyLabel, fn) {
     clearError();

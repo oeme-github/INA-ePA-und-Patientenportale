@@ -37,13 +37,33 @@ Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als ech
 | T06 | Neuer, separater Editor-Prototyp mit Datenbank-Write + Row-Level-Security (bestehender GitHub-PUT-Editor bleibt parallel nutzbar) | Hoch | ✅ Erledigt (2026-07-11) — `editor-db/index.html` |
 | T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ✅ Erledigt (2026-07-11) — zusammen mit T06 umgesetzt, da neuer Editor von Anfang an dynamisch gebaut wurde |
 | T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ✅ Erledigt (2026-07-11) — `shared/auth.js`, von viewer-db und editor-db gemeinsam genutzt, Passwort als Fallback |
-| T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | 📋 Offen |
-| T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 📋 Offen |
-| T11 | Cutover: Bestandstool erst ablösen/umleiten, nachdem neues Tool im Parallelbetrieb validiert ist (Datenabgleich, AG-Freigabe) | Hoch | 📋 Offen |
+| T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | ✅ Erledigt (2026-07-11) — neue Ansicht in `editor-db/index.html`: Dimensionen anlegen/bearbeiten/löschen (Rolle `admin`), Werte pro Dimension bearbeiten/löschen (Rolle `editor`+) |
+| T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 🔄 Scaffolding erledigt (2026-07-11) — GoTrue-Konfiguration + Redirect-Flow in `shared/auth.js` fertig verdrahtet, aber deaktiviert (`ssoAzureEnabled: false`); echte Aktivierung braucht eine App-Registrierung im Entra-ID-Tenant der Organisation (externe Abhängigkeit, siehe supabase/README.md) |
+| T11 | Cutover: Bestandstool erst ablösen/umleiten, nachdem neues Tool im Parallelbetrieb validiert ist (Datenabgleich, AG-Freigabe) | Hoch | 🔄 Vorbereitung erledigt (2026-07-11) — `supabase/seed/reconcile_with_data_js.py` (Datenabgleich, getestet) + Cutover-Checkliste (siehe unten); tatsächlicher Cutover erfordert AG-Freigabe, keine technische Einzelentscheidung |
 
 **Offene Entscheidungen (siehe KONTEXT.md):** Wer hostet langfristig (Nutzer vs. gematik)? Finale SSO-Wahl? Ist ein Git-artiges Audit-/Versionsprotokoll ein hartes Anforderungskriterium?
 
 **Hinweis aus T02:** `workgroups` hat bewusst keine Schreib-Policy — neue Arbeitsgruppen anlegen geht aktuell nur per `service_role`/direktem DB-Zugriff, nicht über PostgREST mit einer Nutzerrolle. Bei T09 (Verwaltungsoberfläche) berücksichtigen (z.B. eigene Admin-Policy oder separater privilegierter Endpunkt).
+
+### Cutover-Checkliste (Vorbereitung für T11 — bewusst noch keine Ausführung)
+
+**Wichtig:** Die folgende Checkliste ist Vorbereitung, keine Ausführung. Ein
+tatsächlicher Cutover (Bestandstool ablösen/umleiten) ist an die harte
+Randbedingung aus KONTEXT.md gebunden ("Diese drei Dateien bleiben
+unverändert nutzbar … bis das neue System nachweislich gleichwertig ist")
+und erfordert eine Entscheidung/Freigabe der AG, keine technische
+Einzelperson-Entscheidung. Diese Liste hilft, wann diese Freigabe sinnvoll
+eingeholt werden kann — sie ersetzt sie nicht.
+
+- [ ] **Datenabgleich grün:** `supabase/seed/reconcile_with_data_js.py` läuft ohne Abweichungen (Exit-Code 0) gegen den *aktuellen* Stand von `patientenpfad_data.js` — nicht nur den Stand von T03
+- [ ] **Rollenkonzept final:** Wer bekommt welche `memberships`-Rolle (viewer/editor/admin) in der produktiven Workgroup? Wer pflegt das?
+- [ ] **Hosting/Betrieb geklärt:** Wer betreibt den Stack langfristig (Nutzer selbst vs. gematik) — siehe offene Entscheidung oben
+- [ ] **SSO-Entscheidung:** Reicht E-Mail/Magic-Link zum Start, oder muss institutionelles SSO (T10) vorher stehen?
+- [ ] **Audit-/Versionsprotokoll geklärt:** Ist der Git-Commit-Verlauf-Ersatz (`process_step_audit`-Tabelle, aktuell nur angelegt, nicht aktiv genutzt) ausreichend, oder ein hartes Kriterium?
+- [ ] **AG-Freigabe eingeholt:** Plenum/Ansprechpartner der AG hat den Parallelbetrieb bewertet und dem Wechsel zugestimmt
+- [ ] **Parallelbetriebs-Zeitraum definiert:** Wie lange laufen altes und neues Tool nebeneinander, bevor endgültig umgestellt wird?
+- [ ] **Rückfallplan dokumentiert:** Wie kommt die AG zurück zum alten Tool, falls das neue nach dem Umstieg Probleme zeigt?
+- [ ] **Kommunikation an die AG:** Wer informiert wann über den Wechsel (neue URL, neuer Login-Weg)?
 
 ---
 

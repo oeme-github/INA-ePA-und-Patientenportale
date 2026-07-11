@@ -109,6 +109,41 @@
     }
     .add-value-row button:hover { border-color: var(--c-border-3); }
 
+    .sidebar-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 6px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: var(--c-surface); color: var(--c-text-3); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .tab-btn.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+
+    .typ-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2); margin-left: 6px; flex-shrink: 0;
+    }
+    .nav-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; margin-left: 4px; flex-shrink: 0;
+    }
+
+    .value-row {
+      display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--c-border-1);
+    }
+    .value-row:last-child { border-bottom: none; }
+    .value-row input[type="text"] {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; font-family: inherit;
+    }
+    .value-row input[type="text"].value-label { flex: 1; }
+    .value-row input[type="color"] { width: 32px; height: 28px; padding: 2px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); }
+    .value-row input[type="number"] { width: 52px; padding: 4px 6px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
+    .value-row button {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: var(--c-surface);
+      font-size: 11px; cursor: pointer;
+    }
+    .value-row button.btn-danger { background: #FEE2E2; color: #7F1D1D; border-color: #FCA5A5; }
+
+    .checkbox-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .checkbox-inline input { width: auto; }
+
     .form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--c-border-1); }
     .form-message {
       margin-top: 12px; font-size: 12px; padding: 8px 10px; border-radius: var(--r-sm); display: none;
@@ -168,15 +203,31 @@
 
     <div class="layout">
       <div class="sidebar">
-        <div class="sidebar-header">
-          <h2 id="step-count">Prozessschritte</h2>
-          <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
+          <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
         </div>
-        <div class="step-list" id="step-list"></div>
+
+        <div id="steps-sidebar">
+          <div class="sidebar-header">
+            <h2 id="step-count">Prozessschritte</h2>
+            <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
+          </div>
+          <div class="step-list" id="step-list"></div>
+        </div>
+
+        <div id="dimensions-sidebar" style="display:none;">
+          <div class="sidebar-header">
+            <h2 id="dimension-count">Dimensionen</h2>
+            <button class="btn btn-primary" onclick="newDimension()">+ Neu</button>
+          </div>
+          <div class="step-list" id="dimension-list"></div>
+        </div>
       </div>
 
       <div class="editor-main">
         <div id="editor-empty" class="empty-hint">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+
         <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
           <div class="form-row">
             <div class="field" style="max-width:120px;">
@@ -195,6 +246,60 @@
           </div>
           <div class="form-message error" id="form-error"></div>
           <div class="form-message success" id="form-success"></div>
+        </form>
+
+        <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
+          <p class="field-hint" style="margin-bottom:16px;">Neue Dimensionen anlegen/bearbeiten erfordert die Rolle
+            <code>admin</code> (Row-Level-Security) — mit <code>editor</code> kann man nur Werte innerhalb
+            bestehender Dimensionen pflegen (siehe Prozessschritt-Formular).</p>
+          <div class="form-row">
+            <div class="field" style="max-width:200px;">
+              <label for="dim-field-key">Key</label>
+              <input type="text" id="dim-field-key" required>
+              <p class="field-hint">Technischer Bezeichner, z.B. <code>prioritaet</code>.</p>
+            </div>
+            <div class="field">
+              <label for="dim-field-label">Label</label>
+              <input type="text" id="dim-field-label" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="dim-field-typ">Typ</label>
+              <select id="dim-field-typ">
+                <option value="single_select">single_select (Auswahl, ein Wert)</option>
+                <option value="multi_select">multi_select (Auswahl, mehrere Werte)</option>
+                <option value="text">text (Freitext)</option>
+              </select>
+            </div>
+            <div class="field" style="max-width:120px;">
+              <label for="dim-field-reihenfolge">Reihenfolge</label>
+              <input type="number" id="dim-field-reihenfolge" min="1">
+            </div>
+            <div class="field" style="max-width:160px;">
+              <label for="dim-field-farbe">Farbe (optional)</label>
+              <input type="color" id="dim-field-farbe" style="width:100%;height:34px;padding:2px;">
+            </div>
+          </div>
+          <div class="field">
+            <label class="checkbox-inline"><input type="checkbox" id="dim-field-nav"> Navigationsachse (Tab-Leiste bzw. Toggle-Filter im Viewer)</label>
+          </div>
+
+          <div id="dimension-values-section" class="field" style="display:none;">
+            <label>Werte</label>
+            <div id="dimension-values-list"></div>
+            <div class="add-value-row">
+              <input type="text" placeholder="Neuer Wert" id="dim-new-value-label">
+              <button type="button" onclick="addDimensionValueInManager()">+ Hinzufügen</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="dim-save-btn">Speichern</button>
+            <button type="button" class="btn btn-danger" id="dim-delete-btn" onclick="onDeleteDimension()">Löschen</button>
+          </div>
+          <div class="form-message error" id="dim-form-error"></div>
+          <div class="form-message success" id="dim-form-success"></div>
         </form>
       </div>
     </div>
@@ -223,6 +328,8 @@
   let dims = [];
   let steps = [];         // [{ id, nr, titel }]
   let currentStepId = null;
+  let activeView = 'steps';  // 'steps' | 'dimensions' (T09)
+  let currentDimId = null;
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -261,12 +368,7 @@
     myRole = memberships[0]?.rolle || null;
     document.getElementById('session-role').textContent = myRole || 'ohne Rolle';
 
-    const dimsRes = await apiFetch(
-      `/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(id,key,label,farbe,reihenfolge)` +
-      `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
-    );
-    dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));
-
+    await reloadDimensions();
     await reloadSteps();
   }
 
@@ -370,6 +472,214 @@
       item.innerHTML = `<input type="checkbox" value="${escapeHtml(created.key)}">${escapeHtml(created.label)}`;
       field.querySelector('.checkbox-list').appendChild(item);
     }
+  }
+
+  // ── Ansicht wechseln: Prozessschritte / Dimensionen (T09) ───────────
+  function setView(view) {
+    activeView = view;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+    document.getElementById('steps-sidebar').style.display = view === 'steps' ? 'block' : 'none';
+    document.getElementById('dimensions-sidebar').style.display = view === 'dimensions' ? 'block' : 'none';
+
+    document.getElementById('step-form').style.display = 'none';
+    document.getElementById('dimension-form').style.display = 'none';
+    document.getElementById('editor-empty').style.display = 'block';
+    document.getElementById('editor-empty').textContent = view === 'steps'
+      ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
+      : 'Dimension in der Liste auswählen oder „+ Neu" klicken.';
+  }
+
+  // ── Dimensionen verwalten (T09) ──────────────────────────────────────
+  function renderDimensionList() {
+    document.getElementById('dimension-count').textContent = `Dimensionen (${dims.length})`;
+    document.getElementById('dimension-list').innerHTML = dims.map(d => `
+      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" onclick="selectDimension('${d.id}')">
+        <span class="titel">${escapeHtml(d.label)}</span>
+        <span class="typ-badge">${d.typ}</span>
+        ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
+      </div>`).join('') || '<div class="empty-hint">Noch keine Dimensionen.</div>';
+  }
+
+  function selectDimension(id) {
+    currentDimId = id;
+    renderDimensionList();
+    renderDimensionForm(id);
+  }
+
+  function newDimension() {
+    currentDimId = null;
+    renderDimensionList();
+    const nextOrder = dims.length ? Math.max(...dims.map(d => d.reihenfolge)) + 1 : 1;
+    renderDimensionForm(null, { reihenfolge: nextOrder });
+  }
+
+  function renderDimensionValues(dim) {
+    document.getElementById('dimension-values-list').innerHTML = (dim.values || []).map(v => `
+      <div class="value-row" data-value-id="${v.id}">
+        <input type="text" class="value-label" value="${escapeHtml(v.label)}">
+        <input type="color" value="${v.farbe || '#94a3b8'}">
+        <input type="number" value="${v.reihenfolge}" title="Reihenfolge">
+        <button type="button" onclick="saveDimensionValueRow('${v.id}')">Speichern</button>
+        <button type="button" class="btn-danger" onclick="deleteDimensionValueRow('${v.id}')">Löschen</button>
+      </div>`).join('') || '<p class="field-hint">Noch keine Werte.</p>';
+  }
+
+  function toggleDimensionValuesSection() {
+    const typ = document.getElementById('dim-field-typ').value;
+    document.getElementById('dimension-values-section').style.display = typ === 'text' ? 'none' : 'block';
+  }
+
+  function renderDimensionForm(dimId, draft) {
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('dimension-form').style.display = 'block';
+    document.getElementById('dim-form-error').style.display = 'none';
+    document.getElementById('dim-form-success').style.display = 'none';
+    document.getElementById('dim-delete-btn').style.display = dimId ? 'inline-block' : 'none';
+
+    const dim = dimId ? dims.find(d => d.id === dimId) : null;
+
+    document.getElementById('dim-field-key').value = dim?.key ?? '';
+    document.getElementById('dim-field-key').disabled = !!dim;
+    document.getElementById('dim-field-label').value = dim?.label ?? '';
+    document.getElementById('dim-field-typ').value = dim?.typ ?? 'single_select';
+    document.getElementById('dim-field-reihenfolge').value = dim?.reihenfolge ?? draft?.reihenfolge ?? 1;
+    document.getElementById('dim-field-farbe').value = dim?.farbe ?? '#94a3b8';
+    document.getElementById('dim-field-nav').checked = !!dim?.ist_navigationsachse;
+
+    document.getElementById('dim-field-typ').onchange = toggleDimensionValuesSection;
+    toggleDimensionValuesSection();
+    if (dim) renderDimensionValues(dim);
+    else document.getElementById('dimension-values-list').innerHTML = '<p class="field-hint">Erst nach dem ersten Speichern verfügbar.</p>';
+  }
+
+  async function onSaveDimension(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('dim-form-error');
+    const successBox = document.getElementById('dim-form-success');
+    const saveBtn = document.getElementById('dim-save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+
+    try {
+      const payload = {
+        key: document.getElementById('dim-field-key').value.trim(),
+        label: document.getElementById('dim-field-label').value.trim(),
+        typ: document.getElementById('dim-field-typ').value,
+        reihenfolge: Number(document.getElementById('dim-field-reihenfolge').value) || 1,
+        farbe: document.getElementById('dim-field-farbe').value,
+        ist_navigationsachse: document.getElementById('dim-field-nav').checked,
+      };
+
+      if (currentDimId) {
+        const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({
+            label: payload.label, typ: payload.typ, reihenfolge: payload.reihenfolge,
+            farbe: payload.farbe, ist_navigationsachse: payload.ist_navigationsachse,
+          }),
+        });
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        const rows = await res.json();
+        if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die admin-Rolle (Row-Level-Security).');
+      } else {
+        const res = await apiFetch('/dimensions', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ ...payload, workgroup_id: workgroup.id }),
+        });
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        const [created] = await res.json();
+        currentDimId = created.id;
+      }
+
+      successBox.textContent = 'Gespeichert.';
+      successBox.style.display = 'block';
+      await reloadDimensions();
+      renderDimensionForm(currentDimId);
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = false;
+    }
+    return false;
+  }
+
+  async function onDeleteDimension() {
+    if (!currentDimId) return;
+    if (!confirm('Diese Dimension wirklich löschen? Alle zugehörigen Werte UND alle Zuordnungen zu Prozessschritten gehen dabei verloren.')) return;
+    const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+      return;
+    }
+    currentDimId = null;
+    document.getElementById('dimension-form').style.display = 'none';
+    document.getElementById('editor-empty').style.display = 'block';
+    await reloadDimensions();
+  }
+
+  async function reloadDimensions() {
+    const dimsRes = await apiFetch(
+      `/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,farbe,dimension_values(id,key,label,farbe,reihenfolge)` +
+      `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
+    );
+    dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));
+    renderDimensionList();
+  }
+
+  async function addDimensionValueInManager() {
+    const dim = dims.find(d => d.id === currentDimId);
+    const input = document.getElementById('dim-new-value-label');
+    const label = input.value.trim();
+    if (!dim || !label) return;
+    const maxOrder = Math.max(0, ...dim.values.map(v => v.reihenfolge));
+    const res = await apiFetch('/dimension_values', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ dimension_id: dim.id, key: label, label, reihenfolge: maxOrder + 1 }),
+    });
+    if (!res.ok) {
+      alert(`Wert konnte nicht angelegt werden (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    const [created] = await res.json();
+    dim.values.push(created);
+    input.value = '';
+    renderDimensionValues(dim);
+  }
+
+  async function saveDimensionValueRow(valueId) {
+    const row = document.querySelector(`.value-row[data-value-id="${valueId}"]`);
+    const label = row.querySelector('.value-label').value.trim();
+    const farbe = row.querySelector('input[type="color"]').value;
+    const reihenfolge = Number(row.querySelector('input[type="number"]').value) || 1;
+    const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ label, farbe, reihenfolge }),
+    });
+    if (!res.ok) {
+      alert(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    await reloadDimensions();
+    const dim = dims.find(d => d.id === currentDimId);
+    if (dim) renderDimensionValues(dim);
+  }
+
+  async function deleteDimensionValueRow(valueId) {
+    if (!confirm('Diesen Wert wirklich löschen? Er wird auch aus allen Prozessschritten entfernt, die ihn verwenden.')) return;
+    const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    await reloadDimensions();
+    const dim = dims.find(d => d.id === currentDimId);
+    if (dim) renderDimensionValues(dim);
   }
 
   // ── Schritt auswählen / neu / speichern / löschen ───────────────────
@@ -519,11 +829,14 @@
   }
 
   // ── Start ────────────────────────────────────────────────────────
+  // ssoAzureEnabled: siehe Kommentar in viewer-db/index.html — auf true
+  // stellen, sobald eine echte Entra-ID-App-Registrierung existiert.
   initLoginScreen({
     title: 'Patientenpfad – Editor',
     hint: 'Schreiben erfordert die Rolle <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe ' +
           '(Row-Level-Security) — mit <code>viewer</code> kann man sich anmelden und lesen, aber Speichern schlägt fehl.',
     onSuccess: startApp,
+    ssoAzureEnabled: false,
   });
 
   if (tryConsumeUrlHashToken() || getToken()) {

@@ -162,6 +162,51 @@ neuen Dimension-Wert ergänzen + Speichern (persistiert, Liste aktualisiert
 sich), RLS-Grenzfall mit `viewer`-Rolle (Speichern schlägt kontrolliert fehl,
 DB bleibt unverändert), neuen Schritt anlegen und löschen.
 
+## Dimensionen-Verwaltung im Editor (T09)
+
+Im Editor (`editor-db/index.html`) zwischen „Prozessschritte" und
+„Dimensionen" umschalten (Sidebar-Tabs). Dort lassen sich neue Dimensionen
+anlegen (Key/Label/Typ/Reihenfolge/Farbe/Navigationsachse) sowie bestehende
+bearbeiten/löschen, und die Werte einer Dimension pflegen (bearbeiten/
+löschen, nicht nur ergänzen wie im Prozessschritt-Formular). Dimensionen
+anlegen/ändern/löschen erfordert laut Schema die Rolle `admin`, nicht nur
+`editor` (`"Admins verwalten Dimensionen"`-Policy) — mit `editor` bleibt nur
+die Werte-Pflege innerhalb bestehender Dimensionen möglich. Admin-Testzugang
+analog zu `demo@…`/`editor@…` anlegen, nur mit Rolle `admin`:
+
+```bash
+curl -X POST http://localhost:9999/signup -H "Content-Type: application/json" \
+  -d '{"email":"admin@prozesslandkarte.local","password":"admin-passwort-123"}'
+# Code aus Mailpit holen und verifizieren (siehe oben), dann:
+docker compose exec -T db psql -U postgres -d postgres -c "
+  insert into memberships (user_id, workgroup_id, rolle)
+  select id, (select id from workgroups where key='ak-patientenportale'), 'admin'
+  from auth.users where email='admin@prozesslandkarte.local';
+"
+```
+
+Getestet (Headless-Chrome): Dimension anlegen (Reihenfolge korrekt
+vorgeschlagen), Wert ergänzen (erscheint sofort im Prozessschritt-Formular),
+RLS-Grenzfall mit `editor`-Rolle (Anlegen schlägt mit HTTP 403 fehl, DB
+unverändert), Dimension wieder löschen.
+
+## Datenabgleich gegen patientenpfad_data.js (T11-Vorbereitung)
+
+`supabase/seed/reconcile_with_data_js.py` vergleicht den aktuellen DB-Stand
+der Workgroup `ak-patientenportale` Feld für Feld gegen den *aktuellen*
+Stand von `patientenpfad_data.js` (reiner Lesevergleich, keine Schreib­
+operation):
+
+```bash
+cd supabase/seed
+python3 reconcile_with_data_js.py
+# Exit-Code 0 = identisch, 1 = Abweichungen (werden aufgelistet)
+```
+
+Sinnvoll vor einem Cutover (siehe Checkliste in BACKLOG.md) oder nachdem die
+AG über den bestehenden Editor weitergepflegt hat — bei Abweichungen zuerst
+`seed_ak_patientenportale.py` erneut laufen lassen, dann erneut prüfen.
+
 ## Gemeinsamer Login (T08)
 
 `../shared/auth.js` wird von `viewer-db` und `editor-db` gemeinsam per
@@ -172,6 +217,35 @@ Code aus der Mail/Mailpit → `/verify`), Passwort als eingeklappter Fallback
 (z.B. für die obigen `demo@…`/`editor@…`-Testzugänge). `demo@…` und
 `editor@…` funktionieren mit beiden Wegen — es ist derselbe GoTrue-Nutzer,
 nur die Anmeldemethode unterscheidet sich.
+
+## Institutionelles SSO — Microsoft Entra ID (T10)
+
+GoTrue unterstützt Entra ID als externen OAuth-Provider bereits fertig
+(`GOTRUE_EXTERNAL_AZURE_*` in `docker-compose.yml`, `SSO_AZURE_*` in
+`.env.example`) — der Redirect-Flow (`/authorize?provider=azure` → Microsoft-
+Login → zurück mit `#access_token` im URL-Hash) ist in `shared/auth.js`
+(`signInWithAzure()`) verdrahtet und nutzt denselben Hash-Consuming-Pfad wie
+der Magic-Link-Bonusweg.
+
+**Was hier bewusst fehlt und nicht lokal nachgebaut werden kann:** eine
+echte App-Registrierung im Entra-ID-Tenant der Organisation (Client-ID/
+-Secret, erlaubte Redirect-URIs). Das erfordert Zugriff auf den Azure-AD-
+Tenant der gematik/des Krankenhauses, den ich als lokaler Dev-Prototyp
+nicht besitze und nicht selbst anlegen kann. Bis eine Organisation das
+selbst einrichtet, bleibt SSO im Login-Bildschirm ausgeblendet
+(`ssoAzureEnabled: false` in `viewer-db/index.html` und
+`editor-db/index.html`).
+
+**Um SSO später scharf zu schalten**, sobald eine App-Registrierung
+existiert:
+1. In Entra ID: App-Registrierung anlegen, Redirect-URI auf die GoTrue-URL
+   setzen (z.B. `http://localhost:9999/callback` lokal), Client-Secret
+   erzeugen.
+2. `supabase/.env`: `SSO_AZURE_ENABLED=true` sowie Client-ID/-Secret/
+   Tenant-URL/Redirect-URI eintragen, Stack neu starten (`docker compose up
+   -d auth`).
+3. In `viewer-db/index.html` und `editor-db/index.html`: `ssoAzureEnabled:
+   true` in `initLoginScreen(...)` setzen.
 
 ## Ports
 
@@ -222,9 +296,13 @@ und wurde am 2026-07-11 auf `DB_PORT`/`REST_PORT` (Default 5435/8001) umgestellt
   nach. **Ein reiner Spalten-Default reicht aber nicht**: GoTrue schreibt bei
   jedem Signup explizit `role=''` (nicht NULL, nicht weggelassen) – ein
   Default greift nur, wenn die Spalte in der INSERT-Anweisung fehlt. Deshalb
-  zusätzlich ein `before insert`-Trigger auf `auth.users`, der leere Rollen
-  korrigiert (gefunden beim T06-Test mit einem zweiten, neu angelegten
-  Nutzer).
+  zusätzlich ein Trigger auf `auth.users`, der leere Rollen korrigiert
+  (gefunden beim T06-Test mit einem zweiten, neu angelegten Nutzer). **Ein
+  `before insert`-Trigger allein reichte danach immer noch nicht** (T09-Test):
+  GoTrue überschreibt den Nutzer offenbar noch mindestens einmal per `UPDATE`
+  im selben Signup/Verify-Ablauf, mit einem in Go noch leeren Rollen-Feld —
+  ein reiner Insert-Trigger sieht diese spätere Update nicht. Endgültiger
+  Fix: Trigger auf `before insert or update` erweitert.
 
 ## Smoke-Test (durchgeführt, nicht dauerhaft im Stack)
 

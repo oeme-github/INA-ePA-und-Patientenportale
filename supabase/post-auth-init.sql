@@ -13,9 +13,17 @@
 -- Ein reiner Spalten-Default reicht NICHT: GoTrue schreibt bei jedem Signup
 -- explizit role='' (leerer String, nicht NULL, nicht weggelassen) – ein
 -- Default greift nur, wenn die Spalte in der INSERT-Anweisung fehlt, nicht
--- wenn sie explizit auf '' gesetzt wird. Deshalb zusätzlich ein Trigger, der
--- das bei jedem Insert korrigiert (gefunden beim T06-Test: ein zweiter,
--- nach dem ersten Fix neu angelegter Nutzer hatte wieder role:"").
+-- wenn sie explizit auf '' gesetzt wird.
+--
+-- Ein BEFORE-INSERT-Trigger allein reicht AUCH NICHT (gefunden beim T09-Test):
+-- GoTrue scheint den User-Datensatz nach dem initialen Insert im selben
+-- Signup/Verify-Ablauf noch mindestens einmal per UPDATE zu überschreiben,
+-- offenbar mit einem in Go noch leeren Role-Feld aus dem Moment der
+-- Objekterzeugung (nicht dem per Trigger korrigierten DB-Wert). Ein frisch
+-- angelegter Nutzer hatte direkt nach /signup (vor jedem /verify) bereits
+-- wieder role='' in der DB, obwohl der Trigger beim Insert nachweislich
+-- feuert (manuell getestet). Deshalb muss der Trigger auch bei UPDATE
+-- greifen, nicht nur bei INSERT.
 alter table auth.users alter column role set default 'authenticated';
 
 create or replace function auth.set_default_role() returns trigger
@@ -30,7 +38,7 @@ end;
 $$;
 
 drop trigger if exists set_default_role on auth.users;
-create trigger set_default_role before insert on auth.users
+create trigger set_default_role before insert or update on auth.users
   for each row execute function auth.set_default_role();
 
 -- Falls schon Nutzer ohne Rolle angelegt wurden (z.B. beim ersten Ausprobieren):

@@ -647,10 +647,15 @@
   }
 
   // ── Start ────────────────────────────────────────────────────────
+  // ssoAzureEnabled: auf true stellen, sobald eine echte Entra-ID-App-
+  // Registrierung existiert und GOTRUE_EXTERNAL_AZURE_* in supabase/.env
+  // gesetzt sind (siehe supabase/README.md, Abschnitt SSO/T10). Ohne das
+  // bleibt der Button bewusst ausgeblendet statt kaputt anklickbar zu sein.
   initLoginScreen({
     title: 'Patientenpfad – Viewer',
     hint: 'Zugriff auf Prozessschritte hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
     onSuccess: startApp,
+    ssoAzureEnabled: false,
   });
 
   if (tryConsumeUrlHashToken() || getToken()) {

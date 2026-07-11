@@ -53,6 +53,19 @@ services:
       GOTRUE_SMTP_PASS: gotrue
       GOTRUE_SMTP_ADMIN_EMAIL: noreply@prozesslandkarte.local
       GOTRUE_SMTP_SENDER_NAME: "Prozesslandkarte (lokal)"
+
+      # Institutionelles SSO (T10, Kandidat Microsoft Entra ID) — Scaffolding.
+      # Standardmäßig deaktiviert/leer: eine echte App-Registrierung im
+      # Entra-ID-Tenant der Organisation kann nicht lokal nachgebaut werden
+      # (siehe supabase/README.md, Abschnitt SSO). Sobald Client-ID/-Secret
+      # und Tenant-URL in .env eingetragen sind, hier auf "true" setzen und
+      # ssoAzureEnabled in viewer-db/editor-db (index.html) ebenfalls auf
+      # true stellen.
+      GOTRUE_EXTERNAL_AZURE_ENABLED: ${SSO_AZURE_ENABLED:-false}
+      GOTRUE_EXTERNAL_AZURE_CLIENT_ID: ${SSO_AZURE_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_AZURE_SECRET: ${SSO_AZURE_SECRET:-}
+      GOTRUE_EXTERNAL_AZURE_REDIRECT_URI: ${SSO_AZURE_REDIRECT_URI:-}
+      GOTRUE_EXTERNAL_AZURE_URL: ${SSO_AZURE_TENANT_URL:-}
     ports:
       - "9999:9999"
 

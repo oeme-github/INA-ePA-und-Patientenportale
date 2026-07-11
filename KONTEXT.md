@@ -20,12 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02–T08: lokaler Stack, Seed-Migration, Viewer-/Editor-Prototyp, gemeinsamer Login |
+| `KONTEXT.md` | – | 2026-07-11 | T02–T11: lokaler Stack, Seed-Migration, Viewer-/Editor-Prototyp, Login, Dimensionen-Verwaltung, SSO-Scaffolding, Datenabgleich |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
 | `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03) |
 | `viewer-db/index.html` | v2 | 2026-07-11 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08) |
-| `editor-db/index.html` | v2 | 2026-07-11 | Editor-Prototyp mit dynamischen Formularfeldern (T06+T07), gemeinsamer Login (T08) |
-| `shared/auth.js` | v1 | 2026-07-11 | Neu: gemeinsamer Login (Magic-Link + Passwort-Fallback) für viewer-db/editor-db (T08) |
+| `editor-db/index.html` | v3 | 2026-07-11 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09) |
+| `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
+| `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -368,6 +369,91 @@ Testen mehrfach zugeschlagen, weil manuelle `curl`-Prüfungen zwischendurch
 den Cooldown immer wieder neu gestartet haben — kein Bug, nur beim Testen
 zu beachten (nicht mehrfach kurz hintereinander für dieselbe Adresse
 anfragen).
+
+### T09 abgeschlossen: Dimensionen-Verwaltung im Editor (Session 2026-07-11)
+
+`editor-db/index.html` bekommt eine zweite Ansicht (Umschalter „Prozess­
+schritte"/„Dimensionen" in der Sidebar): Dimensionen anlegen (Key/Label/Typ/
+Reihenfolge/Farbe/Navigationsachse-Flag), bearbeiten, löschen; Werte
+innerhalb einer Dimension bearbeiten (Label/Farbe/Reihenfolge) und löschen,
+nicht mehr nur ergänzen wie zuvor im Prozessschritt-Formular. RLS-Konsequenz
+sichtbar gemacht: Dimensionen anlegen/ändern/löschen erfordert laut Schema
+die Rolle `admin` (`"Admins verwalten Dimensionen"`-Policy), während Werte
+innerhalb bestehender Dimensionen weiterhin mit `editor` gepflegt werden
+können (`"Editoren pflegen Dimension-Werte"`) — das war schon immer so im
+Schema angelegt, wird jetzt durch eine echte UI sichtbar.
+
+Beim Testen ein zweites Mal auf denselben GoTrue-Rollen-Bug gestoßen wie in
+T06/T08, diesmal in einer schlimmeren Ausprägung: ein frisch signup'ter
+Nutzer hatte **direkt nach `/signup`** (vor jedem `/verify`) schon wieder
+`role:''` in der DB, obwohl der `before insert`-Trigger aus T06 nachweislich
+korrekt feuert (mit einer rohen `INSERT`-Anweisung manuell verifiziert).
+Ursache: GoTrue schreibt den Nutzer offenbar nicht nur einmal per `INSERT`,
+sondern überschreibt ihn im selben Signup/Verify-Ablauf mindestens noch
+einmal per `UPDATE` — vermutlich mit einem in Go noch leeren Rollen-Feld aus
+dem Moment der Objekterzeugung, nicht dem per Trigger korrigierten
+DB-Wert. Ein `BEFORE INSERT`-Trigger greift bei einem `UPDATE` nicht.
+**Endgültiger Fix:** `post-auth-init.sql`s Trigger auf `before insert or
+update` erweitert — seitdem bekommen alle drei Test-Nutzer (`demo@`,
+`editor@`, `admin@`) zuverlässig `role: 'authenticated'`, auch bei
+wiederholten Neuanlagen zum Testen.
+
+Getestet per Headless-Chrome mit neuem `admin@prozesslandkarte.local`-Zugang
+(Rolle `admin` in `ak-patientenportale`): alle 13 bestehenden Dimensionen
+korrekt gelistet (Typ-/Nav-Badges), neue Dimension „Priorität" angelegt
+(inkl. automatisch vorgeschlagener nächster `reihenfolge`), neuer Wert
+„Hoch" ergänzt und im Prozessschritt-Formular sofort als zusätzliches Feld
+sichtbar, RLS-Grenzfall mit `editor`-Rolle (Dimension anlegen schlägt mit
+HTTP 403 fehl, DB unverändert), Dimension wieder gelöscht — Datenabgleich
+(`reconcile_with_data_js.py`, siehe T11) bestätigt hinterher wieder exakt
+25/25 identische Prozessschritte.
+
+### T10: SSO-Scaffolding für Microsoft Entra ID (Session 2026-07-11)
+
+GoTrue unterstützt Entra ID als OAuth-Provider bereits fertig — es fehlt nur
+eine echte App-Registrierung im Entra-ID-Tenant der Organisation (Client-ID/
+-Secret, Redirect-URI), die ich als lokaler Dev-Prototyp nicht besitze und
+nicht selbst anlegen kann (das ist keine technische Lücke, sondern eine
+organisatorische Abhängigkeit vom Azure-AD-Tenant der gematik/des
+Krankenhauses). Deshalb bewusst nur Scaffolding statt eines vollständigen
+Features:
+- `supabase/docker-compose.yml`: `GOTRUE_EXTERNAL_AZURE_*`-Variablen (aus
+  `SSO_AZURE_*` in `.env`, Default: deaktiviert/leer).
+- `shared/auth.js`: `signInWithAzure()` verdrahtet den Redirect-Flow
+  (`/authorize?provider=azure` → Microsoft-Login → zurück mit
+  `#access_token` im Hash), nutzt denselben `tryConsumeUrlHashToken()`-Pfad
+  wie der Magic-Link-Bonusweg aus T08. `initLoginScreen()` bekommt einen
+  neuen `ssoAzureEnabled`-Schalter (Default `false`) — ohne echte
+  Credentials bleibt der Button ausgeblendet statt kaputt anklickbar zu
+  sein.
+- Aktivierungsschritte für später in `supabase/README.md` dokumentiert.
+
+Nicht möglich ohne externen Input: eine echte Entra-ID-App-Registrierung zu
+testen. Dieser Teil bleibt offen, bis die Organisation das selbst einrichtet.
+
+### T11: Datenabgleich-Skript + Cutover-Checkliste (Session 2026-07-11)
+
+`supabase/seed/reconcile_with_data_js.py` — reiner Lesevergleich (keine
+Schreiboperation), prüft die DB-Workgroup `ak-patientenportale` Feld für
+Feld gegen den *aktuellen* Stand von `patientenpfad_data.js` (nicht nur den
+T03-Migrationsstand): Titel, alle Multi-/Single-Select-Dimensionen, alle
+Textfelder, plus fehlende/zusätzliche Prozessschritte. Exit-Code 0 bei
+Übereinstimmung, 1 bei Abweichungen. Getestet: lief zunächst grün (25/25
+identisch), dann mit einer bewusst eingefügten Abweichung (Titel manuell in
+der DB verändert) — Skript hat die Abweichung korrekt erkannt und
+gemeldet — dann zurückgesetzt und erneut grün bestätigt.
+
+Cutover-Checkliste als neuer Abschnitt in BACKLOG.md ergänzt (Datenabgleich,
+Rollenkonzept, Hosting, SSO-Entscheidung, Audit-Protokoll, AG-Freigabe,
+Parallelbetriebs-Zeitraum, Rückfallplan, Kommunikation).
+
+**Bewusst nicht getan:** kein tatsächlicher Cutover. Die harte Randbedingung
+aus dieser Datei ("Diese drei Dateien bleiben unverändert nutzbar … bis das
+neue System nachweislich gleichwertig ist") gilt unverändert — ein Wechsel
+ist eine AG-Entscheidung, keine technische Einzelaufgabe, die sich im
+Vorbeigehen erledigen lässt. `patientenpfad_interaktiv.html`,
+`patientenpfad_editor.html` und `patientenpfad_data.js` wurden auch in
+dieser Session an keiner Stelle verändert.
 
 ## Geplante Aufgaben
 
