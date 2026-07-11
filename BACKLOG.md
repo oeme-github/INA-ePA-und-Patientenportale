@@ -4,6 +4,7 @@
 
 **Positionspapier:** Abgeschlossen und eingereicht (2026-07-10, manuell durch die AG außerhalb dieses Repos)
 **Projektfokus jetzt:** Tooling — Prozesslandkarte als Multi-User-Web-Tool für weitere Arbeitsgruppen (siehe unten)
+**PR #27 offen:** Bündelt Positionspapier-Abschluss + Multi-User-Web-Tool-Prototyp (T01–T09 erledigt, T10/T11 vorbereitet), wartet auf Review
 
 ---
 
