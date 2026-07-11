@@ -30,7 +30,7 @@ Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als ech
 
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
-| T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | 🔄 In Bearbeitung |
+| T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | ✅ Erledigt — `supabase/migrations/20260710120000_init_schema.sql`, seit T02 produktiv im Einsatz und in T03–T11 mehrfach erweitert/getestet |
 | T02 | Postgres + PostgREST + GoTrue selbst hosten (lokal/Docker zum Start; Migration `20260710120000_init_schema.sql` einspielen) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/docker-compose.yml` + `supabase/README.md`, Smoke-Test erfolgreich (Signup/Verify/JWT/RLS über PostgREST) |
 | T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/seed/`, idempotent, liest `patientenpfad_data.js` live ein (erneut lauffähig nach weiterer AG-Pflege) |
 | T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | ✅ Erledigt (2026-07-11) — `viewer-db/index.html`, Login (GoTrue) + Datenabruf (PostgREST) + Kartenlogik, per Headless-Chrome-Screenshots verifiziert |
