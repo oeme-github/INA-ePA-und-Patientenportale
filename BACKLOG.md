@@ -23,14 +23,14 @@
 
 ## Multi-User-Web-Tool – nächste Schritte (ab Session 2026-07-10)
 
-Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: Postgres-BaaS (Referenz Supabase), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
+Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: selbst gehostet Postgres + PostgREST + GoTrue (entbündelt statt voller Supabase-Stack — gleiche Bausteine, geringerer Betriebsaufwand, kein SaaS-Vendor-Lock-in), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
 
 **⚠ Harte Randbedingung:** Das bestehende Tool (`patientenpfad_interaktiv.html`, `patientenpfad_editor.html`, `patientenpfad_data.js`) ist im Wirkbetrieb der AG und darf durch die folgenden Aufgaben nicht beeinträchtigt werden. Entwicklung erfolgt additiv (neue Dateien/Verzeichnisse), keine Änderung der produktiven Dateien "in place". Umschaltung erst nach Parallelbetrieb/Validierung (siehe T11).
 
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
 | T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | 🔄 In Bearbeitung |
-| T02 | Supabase-Projekt anlegen (oder alternative Postgres-BaaS final entscheiden) | Hoch | 📋 Offen |
+| T02 | Postgres + PostgREST + GoTrue selbst hosten (lokal/Docker zum Start; Migration `20260710120000_init_schema.sql` einspielen) | Hoch | 📋 Offen |
 | T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | ⏭ Wartet auf T02 |
 | T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | ⏭ Wartet auf T02/T03 |
 | T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ⏭ Wartet auf T04 |
