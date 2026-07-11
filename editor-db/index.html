@@ -106,6 +106,13 @@
     .field-hint { font-size: 11px; color: var(--c-text-4); margin-top: 4px; }
 
     .checkbox-list { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+    /* E02: lange Listen (Schwellwert über Anzahl, nicht über den Dimension-Key —
+       gilt also generisch für jede Dimension mit vielen Werten) bekommen eine
+       feste, scrollbare Box statt den ganzen Formularbereich flach zu füllen. */
+    .checkbox-list-scrollable {
+      max-height: 160px; overflow-y: auto; padding: 8px;
+      border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: #FAFAFA;
+    }
     .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 13px; }
     .checkbox-item input { width: auto; }
     /* checkbox-inline (z.B. "Navigationsachse"-Checkbox) ist ein direktes Kind von
@@ -433,10 +440,15 @@
         <input type="checkbox" value="${escapeHtml(v.key)}" ${selectedKeys.has(v.key) ? 'checked' : ''}>
         ${escapeHtml(v.label)}
       </label>`).join('');
+    // E02: Schwellwert über die Anzahl der Werte, nicht über den Dimension-Key —
+    // gilt generisch für jede Dimension mit vielen Optionen (bei unserem
+    // aktuellen Datensatz betrifft das Datenobjekt/Rechtsgrundlage/Standard,
+    // aber fest verdrahtet ist nur die Zahl 10, nicht die Dimensionen selbst).
+    const scrollClass = dim.values.length > 10 ? ' checkbox-list-scrollable' : '';
     return `
       <div class="field" data-dim="${dim.key}" data-typ="multi_select">
         <label>${escapeHtml(dim.label)}</label>
-        <div class="checkbox-list">${checkboxes}</div>
+        <div class="checkbox-list${scrollClass}">${checkboxes}</div>
         ${addValueRow(dim)}
       </div>`;
   }
