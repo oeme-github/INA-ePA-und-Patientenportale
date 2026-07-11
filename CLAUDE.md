@@ -121,7 +121,7 @@ Dateien prüfen — sie dürfen nicht auftauchen.
 - `viewer-db/`, `editor-db/` — DB-gestützte Prototypen, rendern/generieren Felder dynamisch aus `dimensions`/`dimension_values`, nicht hart codiert
 - `shared/auth.js` — gemeinsamer Login (Magic-Link zuerst, Passwort-Fallback, SSO-Scaffolding), von beiden Prototypen per `<script src="../shared/auth.js">` eingebunden
 
-**Alles starten:** `./supabase/start.sh` (idempotent, ein Aufruf für den kompletten Stack inkl. Test-Zugänge). Details/Troubleshooting in `supabase/README.md`.
+**Alles starten:** `./supabase/start.sh` (idempotent, ein Aufruf für den kompletten Stack inkl. Test-Zugänge). **Stoppen:** `./supabase/stop.sh` (Daten bleiben erhalten; `--wipe-data` für kompletten Reset). Details/Troubleshooting in `supabase/README.md`.
 
 **Wichtig für lokale Tests:** Viewer/Editor müssen aus dem Projekt-Wurzelverzeichnis
 heraus per Webserver bereitgestellt werden (nicht aus ihrem eigenen Unterordner),

@@ -20,11 +20,12 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02–T11: lokaler Stack, Seed-Migration, Viewer-/Editor-Prototyp, Login, Dimensionen-Verwaltung, SSO-Scaffolding, Datenabgleich |
-| `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
-| `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03) |
-| `viewer-db/index.html` | v2 | 2026-07-11 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08) |
-| `editor-db/index.html` | v3 | 2026-07-11 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09) |
+| `KONTEXT.md` | – | 2026-07-11 | T02–T11, PR #27, Viewer-/Editor-Abgleich, Priorisierung + Phase 1/E02 |
+| `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
+| `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11) |
+| `supabase/start.sh`, `supabase/stop.sh` | v1 | 2026-07-11 | Neu: kompletter Stack mit einem Aufruf startbar/stoppbar |
+| `viewer-db/index.html` | v3 | 2026-07-11 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08) |
+| `editor-db/index.html` | v4 | 2026-07-11 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06) |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -454,6 +455,62 @@ ist eine AG-Entscheidung, keine technische Einzelaufgabe, die sich im
 Vorbeigehen erledigen lässt. `patientenpfad_interaktiv.html`,
 `patientenpfad_editor.html` und `patientenpfad_data.js` wurden auch in
 dieser Session an keiner Stelle verändert.
+
+### PR #27 + Viewer-/Editor-Abgleich + Priorisierung (Session 2026-07-11, Fortsetzung)
+
+**PR #27** (bündelt Positionspapier-Abschluss + gesamten Tooling-Track)
+angelegt und geprüft: offen, 0 Reviews, von GitHub aus technisch mergebar
+(Branch-Ruleset verlangt zwar Code-Owner-Review, steht aber aktuell auf
+`enforcement: disabled`) — es fehlt schlicht der Review-Schritt, kein
+technisches Hindernis. Kein Merge ohne Rücksprache.
+
+**Start-/Stop-Skripte:** `supabase/start.sh` (idempotent, ein Aufruf für den
+kompletten Stack inkl. Test-Zugänge) und `supabase/stop.sh` (nicht-
+destruktiv per Default, `--wipe-data` für kompletten Reset) ergänzt und per
+echtem Stop→Start-Zyklus verifiziert (Daten bleiben erhalten).
+
+**Viewer-Abgleich** (`viewer-db` vs. `patientenpfad_interaktiv.html`, per
+Screenshots) ergab 8 Punkte (V01–V08 in BACKLOG.md) — Original hat u.a.
+Struktur-/Rechtsgrundlage-/Standard-Filter (Letztere mit einer AG-Daten-
+spezifischen Gruppierungslogik, die nicht generisch nachbaubar ist, ohne
+das erst zu entscheiden), Export-Toolbar, eine Kopfzeile/Breadcrumb, und
+eine Matrix mit Schritt-Titeln statt nur Zahlen in den Zellen. Nebenbefund:
+übrig gebliebene Test-Dimension + Test-Phasenwert aus einer früheren
+Browser-Testsession hatten den Viewer auf 0/25 sichtbare Schritte gebracht
+— aus der DB gelöscht, war kein Code-Bug.
+
+**Editor-Abgleich** (`editor-db` vs. `patientenpfad_editor.html`) ergab 7
+Punkte (E01–E07) — der wichtigste ein echter CSS-Bug: `.field label` traf
+versehentlich auch jedes Checkbox-Label mit (alles großgeschrieben), und
+die fehlenden scrollbaren Boxen für lange Checkbox-Listen (Original:
+`max-height` + eigener Scrollbalken) waren vermutlich die Hauptursache für
+die Nutzer-Rückmeldung "im Moment noch unübersichtlich".
+
+**Priorisierung** gemeinsam mit dem Nutzer festgelegt (4 Phasen, siehe
+BACKLOG.md) — **Phase 1 (Quick Wins) und E02 sind erledigt:**
+- E01: CSS-Selektor `.field label` → `.field > label` (direkter Kind-
+  Selektor), inkl. derselben Ausnahme für das "Navigationsachse"-Checkbox-
+  Label in der Dimensionen-Ansicht
+- E02: Checkbox-Listen mit vielen Werten (Schwellwert generisch: Anzahl
+  >10, nicht Dimension-Key) bekommen jetzt eine scrollbare Box — Formular-
+  Scrollhöhe eines datenreichen Schritts sinkt von ~2200px auf ~1985px
+- E04: Sidebar 280px → 320px, Titel brechen um statt abzuschneiden
+- E06: "+ Hinzufügen" bei Navigations-Dimensionen (Phase, Datenraum) durch
+  Hinweis auf die Dimensionen-Ansicht ersetzt
+- V05: Breadcrumb-Kopfzeile ergänzt, dynamisch aus Dimensionen/Workgroup-
+  Name berechnet (nicht hart codiert wie im Original)
+- V08: Operation-Badge auf der geschlossenen Karte — generisch als dritte
+  Multi-Select-Dimension (reihenfolge-basiert) gelöst, kein hart codierter
+  Dimension-Key
+
+Alle sieben Punkte per Headless-Chrome verifiziert (nicht nur Code-Review).
+
+**Offen/unentschieden:** E03 (Sticky-Save-Button — nach E02 neu bewertet:
+bleibt sinnvoll, Save-Button sitzt bei einem datenreichen Schritt immer noch
+bei ~1365px) und E05 (Akkordeon- statt Sidebar+Panel-Layout — echte
+Architekturfrage mit größerem Umbauaufwand, bewusst nicht im Vorbeigehen
+entschieden). Rest von Phase 3/4 (V01–V04, V06, V07, E07) noch nicht
+begonnen.
 
 ## Geplante Aufgaben
 
