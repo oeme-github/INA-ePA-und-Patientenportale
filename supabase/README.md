@@ -117,14 +117,47 @@ hinterlegt (Default: die Ports aus diesem Stack) – bei abweichenden Ports
 dort anpassen.
 
 Getestet (Headless-Chrome-Screenshots, Session 2026-07-11): Login, alle 25
-Prozessschritte über alle drei Phasen, Karten-Detail-Aufklappen (Domäne/
-Rechtsgrundlagen/Standards/Ist/Lücke/Forderungen), Freitextsuche mit
-Highlighting, Datenraum-Filter (Dimmen nicht passender Karten), Logout,
+Prozessschritte über alle drei Phasen, Karten-Detail-Aufklappen, Freitextsuche
+mit Highlighting, Datenraum-Filter (Dimmen), Matrix-Ansicht, Logout,
 Fehlermeldung bei falschem Passwort.
 
-Phase 1 (siehe KONTEXT.md): Struktur ist bewusst noch hart codiert wie im
-bestehenden Viewer (feste Phasen/Datenräume/Felder) – die dynamische
-Ableitung aus `dimensions` ist T05.
+**T05 (erledigt):** Tabs/Filter/Kartenfelder/Matrix-Achsen werden inzwischen
+vollständig dynamisch aus `dimensions`/`dimension_values` abgeleitet, nicht
+mehr hart codiert (Details siehe KONTEXT.md).
+
+## Editor-Prototyp gegen die Datenbank (T06+T07)
+
+`../editor-db/index.html` — separater Editor-Prototyp (bestehender
+`patientenpfad_editor.html` bleibt unangetastet). Formularfelder werden pro
+Dimension generisch erzeugt (`single_select`/`multi_select`/`text`), neue
+Werte lassen sich inline ergänzen. Speichern schreibt direkt per PostgREST,
+abgesichert durch RLS (nur Rolle `editor`/`admin` darf schreiben).
+
+```bash
+cd editor-db
+python3 -m http.server 8091
+# im Browser: http://localhost:8091/
+```
+
+Zum Testen der Schreibrechte zusätzlich zum `demo`-Viewer-Zugang (siehe oben)
+einen Editor-Zugang anlegen (gleiches Verfahren: signup → Mailpit-Code →
+verify → Mitgliedschaft), nur mit Rolle `editor` statt `viewer`:
+
+```bash
+curl -X POST http://localhost:9999/signup -H "Content-Type: application/json" \
+  -d '{"email":"editor@prozesslandkarte.local","password":"editor-passwort-123"}'
+# Code aus Mailpit holen und verifizieren (siehe oben), dann:
+docker compose exec -T db psql -U postgres -d postgres -c "
+  insert into memberships (user_id, workgroup_id, rolle)
+  select id, (select id from workgroups where key='ak-patientenportale'), 'editor'
+  from auth.users where email='editor@prozesslandkarte.local';
+"
+```
+
+Getestet (Headless-Chrome): Formularfelder korrekt vorbefüllt, Titel ändern +
+neuen Dimension-Wert ergänzen + Speichern (persistiert, Liste aktualisiert
+sich), RLS-Grenzfall mit `viewer`-Rolle (Speichern schlägt kontrolliert fehl,
+DB bleibt unverändert), neuen Schritt anlegen und löschen.
 
 ## Ports
 
@@ -172,7 +205,12 @@ und wurde am 2026-07-11 auf `DB_PORT`/`REST_PORT` (Default 5435/8001) umgestellt
   einen Spalten-Default `auth.users.role = 'authenticated'`. Ohne diesen
   Default (unser Fall) liefert GoTrue JWTs mit `role:""`, und PostgREST kann
   nicht per `SET ROLE` wechseln → `post-auth-init.sql` setzt den Default
-  nach.
+  nach. **Ein reiner Spalten-Default reicht aber nicht**: GoTrue schreibt bei
+  jedem Signup explizit `role=''` (nicht NULL, nicht weggelassen) – ein
+  Default greift nur, wenn die Spalte in der INSERT-Anweisung fehlt. Deshalb
+  zusätzlich ein `before insert`-Trigger auf `auth.users`, der leere Rollen
+  korrigiert (gefunden beim T06-Test mit einem zweiten, neu angelegten
+  Nutzer).
 
 ## Smoke-Test (durchgeführt, nicht dauerhaft im Stack)
 

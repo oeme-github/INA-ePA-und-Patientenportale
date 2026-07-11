@@ -289,6 +289,47 @@ funktional bestätigt.
 `seed_ak_patientenportale.py` erweitert: `dimension_values`-Farbe ist jetzt
 optional als drittes Tupel-Element pro Wert angebbar.
 
+### T06+T07 abgeschlossen: Editor-Prototyp, Formularfelder dynamisch (Session 2026-07-11)
+
+`editor-db/index.html` — neue, eigenständige Datei (bestehender
+`patientenpfad_editor.html` bleibt unangetastet). T06 und T07 wurden
+zusammengelegt: da der Editor ohnehin neu gebaut wird, ergab ein zunächst
+hart codiertes Formular (T06) mit anschließender Umstellung auf dynamische
+Felder (T07) keinen Mehrwert gegenüber direkt dynamischem Aufbau.
+
+Struktur: Seitenliste aller Prozessschritte (`nr`+`titel`) + Formular pro
+Schritt, Felder generisch aus `dimensions` erzeugt (`single_select` → Select,
+`multi_select` → Checkbox-Liste, `text` → Textarea). Neue Werte lassen sich
+inline pro Dimension ergänzen (analog zur Meta-Verwaltung im bestehenden
+Editor), landen sofort nutzbar in der Werteliste. Speichern: `process_steps`
+per PATCH/POST, `process_step_values` pro Dimension per volles
+Delete-and-Reinsert (wie schon im Seed-Skript) — abgesichert einzig durch
+PostgREST + RLS, kein serverseitiger Sonderweg.
+
+Zwei echte Bugs beim Testen gefunden und behoben (nicht nur kosmetisch):
+- **`addDimensionValue` rief zuerst `renderForm()` (kompletter Neuaufbau des
+  Formulars von Server-Daten) auf** — das hat jede unsaved Änderung in
+  anderen Feldern (inkl. Titel) weggeworfen, sobald man einen neuen Wert
+  ergänzt hat. Fix: nur das betroffene Feld wird per DOM-Patch aktualisiert
+  (`addOptionToField`), der Rest des Formulars bleibt unangetastet.
+- **`GOTRUE_JWT_DEFAULT_GROUP_NAME` ist wirkungslos UND der Spalten-Default
+  auf `auth.users.role` reicht nicht** — GoTrue schreibt bei jedem Signup
+  explizit `role=''` (nicht NULL, nicht weggelassen), ein Spalten-Default
+  greift aber nur, wenn die Spalte in der INSERT-Anweisung fehlt. Ein zweiter,
+  nach dem ersten (T02-)Fix neu angelegter Nutzer hatte deshalb wieder
+  `role:""`. Behoben durch einen `before insert`-Trigger auf `auth.users` in
+  `post-auth-init.sql`, der leere Rollen auf `authenticated` korrigiert —
+  robuster als der reine Spalten-Default.
+
+Getestet per Headless-Chrome: Login als `editor`, Formularfelder korrekt
+vorbefüllt (Stichprobe Schritt 1 1:1 gegen Datenbank), Titel ändern + neuen
+Domänen-Wert ergänzen + Speichern (Änderung persistiert, Sidebar aktualisiert
+sich), RLS-Grenzfall mit `viewer`-Rolle (Speichern schlägt kontrolliert fehl,
+klare Fehlermeldung, DB bleibt unverändert), neuen Schritt anlegen (nr
+korrekt vorgeschlagen) und wieder löschen. Test-Zugang
+`editor@prozesslandkarte.local` / `editor-passwort-123` (Rolle `editor` in
+`ak-patientenportale`) zusätzlich zum bestehenden `demo@…`-Viewer-Zugang.
+
 ## Geplante Aufgaben
 
 | Aufgabe | Wer | Status |

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Editor-Prototyp (Datenbank)</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg); color: var(--c-text-1); min-height: 100vh;
+    }
+
+    .page-header {
+      background: var(--c-surface); border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    }
+    .page-header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+    .page-header p { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+    .badge-proto {
+      display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; vertical-align: middle;
+    }
+    .badge-role {
+      display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; vertical-align: middle;
+    }
+    .session-box { font-size: 12px; color: var(--c-text-3); text-align: right; white-space: nowrap; }
+    .session-box .email { color: var(--c-text-2); font-weight: 600; }
+    .btn-link {
+      background: none; border: none; color: #4F46E5; font-size: 12px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-top: 4px;
+    }
+    .btn-link:hover { text-decoration: underline; }
+
+    .layout { display: flex; gap: 16px; padding: 20px 24px; align-items: flex-start; }
+    .sidebar { width: 280px; flex-shrink: 0; }
+    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .sidebar-header h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-4); }
+
+    .btn {
+      padding: 6px 12px; border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--c-text-1); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: var(--c-surface); color: var(--c-text-2); border-color: var(--c-border-2); }
+    .btn-secondary:hover { border-color: var(--c-border-3); }
+    .btn-danger { background: #FEE2E2; color: #7F1D1D; border-color: #FCA5A5; }
+    .btn-danger:hover { background: #FECACA; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+
+    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); overflow: hidden; }
+    .step-item {
+      padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
+      display: flex; gap: 8px; align-items: baseline;
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-item:hover { background: #F9FAFB; }
+    .step-item.active { background: #EFF6FF; }
+    .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; }
+    .step-item .titel { color: var(--c-text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .editor-main {
+      flex: 1; background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 20px 24px;
+    }
+    .empty-hint { color: var(--c-text-3); font-size: 13px; padding: 40px 0; text-align: center; }
+
+    .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .form-row .field { flex: 1; }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--c-text-4); margin-bottom: 6px;
+    }
+    .field input[type="text"], .field input[type="number"], .field select, .field textarea {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit; color: var(--c-text-1); background: var(--c-surface);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--c-border-3); }
+    .field textarea { resize: vertical; }
+    .field-hint { font-size: 11px; color: var(--c-text-4); margin-top: 4px; }
+
+    .checkbox-list { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+    .checkbox-item input { width: auto; }
+
+    .add-value-row { display: flex; gap: 6px; margin-top: 8px; }
+    .add-value-row input { flex: 1; padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
+    .add-value-row button {
+      padding: 4px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: var(--c-surface);
+      font-size: 12px; cursor: pointer; color: var(--c-text-2);
+    }
+    .add-value-row button:hover { border-color: var(--c-border-3); }
+
+    .form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--c-border-1); }
+    .form-message {
+      margin-top: 12px; font-size: 12px; padding: 8px 10px; border-radius: var(--r-sm); display: none;
+    }
+    .form-message.error { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
+    .form-message.success { background: #F0FDF4; color: #14532D; border: 1px solid #BBF7D0; }
+
+    /* ── Login (identisch zu viewer-db, wird in T08 gemeinsam extrahiert) ── */
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-box {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 28px 28px 24px; width: 100%; max-width: 340px;
+    }
+    .login-box h1 { font-size: 16px; margin-bottom: 4px; }
+    .login-box p.hint { font-size: 12px; color: var(--c-text-3); margin-bottom: 18px; }
+    .login-box label { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-2); margin: 12px 0 4px; }
+    .login-box input {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit;
+    }
+    .login-box input:focus { outline: none; border-color: var(--c-border-3); }
+    .login-box button {
+      margin-top: 18px; width: 100%; padding: 8px 10px; border: none; border-radius: var(--r-sm);
+      background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-error {
+      margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
+      border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login-Screen ─────────────────────────────────────────────── -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <h1>Patientenpfad – Editor-Prototyp</h1>
+      <p class="hint">Anmeldung gegen den lokalen Auth-Dienst (GoTrue). Schreiben erfordert die Rolle
+        <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe (Row-Level-Security) — mit
+        <code>viewer</code> kann man lesen, aber Speichern schlägt fehl.</p>
+      <form id="login-form">
+        <label for="login-email">E-Mail</label>
+        <input type="email" id="login-email" autocomplete="username" required>
+        <label for="login-password">Passwort</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+        <button type="submit" id="login-submit">Anmelden</button>
+      </form>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- ── App (nach Login) ─────────────────────────────────────────── -->
+  <div id="app" style="display:none;">
+    <div class="page-header">
+      <div>
+        <h1>Patientenpfad – Editor <span class="badge-proto">DB-Prototyp</span></h1>
+        <p>T06+T07: Formularfelder werden dynamisch aus <code>dimensions</code> generiert. Schreibt per PostgREST,
+          abgesichert durch Row-Level-Security statt GitHub-Personal-Access-Token. Der bestehende
+          <code>patientenpfad_editor.html</code> bleibt unverändert parallel nutzbar.</p>
+      </div>
+      <div class="session-box">
+        <div>Angemeldet als <span class="email" id="session-email"></span><span class="badge-role" id="session-role"></span></div>
+        <button class="btn-link" onclick="logout()">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2 id="step-count">Prozessschritte</h2>
+          <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
+        </div>
+        <div class="step-list" id="step-list"></div>
+      </div>
+
+      <div class="editor-main">
+        <div id="editor-empty" class="empty-hint">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+        <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
+          <div class="form-row">
+            <div class="field" style="max-width:120px;">
+              <label for="field-nr">Nr.</label>
+              <input type="number" id="field-nr" required min="1">
+            </div>
+            <div class="field">
+              <label for="field-titel">Titel</label>
+              <input type="text" id="field-titel" required>
+            </div>
+          </div>
+          <div id="dynamic-fields"></div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="save-btn">Speichern</button>
+            <button type="button" class="btn btn-danger" id="delete-btn" onclick="onDeleteStep()">Löschen</button>
+          </div>
+          <div class="form-message error" id="form-error"></div>
+          <div class="form-message success" id="form-success"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ── Konfiguration ────────────────────────────────────────────────
+  const GOTRUE_URL = 'http://localhost:9999';
+  const REST_URL   = 'http://localhost:8001';
+
+  // ── Farben (identisch zu viewer-db, T08 extrahiert das in ein gemeinsames Modul) ──
+  const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
+  function hashColor(key) {
+    let h = 0;
+    for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return FALLBACK_PALETTE[h % FALLBACK_PALETTE.length];
+  }
+  function colorOf(value) { return value.farbe || hashColor(value.key); }
+
+  // ── Auth (identisch zu viewer-db) ─────────────────────────────────
+  function getToken() { return sessionStorage.getItem('access_token'); }
+
+  function decodeJwt(token) {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
+    return JSON.parse(atob(padded));
+  }
+
+  async function login(email, password) {
+    const res = await fetch(`${GOTRUE_URL}/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error_description || json.msg || 'Anmeldung fehlgeschlagen');
+    sessionStorage.setItem('access_token', json.access_token);
+    sessionStorage.setItem('user_email', json.user.email);
+    return json;
+  }
+
+  function logout() {
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_email');
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorBox = document.getElementById('login-error');
+    const submitBtn = document.getElementById('login-submit');
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Anmelden …';
+    try {
+      await login(email, password);
+      await startApp();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Anmelden';
+    }
+  });
+
+  // ── Zustand ──────────────────────────────────────────────────────
+  let workgroup = null;   // { id, key, name }
+  let myRole = null;      // 'viewer' | 'editor' | 'admin' (aus memberships)
+  let dims = [];
+  let steps = [];         // [{ id, nr, titel }]
+  let currentStepId = null;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${REST_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken()}`,
+        ...(options.headers || {}),
+      },
+    });
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    return res;
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  async function startApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
+
+    const wgRes = await apiFetch('/workgroups?select=id,key,name&limit=1');
+    const workgroups = await wgRes.json();
+    if (!workgroups.length) {
+      document.getElementById('step-list').innerHTML =
+        `<div class="empty-hint">Keine Arbeitsgruppe sichtbar. Fehlt eine Mitgliedschaft (memberships) für diesen Nutzer?</div>`;
+      return;
+    }
+    workgroup = workgroups[0];
+
+    const memberRes = await apiFetch(`/memberships?select=rolle&workgroup_id=eq.${workgroup.id}&user_id=eq.${decodeJwt(getToken()).sub}`);
+    const memberships = await memberRes.json();
+    myRole = memberships[0]?.rolle || null;
+    document.getElementById('session-role').textContent = myRole || 'ohne Rolle';
+
+    const dimsRes = await apiFetch(
+      `/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(id,key,label,farbe,reihenfolge)` +
+      `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
+    );
+    dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));
+
+    await reloadSteps();
+  }
+
+  async function reloadSteps() {
+    const res = await apiFetch(`/process_steps?select=id,nr,titel&workgroup_id=eq.${workgroup.id}&order=nr`);
+    steps = await res.json();
+    renderStepList();
+  }
+
+  function renderStepList() {
+    document.getElementById('step-count').textContent = `Prozessschritte (${steps.length})`;
+    document.getElementById('step-list').innerHTML = steps.map(s => `
+      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" onclick="selectStep('${s.id}')">
+        <span class="nr">#${String(s.nr).padStart(2, '0')}</span>
+        <span class="titel">${escapeHtml(s.titel)}</span>
+      </div>`).join('') || '<div class="empty-hint">Noch keine Prozessschritte.</div>';
+  }
+
+  // ── Formular: Felder dynamisch aus dims generieren ──────────────────
+  function fieldHtml(dim, stepValues) {
+    const values = (stepValues && stepValues[dim.key]) || (dim.typ === 'text' ? '' : []);
+
+    if (dim.typ === 'text') {
+      return `
+        <div class="field" data-dim="${dim.key}" data-typ="text">
+          <label>${escapeHtml(dim.label)}</label>
+          <textarea rows="4">${escapeHtml(values)}</textarea>
+        </div>`;
+    }
+
+    if (dim.typ === 'single_select') {
+      const selectedKey = values[0]?.key || '';
+      const options = ['<option value="">–</option>'].concat(
+        dim.values.map(v => `<option value="${escapeHtml(v.key)}" ${v.key === selectedKey ? 'selected' : ''}>${escapeHtml(v.label)}</option>`)
+      ).join('');
+      return `
+        <div class="field" data-dim="${dim.key}" data-typ="single_select">
+          <label>${escapeHtml(dim.label)}</label>
+          <select>${options}</select>
+          ${addValueRow(dim)}
+        </div>`;
+    }
+
+    // multi_select
+    const selectedKeys = new Set(values.map(v => v.key));
+    const checkboxes = dim.values.map(v => `
+      <label class="checkbox-item">
+        <input type="checkbox" value="${escapeHtml(v.key)}" ${selectedKeys.has(v.key) ? 'checked' : ''}>
+        ${escapeHtml(v.label)}
+      </label>`).join('');
+    return `
+      <div class="field" data-dim="${dim.key}" data-typ="multi_select">
+        <label>${escapeHtml(dim.label)}</label>
+        <div class="checkbox-list">${checkboxes}</div>
+        ${addValueRow(dim)}
+      </div>`;
+  }
+
+  function addValueRow(dim) {
+    return `
+      <div class="add-value-row">
+        <input type="text" placeholder="Neuer Wert für ${escapeHtml(dim.label)}" id="new-value-${dim.key}">
+        <button type="button" onclick="addDimensionValue('${dim.key}')">+ Hinzufügen</button>
+      </div>`;
+  }
+
+  async function addDimensionValue(dimKey) {
+    const dim = dims.find(d => d.key === dimKey);
+    const input = document.getElementById(`new-value-${dimKey}`);
+    const label = input.value.trim();
+    if (!label) return;
+    const maxOrder = Math.max(0, ...dim.values.map(v => v.reihenfolge));
+    const res = await apiFetch('/dimension_values', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ dimension_id: dim.id, key: label, label, reihenfolge: maxOrder + 1 }),
+    });
+    if (!res.ok) {
+      alert(`Wert konnte nicht angelegt werden (HTTP ${res.status}). Fehlende editor-Rolle?`);
+      return;
+    }
+    const [created] = await res.json();
+    dim.values.push(created);
+    input.value = '';
+    // Nur das betroffene Feld aktualisieren, nicht das ganze Formular neu laden –
+    // sonst gehen unsaved Änderungen an anderen Feldern verloren.
+    addOptionToField(dim, created);
+  }
+
+  function addOptionToField(dim, created) {
+    const field = document.querySelector(`.field[data-dim="${dim.key}"]`);
+    if (!field) return;
+    if (dim.typ === 'single_select') {
+      const option = document.createElement('option');
+      option.value = created.key;
+      option.textContent = created.label;
+      field.querySelector('select').appendChild(option);
+    } else {
+      const item = document.createElement('label');
+      item.className = 'checkbox-item';
+      item.innerHTML = `<input type="checkbox" value="${escapeHtml(created.key)}">${escapeHtml(created.label)}`;
+      field.querySelector('.checkbox-list').appendChild(item);
+    }
+  }
+
+  // ── Schritt auswählen / neu / speichern / löschen ───────────────────
+  function selectStep(id) {
+    currentStepId = id;
+    renderStepList();
+    renderForm(id);
+  }
+
+  function newStep() {
+    currentStepId = null;
+    renderStepList();
+    const nextNr = steps.length ? Math.max(...steps.map(s => s.nr)) + 1 : 1;
+    renderForm(null, { nr: nextNr, titel: '' });
+  }
+
+  async function renderForm(stepId, draft) {
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('step-form').style.display = 'block';
+    document.getElementById('form-error').style.display = 'none';
+    document.getElementById('form-success').style.display = 'none';
+    document.getElementById('delete-btn').style.display = stepId ? 'inline-block' : 'none';
+
+    let stepValues = {};
+    let nr = draft?.nr ?? '';
+    let titel = draft?.titel ?? '';
+
+    if (stepId) {
+      const res = await apiFetch(
+        `/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(id,key,label,farbe))&id=eq.${stepId}`
+      );
+      const [step] = await res.json();
+      nr = step.nr;
+      titel = step.titel;
+      for (const row of step.process_step_values) {
+        const key = row.dimensions.key;
+        const dim = dims.find(d => d.key === key);
+        if (dim.typ === 'text') stepValues[key] = row.text_value;
+        else (stepValues[key] ||= []).push(row.dimension_values);
+      }
+    }
+
+    document.getElementById('field-nr').value = nr;
+    document.getElementById('field-titel').value = titel;
+    document.getElementById('dynamic-fields').innerHTML =
+      dims.map(dim => fieldHtml(dim, stepValues)).join('');
+  }
+
+  function readFormValues() {
+    const values = {};
+    document.querySelectorAll('#dynamic-fields .field').forEach(el => {
+      const dimKey = el.dataset.dim;
+      const typ = el.dataset.typ;
+      if (typ === 'text') {
+        values[dimKey] = el.querySelector('textarea').value.trim();
+      } else if (typ === 'single_select') {
+        const v = el.querySelector('select').value;
+        values[dimKey] = v ? [v] : [];
+      } else {
+        values[dimKey] = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      }
+    });
+    return values;
+  }
+
+  async function onSaveStep(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('form-error');
+    const successBox = document.getElementById('form-success');
+    const saveBtn = document.getElementById('save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+
+    try {
+      const nr = Number(document.getElementById('field-nr').value);
+      const titel = document.getElementById('field-titel').value.trim();
+      const userId = decodeJwt(getToken()).sub;
+
+      let stepId = currentStepId;
+      if (stepId) {
+        const res = await apiFetch(`/process_steps?id=eq.${stepId}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ nr, titel, updated_at: new Date().toISOString(), updated_by: userId }),
+        });
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        const rows = await res.json();
+        if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die editor-/admin-Rolle (Row-Level-Security).');
+      } else {
+        const res = await apiFetch('/process_steps', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ workgroup_id: workgroup.id, nr, titel }),
+        });
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        const [created] = await res.json();
+        stepId = created.id;
+        currentStepId = stepId;
+      }
+
+      const formValues = readFormValues();
+      for (const dim of dims) {
+        await apiFetch(`/process_step_values?process_step_id=eq.${stepId}&dimension_id=eq.${dim.id}`, { method: 'DELETE' });
+        const value = formValues[dim.key];
+        if (dim.typ === 'text') {
+          if (value) await apiFetch('/process_step_values', {
+            method: 'POST',
+            body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, text_value: value }),
+          });
+        } else {
+          for (const valueKey of value) {
+            const dv = dim.values.find(v => v.key === valueKey);
+            if (!dv) continue;
+            await apiFetch('/process_step_values', {
+              method: 'POST',
+              body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, dimension_value_id: dv.id }),
+            });
+          }
+        }
+      }
+
+      successBox.textContent = 'Gespeichert.';
+      successBox.style.display = 'block';
+      await reloadSteps();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = false;
+    }
+    return false;
+  }
+
+  async function onDeleteStep() {
+    if (!currentStepId) return;
+    if (!confirm('Diesen Prozessschritt wirklich löschen?')) return;
+    const res = await apiFetch(`/process_steps?id=eq.${currentStepId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+      return;
+    }
+    currentStepId = null;
+    document.getElementById('step-form').style.display = 'none';
+    document.getElementById('editor-empty').style.display = 'block';
+    await reloadSteps();
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  if (getToken()) {
+    startApp();
+  }
+</script>
+</body>
+</html>
