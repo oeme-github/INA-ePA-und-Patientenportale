@@ -26,6 +26,15 @@ docker compose up -d auth          # GoTrue: legt auth.users, auth.uid() etc. an
 docker compose up -d rest          # PostgREST
 ```
 
+Direkt danach einmalig `post-auth-init.sql` einspielen (setzt den Default
+`role = 'authenticated'` für neue Nutzer – fehlt hier, weil wir nicht das
+volle supabase/postgres-Image nutzen, siehe Datei-Kommentar):
+
+```bash
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+  < post-auth-init.sql
+```
+
 Danach die Schema-Migration einspielen:
 
 ```bash
@@ -69,10 +78,14 @@ python3 seed_ak_patientenportale.py
 
 | Dienst | Port | Zweck |
 |---|---|---|
-| db (Postgres) | 5432 | direkter DB-Zugriff (psql, Migrationen) |
+| db (Postgres) | 5435 (`DB_PORT`) | direkter DB-Zugriff (psql, Migrationen) |
 | auth (GoTrue) | 9999 | `/signup`, `/token`, `/verify`, `/admin/*` |
-| rest (PostgREST) | 3001 → intern 3000 | REST-API auf `public`-Schema |
+| rest (PostgREST) | 8001 (`REST_PORT`) → intern 3000 | REST-API auf `public`-Schema |
 | mailpit (Web-UI) | 8026 | versendete Mails ansehen (Bestätigung, Magic-Link) |
+
+Ports zentral registriert in `dev-notes/PORTS.md`. `db` lief anfangs hartkodiert auf 5432,
+`rest` auf 3001 — beides kollidierte mit `buero-desk-booking` (Postgres bzw. NestJS-Backend-Dev)
+und wurde am 2026-07-11 auf `DB_PORT`/`REST_PORT` (Default 5435/8001) umgestellt.
 
 ## Wichtige technische Erkenntnisse (Session 2026-07-11)
 
@@ -101,6 +114,13 @@ python3 seed_ak_patientenportale.py
   eines leeren `db-data`-Volumes. Nach Änderungen an `init-db/*.sh` während
   der Entwicklung: `docker compose down -v` (Volume löschen) und neu
   hochfahren.
+- **`GOTRUE_JWT_DEFAULT_GROUP_NAME` ist in dieser GoTrue-Version ein reines
+  No-op** (Deprecation-Hinweis im Log, aber ohne Wirkung). Im vollen
+  supabase/postgres-Image bekommen neue Nutzer ihre Rolle stattdessen über
+  einen Spalten-Default `auth.users.role = 'authenticated'`. Ohne diesen
+  Default (unser Fall) liefert GoTrue JWTs mit `role:""`, und PostgREST kann
+  nicht per `SET ROLE` wechseln → `post-auth-init.sql` setzt den Default
+  nach.
 
 ## Smoke-Test (durchgeführt, nicht dauerhaft im Stack)
 

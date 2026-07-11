@@ -9,7 +9,7 @@ services:
       AUTHENTICATOR_PASSWORD: ${AUTHENTICATOR_PASSWORD}
       AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5435}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d:ro
@@ -72,7 +72,7 @@ services:
       # (Migration 00_init_auth_schema) lesen genau dieses neue Format.
       PGRST_DB_USE_LEGACY_GUCS: "false"
     ports:
-      - "3001:3000"
+      - "${REST_PORT:-8001}:3000"
 
 volumes:
   db-data:

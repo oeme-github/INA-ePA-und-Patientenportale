@@ -15,8 +15,9 @@ hält also keine eigene Kopie der Inhalte.
 
 Verwendung:
     python3 seed_ak_patientenportale.py
-Erwartet den laufenden Stack aus ../docker-compose.yml (db auf localhost:5432)
-und liest das DB-Passwort aus ../.env.
+Erwartet den laufenden Stack aus ../docker-compose.yml (db auf localhost, Port
+via DB_PORT/../.env oder Default 5435, siehe dev-notes/PORTS.md) und liest das
+DB-Passwort aus ../.env.
 """
 import json
 import os
@@ -251,7 +252,8 @@ def main():
     source = load_source_data()
     meta, data = source["meta"], source["data"]
 
-    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@localhost:5432/postgres"
+    db_port = env.get("DB_PORT", "5435")
+    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@localhost:{db_port}/postgres"
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             workgroup_id = upsert_workgroup(cur)
