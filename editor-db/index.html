@@ -50,7 +50,7 @@
     .btn-link:hover { text-decoration: underline; }
 
     .layout { display: flex; gap: 16px; padding: 20px 24px; align-items: flex-start; }
-    .sidebar { width: 280px; flex-shrink: 0; }
+    .sidebar { width: 320px; flex-shrink: 0; }
     .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .sidebar-header h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-4); }
 
@@ -68,13 +68,18 @@
     .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); overflow: hidden; }
     .step-item {
       padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
-      display: flex; gap: 8px; align-items: baseline;
+      display: flex; gap: 8px; align-items: flex-start;
     }
     .step-item:last-child { border-bottom: none; }
     .step-item:hover { background: #F9FAFB; }
     .step-item.active { background: #EFF6FF; }
-    .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; }
-    .step-item .titel { color: var(--c-text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; padding-top: 1px; }
+    /* E04: nicht mehr auf einer Zeile abschneiden ("Durchführung diagnostischer
+       Maßna…") — bis zu 2 Zeilen umbrechen, erst danach abschneiden. */
+    .step-item .titel {
+      color: var(--c-text-1); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; line-height: 1.35;
+    }
 
     .editor-main {
       flex: 1; background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
@@ -85,7 +90,10 @@
     .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
     .form-row .field { flex: 1; }
     .field { margin-bottom: 16px; }
-    .field label {
+    /* Direkter Kind-Selektor (nicht ".field label"): sonst trifft das auch die
+       Checkbox-Labels weiter unten im Feld (E01 — die waren dadurch versehentlich
+       großgeschrieben, z.B. "DSGVO ART. 6 ABS. 1" statt "DSGVO Art. 6 Abs. 1"). */
+    .field > label {
       display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
       color: var(--c-text-4); margin-bottom: 6px;
     }
@@ -100,6 +108,12 @@
     .checkbox-list { display: flex; flex-wrap: wrap; gap: 6px 14px; }
     .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 13px; }
     .checkbox-item input { width: auto; }
+    /* checkbox-inline (z.B. "Navigationsachse"-Checkbox) ist ein direktes Kind von
+       .field wie die Feld-Überschrift selbst — ohne diese Ausnahme bekäme es
+       trotz E01-Fix dieselbe (hier unerwünschte) Großschreibung. */
+    .field > label.checkbox-inline {
+      text-transform: none; font-size: 13px; font-weight: 400; letter-spacing: normal; color: var(--c-text-1);
+    }
 
     .add-value-row { display: flex; gap: 6px; margin-top: 8px; }
     .add-value-row input { flex: 1; padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
@@ -428,6 +442,12 @@
   }
 
   function addValueRow(dim) {
+    // E06: Navigations-Dimensionen (Phase, Datenraum) sind strukturelle Kategorien,
+    // die selten erweitert werden — die Schnellzugriff-Zeile wäre hier nur Rauschen.
+    // Neue Werte bleiben trotzdem möglich, nur über die "Dimensionen"-Ansicht.
+    if (dim.ist_navigationsachse) {
+      return `<p class="field-hint">Neue Werte für „${escapeHtml(dim.label)}" über die Ansicht „Dimensionen" anlegen.</p>`;
+    }
     return `
       <div class="add-value-row">
         <input type="text" placeholder="Neuer Wert für ${escapeHtml(dim.label)}" id="new-value-${dim.key}">

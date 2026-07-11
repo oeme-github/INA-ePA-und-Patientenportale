@@ -101,8 +101,12 @@
       margin-right: 4px; margin-bottom: 4px;
     }
     .chip-sm { padding: 2px 8px; border-radius: 20px; font-size: 11px; margin: 0 4px 4px 0; }
-    .card-tags-primary, .card-tags-secondary { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .card-tags-primary, .card-tags-secondary { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; align-items: center; }
     .card-tags-secondary { font-size: 12px; color: var(--c-text-3); }
+    .card-op-badge {
+      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2); vertical-align: middle;
+    }
 
     .view-switch { display: flex; gap: 4px; margin-left: auto; }
     .view-btn {
@@ -222,7 +226,7 @@
     <div class="page-header">
       <div>
         <h1>Patientenpfad – Interaktive Prozesskarte <span class="badge-proto">DB-Prototyp</span></h1>
-        <p>T05: Tabs/Filter/Kartenfelder/Matrix-Achsen werden dynamisch aus <code>dimensions</code>/<code>dimension_values</code> gerendert, nicht mehr hart codiert. Datenquelle live per PostgREST statt <code>patientenpfad_data.js</code>.</p>
+        <p id="breadcrumb">lädt …</p>
       </div>
       <div class="session-box">
         <div>Angemeldet als <span class="email" id="session-email"></span></div>
@@ -300,6 +304,7 @@
   let sectionDim = null;          // erste navSingle-Dimension: gruppiert wie bisher "Phase"
   let extraNavSingle = [];        // weitere navSingle-Dimensionen (selten): wirken wie Filter, nicht wie Sektionen
   let previewMultiDims = [];      // erste 2 multi_select-Nicht-Nav-Dimensionen: kompakte Vorschau auf der Karte
+  let previewBadgeDim = null;     // dritte multi_select-Nicht-Nav-Dimension: kompaktes Badge neben Vorschau-Zeile 2 (V08)
   let previewSingleDims = [];     // alle single_select-Nicht-Nav-Dimensionen: Chips im Kartenkopf
   let detailDims = [];            // alles andere (weitere multi_select + alle text-Dimensionen): nur in der Detailansicht
 
@@ -339,10 +344,16 @@
     extraNavSingle = navSingle.slice(1);
 
     const nonNavSelectDims = dims.filter(d => !d.ist_navigationsachse && d.typ !== 'text');
-    previewMultiDims = nonNavSelectDims.filter(d => d.typ === 'multi_select').slice(0, 2);
+    const nonNavMultiDims = nonNavSelectDims.filter(d => d.typ === 'multi_select');
+    previewMultiDims = nonNavMultiDims.slice(0, 2);
+    // V08: dritte Multi-Select-Dimension (z.B. "Operation") kommt zusätzlich zur
+    // zweiten Vorschau-Zeile als kompaktes Badge auf die geschlossene Karte,
+    // statt nur im aufgeklappten Detail sichtbar zu sein — generisch über
+    // reihenfolge bestimmt, kein hart codierter Dimension-Key.
+    previewBadgeDim = nonNavMultiDims[2] || null;
     previewSingleDims = nonNavSelectDims.filter(d => d.typ === 'single_select');
     detailDims = dims.filter(d =>
-      !d.ist_navigationsachse && !previewMultiDims.includes(d) && !previewSingleDims.includes(d)
+      !d.ist_navigationsachse && !previewMultiDims.includes(d) && d !== previewBadgeDim && !previewSingleDims.includes(d)
     );
 
     activeNavSingle = Object.fromEntries(navSingle.map(d => [d.key, 'alle']));
@@ -384,6 +395,31 @@
     return steps.map(toStepRecord);
   }
 
+  // ── Kopfzeile/Breadcrumb (V05) ───────────────────────────────────────
+  // Bekannte Pluralformen für die Standard-Navigationsachsen dieser Workgroup;
+  // bei anderen/zusätzlichen Achsen wird einfach das Dimension-Label verwendet
+  // (grammatikalisch nicht perfekt, aber generisch statt hart codiert).
+  const AXIS_LABEL_PLURAL = { phase: 'Phasen', datenraum: 'Datenräume' };
+
+  async function loadWorkgroupName() {
+    const res = await fetch(`${REST_URL}/workgroups?select=name&limit=1`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) return '';
+    const [wg] = await res.json();
+    return wg?.name || '';
+  }
+
+  function renderBreadcrumb(workgroupName) {
+    const axisParts = [...navSingle, ...navMulti].map(dim =>
+      `${dim.values.length} ${AXIS_LABEL_PLURAL[dim.key] || dim.label}`
+    );
+    const parts = [`${data.length} Schritte`, ...axisParts];
+    if (workgroupName) parts.push(workgroupName);
+    document.getElementById('breadcrumb').textContent =
+      `Akteur × Prozess → Datenobjekt · ${parts.join(' · ')}`;
+  }
+
   async function startApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
@@ -392,6 +428,7 @@
     try {
       setupDimensions(await loadDimensions());
       data = await loadData();
+      renderBreadcrumb(await loadWorkgroupName());
     } catch (err) {
       document.getElementById('karten').innerHTML = `<div class="empty-hint">${escapeHtml(err.message)}</div>`;
       document.getElementById('counter').textContent = '';
@@ -522,11 +559,15 @@
 
     const previewRows = previewMultiDims.map((dim, i) => {
       const vals = d.values[dim.key] || [];
-      if (!vals.length) return '';
+      const isLastRow = i === previewMultiDims.length - 1;
+      const badgeVals = (isLastRow && previewBadgeDim) ? (d.values[previewBadgeDim.key] || []) : [];
+      if (!vals.length && !badgeVals.length) return '';
       const cls = i === 0 ? 'card-tags-primary' : 'card-tags-secondary';
-      return `<div class="${cls}">${vals.map(v =>
+      const tags = vals.map(v =>
         `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`
-      ).join('')}</div>`;
+      ).join('');
+      const badges = badgeVals.map(v => `<span class="card-op-badge">${escapeHtml(v.key)}</span>`).join('');
+      return `<div class="${cls}">${tags}${badges}</div>`;
     }).join('');
 
     const navBadges = navMulti.flatMap(dim => (d.values[dim.key] || []).map(v =>
