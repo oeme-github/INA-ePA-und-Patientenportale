@@ -36,6 +36,35 @@ docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
 docker compose exec -T db psql -U postgres -d postgres -c "NOTIFY pgrst, 'reload schema';"
 ```
 
+## Seed-Daten (T03)
+
+`seed/` migriert die heutige `patientenpfad_data.js` (Viewer/Editor-Datenquelle,
+bleibt unangetastet im Wirkbetrieb) als erste Workgroup `ak-patientenportale`
+in das generische Datenmodell:
+
+```bash
+cd supabase/seed
+python3 -m venv .venv && source .venv/bin/activate   # optional
+pip install -r requirements.txt
+python3 seed_ak_patientenportale.py
+```
+
+- `extract_data_js.mjs` liest `../../patientenpfad_data.js` per Node `vm`-Modul
+  live ein (kein Regex-Parsing, keine eigene Kopie der Inhalte) – Re-Seeding
+  nach weiterer AG-Pflege über den bestehenden Editor liefert also immer den
+  aktuellen Stand.
+- `seed_ak_patientenportale.py` ist idempotent (`ON CONFLICT DO UPDATE` bzw.
+  `DELETE` + Neuaufbau der `process_step_values` pro Schritt) und kann beliebig
+  oft erneut laufen.
+- `meta.{domaenen,akteure,datenobjekte,standards,rechtsgrundlagen}` werden zu
+  Dimensionen; `phase` und `dr` (Datenraum) werden dabei zu zwei weiteren
+  Dimensionen statt Sonderfällen (siehe KONTEXT.md).
+- Werte, die in einem Prozessschritt vorkommen, aber in der `meta`-Liste
+  fehlen (z.B. Tippfehler in `patientenpfad_data.js`), werden automatisch als
+  zusätzlicher Wert ergänzt statt stillschweigend verworfen — mit Hinweis auf
+  stderr. Bekannter Fall: Schritt 3 referenziert `HL7 FHIR R4 (Patient)`,
+  fehlt in `meta.standards`.
+
 ## Ports
 
 | Dienst | Port | Zweck |

@@ -31,8 +31,8 @@ Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als ech
 |----|---------|-----------|--------|
 | T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | 🔄 In Bearbeitung |
 | T02 | Postgres + PostgREST + GoTrue selbst hosten (lokal/Docker zum Start; Migration `20260710120000_init_schema.sql` einspielen) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/docker-compose.yml` + `supabase/README.md`, Smoke-Test erfolgreich (Signup/Verify/JWT/RLS über PostgREST) |
-| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | 📋 Offen |
-| T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | ⏭ Wartet auf T02/T03 |
+| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/seed/`, idempotent, liest `patientenpfad_data.js` live ein (erneut lauffähig nach weiterer AG-Pflege) |
+| T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | 📋 Offen |
 | T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ⏭ Wartet auf T04 |
 | T06 | Neuer, separater Editor-Prototyp mit Datenbank-Write + Row-Level-Security (bestehender GitHub-PUT-Editor bleibt parallel nutzbar) | Hoch | ⏭ Wartet auf T02/T03 |
 | T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ⏭ Wartet auf T06 |

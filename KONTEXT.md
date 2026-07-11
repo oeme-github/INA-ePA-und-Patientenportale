@@ -20,8 +20,9 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02: lokaler Postgres+PostgREST+GoTrue-Stack aufgesetzt und smoke-getestet |
+| `KONTEXT.md` | – | 2026-07-11 | T02+T03: lokaler Stack aufgesetzt, patientenpfad_data.js als Seed migriert |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
+| `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -194,6 +195,30 @@ Migration: heutige `patientenpfad_data.js` wird zu Seed-Daten der ersten Workgro
 Smoke-Test erfolgreich: Signup → Bestätigungsmail in Mailpit → `/verify` → JWT (`role: authenticated`) → PostgREST: anonym leer, authenticated ohne Membership leer, `viewer` liest, `editor` schreibt (`POST /process_steps` → 201). Testdaten danach wieder gelöscht, DB ist leer und bereit für T03 (Seed-Migration der heutigen `patientenpfad_data.js`).
 
 Offen aus T02: `workgroups` hat bewusst keine Schreib-Policy (nur service_role kann neue Arbeitsgruppen anlegen) — bei T09 berücksichtigen.
+
+### T03 abgeschlossen: patientenpfad_data.js als Seed migriert (Session 2026-07-11)
+
+`supabase/seed/extract_data_js.mjs` liest `patientenpfad_data.js` per Node
+`vm`-Modul live ein (keine eigene Kopie der Inhalte), `seed_ak_patientenportale.py`
+spielt daraus idempotent die Workgroup `ak-patientenportale` ein: 13 Dimensionen
+(`phase`, `datenraum`, `domaene`, `akteur`, `objekt`, `operation`, `gesetz`,
+`standard`, `struktur`, plus die vier Freitextfelder `detail`/`ist`/`luecke`/
+`forderungen` als eigene Text-Dimensionen), 133 Dimension-Werte, 25
+Prozessschritte, 479 Prozessschritt-Werte. Stichprobe (Schritt 3) 1:1 gegen
+`patientenpfad_data.js` verifiziert; zweiter Lauf des Skripts erzeugt exakt
+dieselben Zeilenzahlen (Idempotenz bestätigt).
+
+Nebenbefund: Schritt 3 referenziert den Standard „HL7 FHIR R4 (Patient)",
+der in `meta.standards` fehlt (vermutlich ein Pflegefehler im bestehenden
+Editor). Das Seed-Skript verwirft solche Fälle nicht, sondern ergänzt sie
+automatisch als zusätzlichen Dimension-Wert (mit Hinweis auf stderr) — kein
+inhaltlicher Verlust, aber ein Hinweis, dass `meta.standards` in
+`patientenpfad_data.js` bei Gelegenheit im bestehenden Editor nachgezogen
+werden könnte.
+
+Da die AG weiterhin über den bestehenden Editor an `patientenpfad_data.js`
+arbeitet, ist das Skript bewusst erneut lauffähig — vor dem eigentlichen
+Cutover (T11) muss es noch einmal gegen den dann aktuellen Stand laufen.
 
 ## Geplante Aufgaben
 
