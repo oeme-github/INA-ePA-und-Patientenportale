@@ -86,6 +86,22 @@ Datenabgleich (`reconcile_with_data_js.py`) läuft wieder grün.
 | V07 | Suchumfang klären: aktuell durchsucht `viewer-db` alle Felder (auch Ist/Lücke/Forderungen), Original nur Titel/Akteur/Objekt/Detail — gewollt oder angleichen? | Niedrig | 📋 Offen |
 | V08 | Operation-Badge ("E"/"E,V") zusätzlich auf der geschlossenen Karte anzeigen, nicht nur im aufgeklappten Detail | Niedrig | 📋 Offen |
 
+### Editor-Abgleich: editor-db vs. patientenpfad_editor.html (Session 2026-07-11)
+
+Usability-Durchgang durch `editor-db` (User-Feedback: "im Moment noch
+unübersichtlich"), verglichen mit dem Layout-Prinzip von
+`patientenpfad_editor.html`.
+
+| ID | Aufgabe | Priorität | Status |
+|----|---------|-----------|--------|
+| E01 | **CSS-Bug:** Selektor `.field label` trifft versehentlich auch jedes Checkbox-Label (technisch ebenfalls ein `<label>`) — dadurch stehen aktuell alle Checkbox-Texte in Großbuchstaben (z.B. "DSGVO ART. 6 ABS. 1" statt "DSGVO Art. 6 Abs. 1"), nicht nur die Feld-Überschrift wie beabsichtigt | Hoch | 📋 Offen |
+| E02 | Große Checkbox-Listen (Datenobjekt: 25, Rechtsgrundlage: 37, Standard: 36 Einträge) laufen flach und unbegrenzt durch — ein Schritt-Formular kommt so auf ~2200px Scrollhöhe. Original steckt diese Listen in feste, scrollbare Boxen (~150px, eigener Scrollbalken). Vermutlich Hauptursache für "unübersichtlich" | Hoch | 📋 Offen |
+| E03 | Kein sichtbarer Speichern-Button ohne komplett nach unten zu scrollen (Folge von E02) — sticky/fixierter Speichern-Bereich sinnvoll | Hoch | 📋 Offen |
+| E04 | Sidebar (Schritt-/Dimensionsliste) mit 280px schmal, lange Titel werden abgeschnitten ("Durchführung diagnostischer Maßna…") | Mittel | 📋 Offen |
+| E05 | Layoutprinzip überdenken: Original nutzt ein Akkordeon (Zeile anklicken → Formular klappt direkt darunter auf, kompaktes 2-spaltiges Grid für kurze Felder), aktuell Liste links + immer sichtbares Formular rechts, einspaltig | Mittel | 📋 Offen |
+| E06 | "+ Hinzufügen"-Zeile für neue Werte erscheint bei jedem Feld, auch bei selten erweiterten wie Phase/Struktur — unnötiges visuelles Rauschen | Niedrig | 📋 Offen |
+| E07 | Keine Such-/Filterfunktion innerhalb der langen Checkbox-Listen (z.B. 37 Rechtsgrundlagen durchsuchen) | Niedrig | 📋 Offen |
+
 ---
 
 ## Inhaltliche Punkte – zurückgestellt (2026-07-10)
