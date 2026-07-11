@@ -20,7 +20,8 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-10 | Positionspapier abgeschlossen; Architekturentscheidung Multi-User-Web-Tool |
+| `KONTEXT.md` | – | 2026-07-11 | T02: lokaler Postgres+PostgREST+GoTrue-Stack aufgesetzt und smoke-getestet |
+| `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -185,6 +186,14 @@ Migration: heutige `patientenpfad_data.js` wird zu Seed-Daten der ersten Workgro
 - Finale Wahl des SSO-Providers/-Protokolls
 - Ob ein Git-artiges Audit-/Versionsprotokoll (heute „gratis" durch Commits) ein hartes Anforderungskriterium ist — vor der Datenmodell-Umsetzung klären
 - Vollständiger Plan liegt unter `/home/oeme/.claude/plans/transient-finding-cat.md` (lokale Planungsdatei, nicht im Repo)
+
+### T02 abgeschlossen: lokaler Stack läuft (Session 2026-07-11)
+
+`supabase/docker-compose.yml` (Postgres 16, PostgREST v12.2.3, GoTrue v2.167.0, Mailpit für lokale Bestätigungs-/Magic-Link-Mails) + `supabase/init-db/` (Rollen `anon`/`authenticated`/`service_role`/`authenticator`, Schema `auth` + eigene Rolle `supabase_auth_admin` dafür) + `supabase/README.md`. Migration `20260710120000_init_schema.sql` erfolgreich eingespielt. Details, Stolpersteine und Startreihenfolge stehen in `supabase/README.md` — wichtigste Erkenntnis: `auth.uid()`/`auth.role()`/`auth.email()`/`auth.jwt()` werden von GoTrue selbst angelegt (nicht vorab definieren!), und PostgREST braucht `PGRST_DB_USE_LEGACY_GUCS=false`, damit das zusammenpasst.
+
+Smoke-Test erfolgreich: Signup → Bestätigungsmail in Mailpit → `/verify` → JWT (`role: authenticated`) → PostgREST: anonym leer, authenticated ohne Membership leer, `viewer` liest, `editor` schreibt (`POST /process_steps` → 201). Testdaten danach wieder gelöscht, DB ist leer und bereit für T03 (Seed-Migration der heutigen `patientenpfad_data.js`).
+
+Offen aus T02: `workgroups` hat bewusst keine Schreib-Policy (nur service_role kann neue Arbeitsgruppen anlegen) — bei T09 berücksichtigen.
 
 ## Geplante Aufgaben
 

@@ -24,3 +24,6 @@ Thumbs.db
 # Export-Dateien (generiert durch den Viewer)
 *_export.csv
 *_export.json
+
+# Multi-User-Web-Tool: lokale Secrets für den selbst gehosteten Stack
+supabase/.env
