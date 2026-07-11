@@ -201,30 +201,21 @@
       background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
     }
     .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-box .btn-link { width: auto; background: none; color: #4F46E5; margin-top: 8px; padding: 0; font-weight: 600; }
+    .login-small-hint { font-size: 11px; color: var(--c-text-4); margin-top: 8px; }
     .login-error {
       margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
       border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
     }
+    #password-fallback { margin-top: 18px; }
+    #password-fallback summary { font-size: 12px; color: var(--c-text-3); cursor: pointer; }
+    #password-fallback[open] summary { margin-bottom: 8px; }
   </style>
 </head>
 <body>
 
-  <!-- ── Login-Screen ─────────────────────────────────────────────── -->
-  <div id="login-screen" class="login-screen">
-    <div class="login-box">
-      <h1>Patientenpfad – Viewer-Prototyp</h1>
-      <p class="hint">Anmeldung gegen den lokalen Auth-Dienst (GoTrue). Zugriff auf Prozessschritte
-        hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).</p>
-      <form id="login-form">
-        <label for="login-email">E-Mail</label>
-        <input type="email" id="login-email" autocomplete="username" required>
-        <label for="login-password">Passwort</label>
-        <input type="password" id="login-password" autocomplete="current-password" required>
-        <button type="submit" id="login-submit">Anmelden</button>
-      </form>
-      <div class="login-error" id="login-error"></div>
-    </div>
-  </div>
+  <!-- ── Login-Screen (Inhalt wird von shared/auth.js initLoginScreen() erzeugt) ── -->
+  <div id="login-screen" class="login-screen"></div>
 
   <!-- ── App (nach Login) ─────────────────────────────────────────── -->
   <div id="app" style="display:none;">
@@ -261,6 +252,7 @@
     </div>
   </div>
 
+<script src="../shared/auth.js"></script>
 <script>
   // ── Konfiguration ────────────────────────────────────────────────
   // Lokaler Dev-Stack aus ../supabase/docker-compose.yml (siehe dort für
@@ -321,49 +313,7 @@
   let matrixX = null;
   let matrixY = null;
 
-  // ── Auth ─────────────────────────────────────────────────────────
-  function getToken() { return sessionStorage.getItem('access_token'); }
-
-  async function login(email, password) {
-    const res = await fetch(`${GOTRUE_URL}/token?grant_type=password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error_description || json.msg || 'Anmeldung fehlgeschlagen');
-    sessionStorage.setItem('access_token', json.access_token);
-    sessionStorage.setItem('user_email', json.user.email);
-    return json;
-  }
-
-  function logout() {
-    sessionStorage.removeItem('access_token');
-    sessionStorage.removeItem('user_email');
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-  }
-
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const errorBox = document.getElementById('login-error');
-    const submitBtn = document.getElementById('login-submit');
-    errorBox.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Anmelden …';
-    try {
-      await login(email, password);
-      await startApp();
-    } catch (err) {
-      errorBox.textContent = err.message;
-      errorBox.style.display = 'block';
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Anmelden';
-    }
-  });
+  // ── Auth: getToken/logout/login-Funktionen kommen aus shared/auth.js ──
 
   // ── Dimensionen laden (T05: Tabs/Filter/Kartenfelder/Matrix generisch
   // aus dimensions/dimension_values statt hart codiert) ───────────────
@@ -697,7 +647,13 @@
   }
 
   // ── Start ────────────────────────────────────────────────────────
-  if (getToken()) {
+  initLoginScreen({
+    title: 'Patientenpfad – Viewer',
+    hint: 'Zugriff auf Prozessschritte hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
+    onSuccess: startApp,
+  });
+
+  if (tryConsumeUrlHashToken() || getToken()) {
     startApp();
   }
 </script>

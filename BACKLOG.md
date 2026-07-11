@@ -36,7 +36,7 @@ Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als ech
 | T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ✅ Erledigt (2026-07-11) — `viewer-db/index.html`, inkl. generischer Matrix-Ansicht (frei wählbare Achsen), Farben aus `dimension_values.farbe` mit Hash-Fallback |
 | T06 | Neuer, separater Editor-Prototyp mit Datenbank-Write + Row-Level-Security (bestehender GitHub-PUT-Editor bleibt parallel nutzbar) | Hoch | ✅ Erledigt (2026-07-11) — `editor-db/index.html` |
 | T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ✅ Erledigt (2026-07-11) — zusammen mit T06 umgesetzt, da neuer Editor von Anfang an dynamisch gebaut wurde |
-| T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ⏭ Wartet auf T02 |
+| T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ✅ Erledigt (2026-07-11) — `shared/auth.js`, von viewer-db und editor-db gemeinsam genutzt, Passwort als Fallback |
 | T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | 📋 Offen |
 | T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 📋 Offen |
 | T11 | Cutover: Bestandstool erst ablösen/umleiten, nachdem neues Tool im Parallelbetrieb validiert ist (Datenabgleich, AG-Freigabe) | Hoch | 📋 Offen |

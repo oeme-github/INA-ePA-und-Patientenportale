@@ -116,7 +116,7 @@
     .form-message.error { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
     .form-message.success { background: #F0FDF4; color: #14532D; border: 1px solid #BBF7D0; }
 
-    /* ── Login (identisch zu viewer-db, wird in T08 gemeinsam extrahiert) ── */
+    /* ── Login (gemeinsam mit viewer-db über shared/auth.js, T08) ── */
     .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
     .login-box {
       background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
@@ -135,31 +135,21 @@
       background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
     }
     .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-box .btn-link { width: auto; background: none; color: #4F46E5; margin-top: 8px; padding: 0; font-weight: 600; }
+    .login-small-hint { font-size: 11px; color: var(--c-text-4); margin-top: 8px; }
     .login-error {
       margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
       border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
     }
+    #password-fallback { margin-top: 18px; }
+    #password-fallback summary { font-size: 12px; color: var(--c-text-3); cursor: pointer; }
+    #password-fallback[open] summary { margin-bottom: 8px; }
   </style>
 </head>
 <body>
 
-  <!-- ── Login-Screen ─────────────────────────────────────────────── -->
-  <div id="login-screen" class="login-screen">
-    <div class="login-box">
-      <h1>Patientenpfad – Editor-Prototyp</h1>
-      <p class="hint">Anmeldung gegen den lokalen Auth-Dienst (GoTrue). Schreiben erfordert die Rolle
-        <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe (Row-Level-Security) — mit
-        <code>viewer</code> kann man lesen, aber Speichern schlägt fehl.</p>
-      <form id="login-form">
-        <label for="login-email">E-Mail</label>
-        <input type="email" id="login-email" autocomplete="username" required>
-        <label for="login-password">Passwort</label>
-        <input type="password" id="login-password" autocomplete="current-password" required>
-        <button type="submit" id="login-submit">Anmelden</button>
-      </form>
-      <div class="login-error" id="login-error"></div>
-    </div>
-  </div>
+  <!-- ── Login-Screen (Inhalt wird von shared/auth.js initLoginScreen() erzeugt) ── -->
+  <div id="login-screen" class="login-screen"></div>
 
   <!-- ── App (nach Login) ─────────────────────────────────────────── -->
   <div id="app" style="display:none;">
@@ -210,12 +200,13 @@
     </div>
   </div>
 
+<script src="../shared/auth.js"></script>
 <script>
   // ── Konfiguration ────────────────────────────────────────────────
   const GOTRUE_URL = 'http://localhost:9999';
   const REST_URL   = 'http://localhost:8001';
 
-  // ── Farben (identisch zu viewer-db, T08 extrahiert das in ein gemeinsames Modul) ──
+  // ── Farben (identisch zu viewer-db, siehe shared/auth.js für Auth) ──
   const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
   function hashColor(key) {
     let h = 0;
@@ -224,55 +215,7 @@
   }
   function colorOf(value) { return value.farbe || hashColor(value.key); }
 
-  // ── Auth (identisch zu viewer-db) ─────────────────────────────────
-  function getToken() { return sessionStorage.getItem('access_token'); }
-
-  function decodeJwt(token) {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
-    return JSON.parse(atob(padded));
-  }
-
-  async function login(email, password) {
-    const res = await fetch(`${GOTRUE_URL}/token?grant_type=password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error_description || json.msg || 'Anmeldung fehlgeschlagen');
-    sessionStorage.setItem('access_token', json.access_token);
-    sessionStorage.setItem('user_email', json.user.email);
-    return json;
-  }
-
-  function logout() {
-    sessionStorage.removeItem('access_token');
-    sessionStorage.removeItem('user_email');
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-  }
-
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const errorBox = document.getElementById('login-error');
-    const submitBtn = document.getElementById('login-submit');
-    errorBox.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Anmelden …';
-    try {
-      await login(email, password);
-      await startApp();
-    } catch (err) {
-      errorBox.textContent = err.message;
-      errorBox.style.display = 'block';
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Anmelden';
-    }
-  });
+  // ── Auth: getToken/logout/decodeJwt/login-Funktionen kommen aus shared/auth.js ──
 
   // ── Zustand ──────────────────────────────────────────────────────
   let workgroup = null;   // { id, key, name }
@@ -576,7 +519,14 @@
   }
 
   // ── Start ────────────────────────────────────────────────────────
-  if (getToken()) {
+  initLoginScreen({
+    title: 'Patientenpfad – Editor',
+    hint: 'Schreiben erfordert die Rolle <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe ' +
+          '(Row-Level-Security) — mit <code>viewer</code> kann man sich anmelden und lesen, aber Speichern schlägt fehl.',
+    onSuccess: startApp,
+  });
+
+  if (tryConsumeUrlHashToken() || getToken()) {
     startApp();
   }
 </script>

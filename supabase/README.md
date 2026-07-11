@@ -82,12 +82,15 @@ Daten aber live per PostgREST aus der Datenbank lädt statt aus
 `patientenpfad_data.js`. Die produktiven Dateien (`patientenpfad_interaktiv.html`,
 `patientenpfad_editor.html`, `patientenpfad_data.js`) bleiben dabei unangetastet.
 
-Start (beliebiger statischer Webserver genügt, kein Build-Schritt):
+Start (beliebiger statischer Webserver genügt, kein Build-Schritt). **Wichtig:**
+vom Projekt-Wurzelverzeichnis aus starten, nicht aus `viewer-db/` selbst —
+`viewer-db` und `editor-db` binden beide `../shared/auth.js` ein (T08), das
+liegt außerhalb ihres jeweiligen Ordners:
 
 ```bash
-cd viewer-db
-python3 -m http.server 8090
-# im Browser: http://localhost:8090/
+# im Projekt-Wurzelverzeichnis (INA-ePA-und-Patientenportale/):
+python3 -m http.server 8095
+# im Browser: http://localhost:8095/viewer-db/
 ```
 
 Der Prototyp braucht eine echte Anmeldung (GoTrue) UND eine Mitgliedschaft
@@ -134,9 +137,9 @@ Werte lassen sich inline ergänzen. Speichern schreibt direkt per PostgREST,
 abgesichert durch RLS (nur Rolle `editor`/`admin` darf schreiben).
 
 ```bash
-cd editor-db
-python3 -m http.server 8091
-# im Browser: http://localhost:8091/
+# im Projekt-Wurzelverzeichnis (INA-ePA-und-Patientenportale/), siehe Hinweis oben:
+python3 -m http.server 8095
+# im Browser: http://localhost:8095/editor-db/
 ```
 
 Zum Testen der Schreibrechte zusätzlich zum `demo`-Viewer-Zugang (siehe oben)
@@ -158,6 +161,17 @@ Getestet (Headless-Chrome): Formularfelder korrekt vorbefüllt, Titel ändern +
 neuen Dimension-Wert ergänzen + Speichern (persistiert, Liste aktualisiert
 sich), RLS-Grenzfall mit `viewer`-Rolle (Speichern schlägt kontrolliert fehl,
 DB bleibt unverändert), neuen Schritt anlegen und löschen.
+
+## Gemeinsamer Login (T08)
+
+`../shared/auth.js` wird von `viewer-db` und `editor-db` gemeinsam per
+`<script src="../shared/auth.js">` eingebunden — daher der Hinweis oben,
+beide Prototypen über einen Server im Projekt-Wurzelverzeichnis zu starten.
+Login-Reihenfolge: Magic-Link zuerst (E-Mail → GoTrue `/otp` → 6-stelliger
+Code aus der Mail/Mailpit → `/verify`), Passwort als eingeklappter Fallback
+(z.B. für die obigen `demo@…`/`editor@…`-Testzugänge). `demo@…` und
+`editor@…` funktionieren mit beiden Wegen — es ist derselbe GoTrue-Nutzer,
+nur die Anmeldemethode unterscheidet sich.
 
 ## Ports
 

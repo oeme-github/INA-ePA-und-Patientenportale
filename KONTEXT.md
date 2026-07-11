@@ -20,10 +20,12 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02–T04: lokaler Stack, Seed-Migration, Viewer-Prototyp gegen die Datenbank |
+| `KONTEXT.md` | – | 2026-07-11 | T02–T08: lokaler Stack, Seed-Migration, Viewer-/Editor-Prototyp, gemeinsamer Login |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02) |
 | `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03) |
-| `viewer-db/index.html` | v1 | 2026-07-11 | Neu: Viewer-Prototyp gegen die Datenbank (T04) |
+| `viewer-db/index.html` | v2 | 2026-07-11 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08) |
+| `editor-db/index.html` | v2 | 2026-07-11 | Editor-Prototyp mit dynamischen Formularfeldern (T06+T07), gemeinsamer Login (T08) |
+| `shared/auth.js` | v1 | 2026-07-11 | Neu: gemeinsamer Login (Magic-Link + Passwort-Fallback) für viewer-db/editor-db (T08) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
 ---
@@ -329,6 +331,43 @@ klare Fehlermeldung, DB bleibt unverändert), neuen Schritt anlegen (nr
 korrekt vorgeschlagen) und wieder löschen. Test-Zugang
 `editor@prozesslandkarte.local` / `editor-passwort-123` (Rolle `editor` in
 `ak-patientenportale`) zusätzlich zum bestehenden `demo@…`-Viewer-Zugang.
+
+### T08 abgeschlossen: gemeinsamer Login-Bildschirm mit Magic-Link zuerst (Session 2026-07-11)
+
+`shared/auth.js` — von `viewer-db/index.html` und `editor-db/index.html`
+gemeinsam per `<script src="../shared/auth.js">` eingebunden (klassisches
+Script, keine Module — Reihenfolge der `<script>`-Tags ist deshalb
+unkritisch, da `GOTRUE_URL` erst zur Laufzeit der aufgerufenen Funktionen
+existieren muss, nicht beim Parsen). `initLoginScreen({title, hint,
+onSuccess})` baut den kompletten Login-Bildschirm einmalig ins DOM:
+
+- **Magic-Link zuerst** (E-Mail-Feld → „Magic-Link senden" → GoTrue `/otp`
+  mit `create_user:false`) — passend zur Architekturentscheidung
+  (E-Mail/Magic-Link als Einstieg). Der Nutzer trägt den 6-stelligen Code aus
+  der E-Mail ein (`/verify` mit `type:'magiclink'`) statt auf einen Link zu
+  klicken — robuster als der Redirect-Link, da dessen `redirect_to` von
+  `GOTRUE_SITE_URL` abhängt, was nicht pro Umgebung/Port (viewer-db vs.
+  editor-db, unterschiedliche lokale Ports) konfiguriert ist. Ein Bonus-Pfad
+  (`tryConsumeUrlHashToken()`) verarbeitet trotzdem `#access_token=...` im
+  URL-Hash, falls der Link zufällig passt.
+- **Passwort als Fallback** in einem eingeklappten `<details>` — für
+  Test-/Demo-Zugänge (`demo@…`, `editor@…`) weiterhin nutzbar, ohne dass
+  Magic-Link für automatisierte Tests jedes Mal eine E-Mail-Runde braucht.
+
+Getestet per Headless-Chrome (persistenter Chrome-Tab über zwei
+Skript-Aufrufe hinweg, da der Bestätigungscode zwischen „Senden" und
+„Bestätigen" per Mailpit-API aus dem Test-Skript geholt wird — die
+Mailpit-Weboberfläche selbst lässt sich aus der App heraus nicht per
+`fetch()` auslesen, ihre CSP blockt Cross-Origin-Requests bewusst, das ist
+kein App-Bug): kompletter Magic-Link-Flow (senden → Code aus Mailpit →
+bestätigen → eingeloggt) für `viewer-db` und `editor-db`, Passwort-Fallback
+über das `<details>`-Element, Rollen-Badge korrekt.
+
+Nebenbefund: GoTrues `/otp`-Rate-Limit (60s pro E-Mail-Adresse) hat beim
+Testen mehrfach zugeschlagen, weil manuelle `curl`-Prüfungen zwischendurch
+den Cooldown immer wieder neu gestartet haben — kein Bug, nur beim Testen
+zu beachten (nicht mehrfach kurz hintereinander für dieselbe Adresse
+anfragen).
 
 ## Geplante Aufgaben
 
