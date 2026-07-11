@@ -5,7 +5,19 @@ Multi-User-Web-Tool"): nur die drei tatsächlich benötigten Bausteine, selbst
 gehostet per Docker Compose. Kein Supabase Studio, kein Kong, keine Realtime/
 Storage-Dienste.
 
-## Einmalig einrichten
+## TL;DR: alles mit einem Aufruf starten
+
+```bash
+./supabase/start.sh
+```
+
+Idempotent — legt beim allerersten Aufruf `.env` (neue Secrets), Schema und
+Seed-Daten sowie die drei Test-Zugänge (`demo@`/`editor@`/`admin@…`) an und
+startet den statischen Webserver für Viewer/Editor; bei jedem weiteren
+Aufruf werden nur fehlende Teile ergänzt, nichts wird überschrieben. Details
+zu den einzelnen Schritten (falls manuell/einzeln gebraucht) siehe unten.
+
+## Einmalig einrichten (manuell, falls nicht über start.sh)
 
 ```bash
 cd supabase
