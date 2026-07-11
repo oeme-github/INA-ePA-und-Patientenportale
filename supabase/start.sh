@@ -138,8 +138,7 @@ Test-Zugänge (Login-Bildschirm → "Alternative: mit Passwort anmelden"):
   editor@prozesslandkarte.local / editor-passwort-123 (Rolle: editor)
   admin@prozesslandkarte.local  / admin-passwort-123  (Rolle: admin)
 
-Stack stoppen: cd supabase && docker compose down
-(Volumes bleiben erhalten; für einen komplett frischen Start zusätzlich
- "docker compose down -v" und das Passwort-File "supabase/.env" behalten
- oder bewusst löschen.)
+Stack stoppen: ./stop.sh (Daten bleiben erhalten)
+Kompletter Reset: ./stop.sh --wipe-data (löscht das DB-Volume, nächster
+start.sh macht einen Erststart)
 EOF

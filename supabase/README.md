@@ -17,6 +17,11 @@ startet den statischen Webserver für Viewer/Editor; bei jedem weiteren
 Aufruf werden nur fehlende Teile ergänzt, nichts wird überschrieben. Details
 zu den einzelnen Schritten (falls manuell/einzeln gebraucht) siehe unten.
 
+Stoppen mit `./supabase/stop.sh` (Daten bleiben erhalten — Container werden
+entfernt, aber nicht das DB-Volume). Für einen kompletten Reset:
+`./supabase/stop.sh --wipe-data` (löscht auch die Daten; der nächste
+`start.sh`-Aufruf spielt Schema + Seed dann wieder frisch ein).
+
 ## Einmalig einrichten (manuell, falls nicht über start.sh)
 
 ```bash
