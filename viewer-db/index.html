@@ -633,7 +633,7 @@
     return safe.replace(new RegExp(`(${escTerm})`, 'ig'), '<mark>$1</mark>');
   }
 
-  const SEARCH_DIM_KEYS = ['akteur', 'objekt', 'detail'];
+  const SEARCH_DIM_KEYS = ['akteur', 'objekt', 'detail', 'gesetz', 'standard'];
   function matchesSearch(d) {
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
