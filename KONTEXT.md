@@ -465,6 +465,15 @@ angelegt und geprüft: offen, 0 Reviews, von GitHub aus technisch mergebar
 `enforcement: disabled`) — es fehlt schlicht der Review-Schritt, kein
 technisches Hindernis. Kein Merge ohne Rücksprache.
 
+**Update (2026-07-19): PR #27 gemergt.** Nach Abschluss des vollständigen
+Viewer-/Editor-Abgleichs (V01–V08, E01–E07, siehe eigener Abschnitt oben)
+hat der Nutzer PR #27 direkt über die GitHub-Oberfläche nach `main` gemergt
+(Merge-Commit `2197dfb`), weiterhin ohne Code-Owner-Review (Ruleset-
+Enforcement war deaktiviert). Damit sind `viewer-db`/`editor-db`/`supabase/`
+und das finale Positionspapier (v0.5) jetzt auf `main`. Feature-Branch
+`feature/positionspapier-v2` ist seither nur noch für etwaige Folgearbeiten
+relevant, `main` ist der aktuelle Stand.
+
 **Start-/Stop-Skripte:** `supabase/start.sh` (idempotent, ein Aufruf für den
 kompletten Stack inkl. Test-Zugänge) und `supabase/stop.sh` (nicht-
 destruktiv per Default, `--wipe-data` für kompletten Reset) ergänzt und per
