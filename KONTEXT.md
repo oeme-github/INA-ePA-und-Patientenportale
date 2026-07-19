@@ -840,8 +840,14 @@ weitere Punkte zurückgemeldet, alle noch in denselben PR eingearbeitet:
 Beide Viewer-Fixes per Screenshot gegen die vorhandene Test-Dimension
 verifiziert (Chip „Test01" erscheint jetzt auf Karte #01, Toolbar-Zeilen
 sichtbar getrennt). PR #37 fasst die komplette E08-Umsetzung inkl. aller
-drei Nachbesserungen zusammen, war zum Ende dieser Session noch offen
-(Nutzer wollte sich das Ergebnis erst ansehen, kein Merge-Auftrag erteilt).
+drei Nachbesserungen zusammen und ist gemergt (932e5f9). Damit ist der
+gesamte Viewer-/Editor-Abgleich (V01–V09, E01–E10, E08) abgeschlossen,
+keine offenen PRs mehr. Die neue Migration
+`20260719090000_deferrable_process_steps_nr.sql` ist damit zwar auf `main`,
+aber `start.sh` spielt neue Migrationsdateien nur beim allerersten Start
+ein (siehe T02) — in dieser Session direkt per `docker exec psql` gegen den
+laufenden lokalen Stack eingespielt; eine weitere Umgebung (Staging o.ä.)
+bräuchte das manuell nachgezogen.
 
 ## Geplante Aufgaben
 
