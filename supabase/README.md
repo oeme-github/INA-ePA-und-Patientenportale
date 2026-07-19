@@ -241,6 +241,34 @@ per E-Mail hinzufügen (inkl. Negativfälle unbekannte E-Mail / bereits
 Mitglied), Rolle ändern, Mitglied entfernen, RLS-Grenzfall mit `editor`-Rolle,
 Selbstschutz bei letztem Admin (Herabstufen und Entfernen beide blockiert).
 
+## Änderungsprotokoll (Cutover-Checkliste: Audit-/Versionsprotokoll)
+
+`process_step_audit` (Schema seit T02, siehe `init_schema.sql`) wird seit
+Migration `20260719110000_enable_process_step_audit.sql` aktiv befüllt —
+vorher war sie nur eine leere Struktur. Trigger auf `process_steps` UND
+`process_step_values` (die fachlichen Inhalte eines Schritts liegen im
+generischen Datenmodell nicht in `process_steps` selbst), beide
+`security definer`, da die Tabelle bewusst keine Schreib-Policy hat.
+
+Abfragbar nur über die API (`GET /process_step_audit?process_step_id=eq.<id>`),
+RLS erlaubt Lesen ab Rolle `viewer` in der jeweiligen Workgroup — bisher
+keine eigene UI dafür.
+
+**Rauschunterdrückung:** `seed_ak_patientenportale.py` löscht/schreibt bei
+jedem Lauf alle `process_step_values` komplett neu, auch wenn sich nichts
+geändert hat. Das Skript setzt deshalb `set local app.skip_audit='on'` für
+seine eigene Transaktion — ein manueller `psql`-Zugriff, der das nicht
+setzt, wird dagegen ganz normal protokolliert (z.B. mit `changed_by =
+null`, da ohne PostgREST-JWT kein `auth.uid()` verfügbar ist).
+
+**Wichtig bei künftigen Migrationen an `process_step_audit`:**
+`process_step_id` hat bewusst **keinen** Fremdschlüssel auf `process_steps`
+(anders als beim ursprünglichen T02-Entwurf) — ein Audit-Log darf nicht
+verschwinden, wenn die protokollierte Zeile gelöscht wird. `workgroup_id`
+ist denormalisiert direkt in der Tabelle mitgeführt (nicht per Join
+ermittelt), sonst würden RLS-Leserechte und der Cascade-Trigger nach einer
+Löschung ins Leere laufen.
+
 ## Datenabgleich gegen patientenpfad_data.js (T11-Vorbereitung)
 
 `supabase/seed/reconcile_with_data_js.py` vergleicht den aktuellen DB-Stand
