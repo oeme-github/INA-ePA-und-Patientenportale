@@ -84,6 +84,10 @@
     .editor-main {
       flex: 1; background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
       padding: 20px 24px;
+      /* E03: eigener Scroll-Container, damit .form-actions unten kleben kann
+         (position: sticky braucht einen begrenzten Scroll-Vorfahren – bisher
+         scrollte nur die ganze Seite). 96px ≈ Höhe von .page-header. */
+      max-height: calc(100vh - 96px); overflow-y: auto;
     }
     .empty-hint { color: var(--c-text-3); font-size: 13px; padding: 40px 0; text-align: center; }
 
@@ -170,7 +174,15 @@
     .checkbox-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; }
     .checkbox-inline input { width: auto; }
 
-    .form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--c-border-1); }
+    .form-actions {
+      display: flex; gap: 8px; border-top: 1px solid var(--c-border-1);
+      /* Full-bleed sticky Fußzeile innerhalb des gepolsterten Scroll-Containers:
+         negative Ränder heben die editor-main-Polsterung auf, padding stellt sie
+         innerhalb der Fußzeile wieder her, bottom gleicht den negativen
+         Rand aus, damit die Zeile exakt am unteren Scrollport-Rand klebt. */
+      position: sticky; bottom: -20px; margin: 20px -24px -20px; padding: 16px 24px;
+      background: var(--c-surface); box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
     .form-message {
       margin-top: 12px; font-size: 12px; padding: 8px 10px; border-radius: var(--r-sm); display: none;
     }
