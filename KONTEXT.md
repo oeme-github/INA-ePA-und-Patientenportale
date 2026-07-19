@@ -20,13 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42, offen) |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v4 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 offen) |
+| `supabase/migrations/` | v4 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt) |
 | `supabase/seed/` | v3 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt) |
 | `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, gemergt) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
-| `editor-db/index.html` | v10 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, offen) |
+| `editor-db/index.html` | v10 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt) |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -973,7 +973,7 @@ stillem Fehlschlag). Test-Nutzer-Account danach wieder gelöscht,
 Datenabgleichs).
 
 Cutover-Checkliste: „Rollenkonzept final" ist damit inhaltlich entschieden
-und technisch umgesetzt (PR #41/#42 offen) — die eigentliche
+und technisch umgesetzt (PR #41/#42/#43 gemergt) — die eigentliche
 Rollen-Zuweisung für die produktive `ak-patientenportale`-Workgroup (welche
 echten AG-Mitglieder welche Rolle bekommen) ist keine technische Aufgabe
 mehr, sondern nur noch Ausführung über die neue UI, sobald die AG-Namen
