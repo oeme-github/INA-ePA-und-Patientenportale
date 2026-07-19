@@ -121,11 +121,18 @@
     }
     .matrix-table { border-collapse: collapse; background: var(--c-surface); font-size: 12px; }
     .matrix-table th, .matrix-table td {
-      border: 1px solid var(--c-border-1); padding: 6px 10px; text-align: center; min-width: 40px;
+      border: 1px solid var(--c-border-1); padding: 6px 8px; text-align: left; vertical-align: top; min-width: 160px;
     }
-    .matrix-table th { background: #F9FAFB; font-weight: 600; color: var(--c-text-2); font-size: 11px; }
-    .matrix-table th:first-child, .matrix-table td:first-child { text-align: left; font-weight: 500; }
-    .matrix-table td.matrix-hit { background: #EFF6FF; color: #1E40AF; font-weight: 700; }
+    .matrix-table th { background: #F9FAFB; font-weight: 600; color: var(--c-text-2); font-size: 11px; text-align: center; }
+    .matrix-table th:first-child, .matrix-table td:first-child { text-align: left; font-weight: 500; min-width: auto; }
+    .matrix-table td.matrix-hit { background: #EFF6FF; }
+    .matrix-step-chip {
+      display: block; width: 100%; text-align: left; margin-bottom: 4px; padding: 3px 6px 3px 8px;
+      border: 1px solid var(--c-border-1); border-left: 3px solid var(--c-border-3); border-radius: 4px;
+      background: var(--c-surface); color: #1E40AF; font-size: 11px; font-family: inherit; cursor: pointer;
+    }
+    .matrix-step-chip:hover { background: #EFF6FF; }
+    .matrix-step-chip:last-child { margin-bottom: 0; }
     .matrix-wrap { overflow-x: auto; }
 
     .search-input {
@@ -618,21 +625,33 @@
     if (!xDim || !yDim) return '<div class="empty-hint">Keine Achsen wählbar.</div>';
 
     const visible = data.filter(matchesSearch);
-    const countFor = (xv, yv) => visible.filter(d =>
+    const stepsFor = (xv, yv) => visible.filter(d =>
       (d.values[xDim.key] || []).some(v => v.key === xv.key) &&
       (d.values[yDim.key] || []).some(v => v.key === yv.key)
-    ).length;
+    );
+    const chipFor = d => {
+      const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
+      const style = sectionValue ? `style="border-left-color:${colorOf(sectionValue)};"` : '';
+      return `<button type="button" class="matrix-step-chip" ${style} onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
+    };
 
     const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
     const body = xDim.values.map(xv => {
       const cells = yDim.values.map(yv => {
-        const c = countFor(xv, yv);
-        return `<td class="${c ? 'matrix-hit' : ''}">${c || ''}</td>`;
+        const steps = stepsFor(xv, yv);
+        return `<td class="${steps.length ? 'matrix-hit' : ''}">${steps.map(chipFor).join('')}</td>`;
       }).join('');
       return `<tr><th>${escapeHtml(xv.label)}</th>${cells}</tr>`;
     }).join('');
 
     return `<div class="matrix-wrap"><table class="matrix-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function openFromMatrix(nr) {
+    openCard = nr;
+    setView('cards');
+    const el = document.querySelector(`.prozess-card[data-nr="${nr}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // ── Render ───────────────────────────────────────────────────────
