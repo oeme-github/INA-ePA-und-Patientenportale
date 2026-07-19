@@ -207,6 +207,40 @@ vorgeschlagen), Wert ergänzen (erscheint sofort im Prozessschritt-Formular),
 RLS-Grenzfall mit `editor`-Rolle (Anlegen schlägt mit HTTP 403 fehl, DB
 unverändert), Dimension wieder löschen.
 
+## Mitglieder-Verwaltung im Editor (T12)
+
+Ersetzt den bisherigen Weg (manuelles `docker compose exec ... psql ...
+insert into memberships ...`, siehe oben bei den Test-Zugängen) durch eine
+UI: im Editor zwischen „Prozessschritte"/„Dimensionen"/„Mitglieder"
+umschalten. Erfordert wie die Dimensionen-Verwaltung die Rolle `admin`
+(`"Admins verwalten Mitgliedschaften"`-Policy) — mit `editor`/`viewer` zeigt
+der Tab nur einen Hinweistext, keine Liste.
+
+**Kein echtes Invite-System:** eine Person muss sich zuerst selbst
+registrieren (Login-Screen → Magic-Link oder Passwort), erst danach kann ein
+admin sie im Editor per E-Mail-Adresse finden und ihr eine Rolle zuweisen.
+Dahinter stecken zwei neue `security definer`-RPCs (Migration
+`20260719100000_add_member_lookup_functions.sql`), weil `auth.users` selbst
+über PostgREST nicht erreichbar ist (`PGRST_DB_SCHEMA=public`):
+
+- `lookup_user_by_email(p_email, p_workgroup_id)` — löst eine E-Mail-Adresse
+  zur `user_id` auf (`null`, falls kein Account existiert)
+- `list_workgroup_members(p_workgroup_id)` — Mitgliederliste inkl. E-Mail
+
+Beide prüfen den `admin`-Status selbst (RLS greift bei `security definer`
+nicht), liefern sonst HTTP 403. Nach dem Einspielen einer neuen
+Funktions-Migration nicht vergessen: `NOTIFY pgrst, 'reload schema';`
+(PostgREST cacht Funktionssignaturen wie Tabellenschemata).
+
+Client-seitiger Selbstschutz (kein DB-Constraint): Die letzte `admin`-Rolle
+einer Workgroup lässt sich weder herabstufen noch entfernen, um
+versehentliches Selbst-Aussperren zu verhindern.
+
+Getestet per Playwright: Admin sieht/verwaltet die Mitgliederliste, Mitglied
+per E-Mail hinzufügen (inkl. Negativfälle unbekannte E-Mail / bereits
+Mitglied), Rolle ändern, Mitglied entfernen, RLS-Grenzfall mit `editor`-Rolle,
+Selbstschutz bei letztem Admin (Herabstufen und Entfernen beide blockiert).
+
 ## Datenabgleich gegen patientenpfad_data.js (T11-Vorbereitung)
 
 `supabase/seed/reconcile_with_data_js.py` vergleicht den aktuellen DB-Stand
