@@ -49,8 +49,10 @@
     }
     .btn-link:hover { text-decoration: underline; }
 
-    .layout { display: flex; gap: 16px; padding: 20px 24px; align-items: flex-start; }
-    .sidebar { width: 320px; flex-shrink: 0; }
+    /* E05: Akkordeon statt Sidebar+Panel – ein Spalten-Layout, das Formular
+       klappt direkt unter der angeklickten Zeile auf statt in einem fixen
+       rechten Panel. */
+    .layout { max-width: 880px; margin: 0 auto; padding: 20px 24px; }
     .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .sidebar-header h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-4); }
 
@@ -65,7 +67,12 @@
     .btn-danger:hover { background: #FECACA; }
     .btn:disabled { opacity: 0.5; cursor: default; }
 
-    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); overflow: hidden; }
+    /* E05: kein overflow:hidden mehr – #step-form/#dimension-form können jetzt
+       als Kind von .step-list eingehängt sein (Akkordeon), und overflow:hidden
+       auf einem Vorfahren würde position:sticky in .form-actions (E03) brechen
+       (kein Scroll-Container mit unbegrenzter Höhe mehr = sticky bezieht sich
+       fälschlich auf .step-list statt den Viewport). */
+    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); }
     .step-item {
       padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
       display: flex; gap: 8px; align-items: flex-start;
@@ -81,15 +88,19 @@
       overflow: hidden; line-height: 1.35;
     }
 
-    .editor-main {
-      flex: 1; background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
-      padding: 20px 24px;
-      /* E03: eigener Scroll-Container, damit .form-actions unten kleben kann
-         (position: sticky braucht einen begrenzten Scroll-Vorfahren – bisher
-         scrollte nur die ganze Seite). 96px ≈ Höhe von .page-header. */
-      max-height: calc(100vh - 96px); overflow-y: auto;
+    /* E05: #step-form/#dimension-form sind Singleton-Elemente, die per JS
+       direkt hinter die angeklickte Zeile verschoben werden (insertAdjacentElement) –
+       kein festes rechtes Panel mehr. Kein eigener Scroll-Container (anders als
+       vorher .editor-main): die aufgeklappte Zeile kann an beliebiger Stelle der
+       Liste stehen, ein fester max-height wäre dort nicht verlässlich innerhalb
+       des Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
+       bleibt per position:sticky relativ zum Browser-Fenster kleben (E03),
+       solange ein Teil des Formulars sichtbar ist. */
+    #step-form, #dimension-form {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 20px 24px; margin: 8px 0 12px;
     }
-    .empty-hint { color: var(--c-text-3); font-size: 13px; padding: 40px 0; text-align: center; }
+    .empty-hint { color: var(--c-text-3); font-size: 13px; padding: 16px 0; text-align: center; }
 
     .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
     .form-row .field { flex: 1; }
@@ -176,11 +187,12 @@
 
     .form-actions {
       display: flex; gap: 8px; border-top: 1px solid var(--c-border-1);
-      /* Full-bleed sticky Fußzeile innerhalb des gepolsterten Scroll-Containers:
-         negative Ränder heben die editor-main-Polsterung auf, padding stellt sie
-         innerhalb der Fußzeile wieder her, bottom gleicht den negativen
-         Rand aus, damit die Zeile exakt am unteren Scrollport-Rand klebt. */
-      position: sticky; bottom: -20px; margin: 20px -24px -20px; padding: 16px 24px;
+      /* Full-bleed Fußzeile über die volle Breite von #step-form (negative
+         Ränder heben dessen Polsterung auf, padding stellt sie innerhalb der
+         Fußzeile wieder her). position:sticky/bottom:0 klebt sie ans untere
+         Ende des Browser-Fensters (E03) – da kein Vorfahre einen eigenen
+         Scroll-Container aufspannt, ist der Viewport selbst der Bezugsrahmen. */
+      position: sticky; bottom: 0; margin: 20px -24px -20px; padding: 16px 24px;
       background: var(--c-surface); box-shadow: 0 -2px 8px rgba(0,0,0,.06);
     }
     .form-message {
@@ -240,106 +252,108 @@
     </div>
 
     <div class="layout">
-      <div class="sidebar">
-        <div class="sidebar-tabs">
-          <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
-          <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
-        </div>
-
-        <div id="steps-sidebar">
-          <div class="sidebar-header">
-            <h2 id="step-count">Prozessschritte</h2>
-            <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
-          </div>
-          <div class="step-list" id="step-list"></div>
-        </div>
-
-        <div id="dimensions-sidebar" style="display:none;">
-          <div class="sidebar-header">
-            <h2 id="dimension-count">Dimensionen</h2>
-            <button class="btn btn-primary" onclick="newDimension()">+ Neu</button>
-          </div>
-          <div class="step-list" id="dimension-list"></div>
-        </div>
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
+        <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
       </div>
 
-      <div class="editor-main">
-        <div id="editor-empty" class="empty-hint">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+      <!-- E05: Akkordeon – Zeile anklicken klappt das Formular direkt darunter
+           auf (kein festes rechtes Panel mehr). #step-form/#dimension-form
+           sind Singleton-Elemente, die per JS zur passenden Zeile verschoben
+           werden (siehe renderStepList()/renderDimensionList()). -->
+      <div id="steps-view">
+        <div class="sidebar-header">
+          <h2 id="step-count">Prozessschritte</h2>
+          <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
+        </div>
+        <div id="new-step-slot"></div>
+        <div class="step-list" id="step-list"></div>
+      </div>
 
-        <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
-          <div class="form-row">
-            <div class="field" style="max-width:120px;">
-              <label for="field-nr">Nr.</label>
-              <input type="number" id="field-nr" required min="1">
-            </div>
-            <div class="field">
-              <label for="field-titel">Titel</label>
-              <input type="text" id="field-titel" required>
-            </div>
-          </div>
-          <div id="dynamic-fields"></div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary" id="save-btn">Speichern</button>
-            <button type="button" class="btn btn-danger" id="delete-btn" onclick="onDeleteStep()">Löschen</button>
-          </div>
-          <div class="form-message error" id="form-error"></div>
-          <div class="form-message success" id="form-success"></div>
-        </form>
+      <div id="dimensions-view" style="display:none;">
+        <div class="sidebar-header">
+          <h2 id="dimension-count">Dimensionen</h2>
+          <button class="btn btn-primary" onclick="newDimension()">+ Neu</button>
+        </div>
+        <div id="new-dimension-slot"></div>
+        <div class="step-list" id="dimension-list"></div>
+      </div>
 
-        <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
-          <p class="field-hint" style="margin-bottom:16px;">Neue Dimensionen anlegen/bearbeiten erfordert die Rolle
-            <code>admin</code> (Row-Level-Security) — mit <code>editor</code> kann man nur Werte innerhalb
-            bestehender Dimensionen pflegen (siehe Prozessschritt-Formular).</p>
-          <div class="form-row">
-            <div class="field" style="max-width:200px;">
-              <label for="dim-field-key">Key</label>
-              <input type="text" id="dim-field-key" required>
-              <p class="field-hint">Technischer Bezeichner, z.B. <code>prioritaet</code>.</p>
-            </div>
-            <div class="field">
-              <label for="dim-field-label">Label</label>
-              <input type="text" id="dim-field-label" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="dim-field-typ">Typ</label>
-              <select id="dim-field-typ">
-                <option value="single_select">single_select (Auswahl, ein Wert)</option>
-                <option value="multi_select">multi_select (Auswahl, mehrere Werte)</option>
-                <option value="text">text (Freitext)</option>
-              </select>
-            </div>
-            <div class="field" style="max-width:120px;">
-              <label for="dim-field-reihenfolge">Reihenfolge</label>
-              <input type="number" id="dim-field-reihenfolge" min="1">
-            </div>
-            <div class="field" style="max-width:160px;">
-              <label for="dim-field-farbe">Farbe (optional)</label>
-              <input type="color" id="dim-field-farbe" style="width:100%;height:34px;padding:2px;">
-            </div>
+      <div id="editor-empty" class="empty-hint" style="display:none;">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+
+      <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
+        <div class="form-row">
+          <div class="field" style="max-width:120px;">
+            <label for="field-nr">Nr.</label>
+            <input type="number" id="field-nr" required min="1">
           </div>
           <div class="field">
-            <label class="checkbox-inline"><input type="checkbox" id="dim-field-nav"> Navigationsachse (Tab-Leiste bzw. Toggle-Filter im Viewer)</label>
+            <label for="field-titel">Titel</label>
+            <input type="text" id="field-titel" required>
           </div>
+        </div>
+        <div id="dynamic-fields"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="save-btn">Speichern</button>
+          <button type="button" class="btn btn-danger" id="delete-btn" onclick="onDeleteStep()">Löschen</button>
+        </div>
+        <div class="form-message error" id="form-error"></div>
+        <div class="form-message success" id="form-success"></div>
+      </form>
 
-          <div id="dimension-values-section" class="field" style="display:none;">
-            <label>Werte</label>
-            <div id="dimension-values-list"></div>
-            <div class="add-value-row">
-              <input type="text" placeholder="Neuer Wert" id="dim-new-value-label">
-              <button type="button" onclick="addDimensionValueInManager()">+ Hinzufügen</button>
-            </div>
+      <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
+        <p class="field-hint" style="margin-bottom:16px;">Neue Dimensionen anlegen/bearbeiten erfordert die Rolle
+          <code>admin</code> (Row-Level-Security) — mit <code>editor</code> kann man nur Werte innerhalb
+          bestehender Dimensionen pflegen (siehe Prozessschritt-Formular).</p>
+        <div class="form-row">
+          <div class="field" style="max-width:200px;">
+            <label for="dim-field-key">Key</label>
+            <input type="text" id="dim-field-key" required>
+            <p class="field-hint">Technischer Bezeichner, z.B. <code>prioritaet</code>.</p>
           </div>
+          <div class="field">
+            <label for="dim-field-label">Label</label>
+            <input type="text" id="dim-field-label" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="dim-field-typ">Typ</label>
+            <select id="dim-field-typ">
+              <option value="single_select">single_select (Auswahl, ein Wert)</option>
+              <option value="multi_select">multi_select (Auswahl, mehrere Werte)</option>
+              <option value="text">text (Freitext)</option>
+            </select>
+          </div>
+          <div class="field" style="max-width:120px;">
+            <label for="dim-field-reihenfolge">Reihenfolge</label>
+            <input type="number" id="dim-field-reihenfolge" min="1">
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label for="dim-field-farbe">Farbe (optional)</label>
+            <input type="color" id="dim-field-farbe" style="width:100%;height:34px;padding:2px;">
+          </div>
+        </div>
+        <div class="field">
+          <label class="checkbox-inline"><input type="checkbox" id="dim-field-nav"> Navigationsachse (Tab-Leiste bzw. Toggle-Filter im Viewer)</label>
+        </div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary" id="dim-save-btn">Speichern</button>
-            <button type="button" class="btn btn-danger" id="dim-delete-btn" onclick="onDeleteDimension()">Löschen</button>
+        <div id="dimension-values-section" class="field" style="display:none;">
+          <label>Werte</label>
+          <div id="dimension-values-list"></div>
+          <div class="add-value-row">
+            <input type="text" placeholder="Neuer Wert" id="dim-new-value-label">
+            <button type="button" onclick="addDimensionValueInManager()">+ Hinzufügen</button>
           </div>
-          <div class="form-message error" id="dim-form-error"></div>
-          <div class="form-message success" id="dim-form-success"></div>
-        </form>
-      </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="dim-save-btn">Speichern</button>
+          <button type="button" class="btn btn-danger" id="dim-delete-btn" onclick="onDeleteDimension()">Löschen</button>
+        </div>
+        <div class="form-message error" id="dim-form-error"></div>
+        <div class="form-message success" id="dim-form-success"></div>
+      </form>
     </div>
   </div>
 
@@ -368,6 +382,17 @@
   let currentStepId = null;
   let activeView = 'steps';  // 'steps' | 'dimensions' (T09)
   let currentDimId = null;
+  // E05: Akkordeon – #step-form/#dimension-form sind Singleton-DOM-Knoten,
+  // die per JS zur passenden Zeile verschoben werden. Referenzen einmal
+  // cachen: nach einem innerHTML-Rebuild der Liste ist der Knoten (falls er
+  // gerade dort eingehängt war) aus dem Dokument entfernt und über
+  // document.getElementById() nicht mehr auffindbar – die gecachte
+  // JS-Referenz bleibt trotzdem gültig zum erneuten Einhängen.
+  const stepFormEl = document.getElementById('step-form');
+  const dimensionFormEl = document.getElementById('dimension-form');
+  const emptyHintEl = document.getElementById('editor-empty');
+  let creatingNewStep = false;
+  let creatingNewDimension = false;
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -408,6 +433,7 @@
 
     await reloadDimensions();
     await reloadSteps();
+    updateEmptyHint();
   }
 
   async function reloadSteps() {
@@ -419,10 +445,18 @@
   function renderStepList() {
     document.getElementById('step-count').textContent = `Prozessschritte (${steps.length})`;
     document.getElementById('step-list').innerHTML = steps.map(s => `
-      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" onclick="selectStep('${s.id}')">
+      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" id="step-item-${s.id}" onclick="selectStep('${s.id}')">
         <span class="nr">#${String(s.nr).padStart(2, '0')}</span>
         <span class="titel">${escapeHtml(s.titel)}</span>
       </div>`).join('') || '<div class="empty-hint">Noch keine Prozessschritte.</div>';
+
+    // E05: das (weiterhin einzige) #step-form-Element direkt hinter die
+    // aufgeklappte Zeile hängen – innerHTML oben hat es aus dem Dokument
+    // entfernt, falls es dort vorher schon eingehängt war.
+    if (currentStepId) {
+      const row = document.getElementById(`step-item-${currentStepId}`);
+      if (row) row.insertAdjacentElement('afterend', stepFormEl);
+    }
   }
 
   // ── Formular: Felder dynamisch aus dims generieren ──────────────────
@@ -538,43 +572,83 @@
     }
   }
 
+  // E05: zeigt den Leer-Hinweis nur, wenn in der aktiven Ansicht weder eine
+  // bestehende Zeile aufgeklappt noch ein neuer Eintrag in Erstellung ist.
+  function updateEmptyHint() {
+    const isEmpty = activeView === 'steps'
+      ? (!currentStepId && !creatingNewStep)
+      : (!currentDimId && !creatingNewDimension);
+    emptyHintEl.textContent = activeView === 'steps'
+      ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
+      : 'Dimension in der Liste auswählen oder „+ Neu" klicken.';
+    emptyHintEl.style.display = isEmpty ? 'block' : 'none';
+    if (isEmpty) {
+      document.getElementById(activeView === 'steps' ? 'new-step-slot' : 'new-dimension-slot').appendChild(emptyHintEl);
+    }
+  }
+
   // ── Ansicht wechseln: Prozessschritte / Dimensionen (T09) ───────────
   function setView(view) {
     activeView = view;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-    document.getElementById('steps-sidebar').style.display = view === 'steps' ? 'block' : 'none';
-    document.getElementById('dimensions-sidebar').style.display = view === 'dimensions' ? 'block' : 'none';
+    document.getElementById('steps-view').style.display = view === 'steps' ? 'block' : 'none';
+    document.getElementById('dimensions-view').style.display = view === 'dimensions' ? 'block' : 'none';
 
-    document.getElementById('step-form').style.display = 'none';
-    document.getElementById('dimension-form').style.display = 'none';
-    document.getElementById('editor-empty').style.display = 'block';
-    document.getElementById('editor-empty').textContent = view === 'steps'
-      ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
-      : 'Dimension in der Liste auswählen oder „+ Neu" klicken.';
+    // E05: Akkordeon-Zustand der jeweils anderen Ansicht beim Wechsel schließen,
+    // sonst bliebe eine Zeile optisch "aktiv" markiert, ohne dass ihr Formular
+    // noch irgendwo eingehängt ist.
+    currentStepId = null; creatingNewStep = false;
+    currentDimId = null; creatingNewDimension = false;
+    stepFormEl.style.display = 'none';
+    dimensionFormEl.style.display = 'none';
+    renderStepList();
+    renderDimensionList();
+    updateEmptyHint();
   }
 
   // ── Dimensionen verwalten (T09) ──────────────────────────────────────
   function renderDimensionList() {
     document.getElementById('dimension-count').textContent = `Dimensionen (${dims.length})`;
     document.getElementById('dimension-list').innerHTML = dims.map(d => `
-      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" onclick="selectDimension('${d.id}')">
+      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')">
         <span class="titel">${escapeHtml(d.label)}</span>
         <span class="typ-badge">${d.typ}</span>
         ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
       </div>`).join('') || '<div class="empty-hint">Noch keine Dimensionen.</div>';
+
+    // E05: das (weiterhin einzige) #dimension-form-Element direkt hinter die
+    // aufgeklappte Zeile hängen – innerHTML oben hat es aus dem Dokument
+    // entfernt, falls es dort vorher schon eingehängt war.
+    if (currentDimId) {
+      const row = document.getElementById(`dimension-item-${currentDimId}`);
+      if (row) row.insertAdjacentElement('afterend', dimensionFormEl);
+    }
   }
 
   function selectDimension(id) {
+    creatingNewDimension = false;
+    if (currentDimId === id) {
+      // Akkordeon: erneuter Klick auf dieselbe Zeile klappt sie zu
+      currentDimId = null;
+      dimensionFormEl.style.display = 'none';
+      renderDimensionList();
+      updateEmptyHint();
+      return;
+    }
     currentDimId = id;
     renderDimensionList();
     renderDimensionForm(id);
+    updateEmptyHint();
   }
 
   function newDimension() {
     currentDimId = null;
+    creatingNewDimension = true;
     renderDimensionList();
+    document.getElementById('new-dimension-slot').appendChild(dimensionFormEl);
     const nextOrder = dims.length ? Math.max(...dims.map(d => d.reihenfolge)) + 1 : 1;
     renderDimensionForm(null, { reihenfolge: nextOrder });
+    updateEmptyHint();
   }
 
   function renderDimensionValues(dim) {
@@ -657,12 +731,14 @@
         if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
         const [created] = await res.json();
         currentDimId = created.id;
+        creatingNewDimension = false;
       }
 
       successBox.textContent = 'Gespeichert.';
       successBox.style.display = 'block';
       await reloadDimensions();
       renderDimensionForm(currentDimId);
+      updateEmptyHint();
     } catch (err) {
       errorBox.textContent = err.message;
       errorBox.style.display = 'block';
@@ -681,9 +757,10 @@
       return;
     }
     currentDimId = null;
-    document.getElementById('dimension-form').style.display = 'none';
-    document.getElementById('editor-empty').style.display = 'block';
+    creatingNewDimension = false;
+    dimensionFormEl.style.display = 'none';
     await reloadDimensions();
+    updateEmptyHint();
   }
 
   async function reloadDimensions() {
@@ -750,16 +827,29 @@
 
   // ── Schritt auswählen / neu / speichern / löschen ───────────────────
   function selectStep(id) {
+    creatingNewStep = false;
+    if (currentStepId === id) {
+      // Akkordeon: erneuter Klick auf dieselbe Zeile klappt sie zu
+      currentStepId = null;
+      stepFormEl.style.display = 'none';
+      renderStepList();
+      updateEmptyHint();
+      return;
+    }
     currentStepId = id;
     renderStepList();
     renderForm(id);
+    updateEmptyHint();
   }
 
   function newStep() {
     currentStepId = null;
+    creatingNewStep = true;
     renderStepList();
+    document.getElementById('new-step-slot').appendChild(stepFormEl);
     const nextNr = steps.length ? Math.max(...steps.map(s => s.nr)) + 1 : 1;
     renderForm(null, { nr: nextNr, titel: '' });
+    updateEmptyHint();
   }
 
   async function renderForm(stepId, draft) {
@@ -845,6 +935,7 @@
         const [created] = await res.json();
         stepId = created.id;
         currentStepId = stepId;
+        creatingNewStep = false;
       }
 
       const formValues = readFormValues();
@@ -871,6 +962,7 @@
       successBox.textContent = 'Gespeichert.';
       successBox.style.display = 'block';
       await reloadSteps();
+      updateEmptyHint();
     } catch (err) {
       errorBox.textContent = err.message;
       errorBox.style.display = 'block';
@@ -889,9 +981,10 @@
       return;
     }
     currentStepId = null;
-    document.getElementById('step-form').style.display = 'none';
-    document.getElementById('editor-empty').style.display = 'block';
+    creatingNewStep = false;
+    stepFormEl.style.display = 'none';
     await reloadSteps();
+    updateEmptyHint();
   }
 
   // ── Start ────────────────────────────────────────────────────────
