@@ -20,7 +20,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich vollständig abgeschlossen (V01–V09, E01–E10) inkl. Live-Testing-Runde |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
 | `supabase/migrations/` | v2 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` ergänzt: `dimension_values.gruppe` für generische Filter-Gruppierung (V02/V03) |
 | `supabase/seed/` | v2 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03) |
@@ -688,6 +688,42 @@ Alle Fixes per Playwright (`playwright` lokal installiert, gecachtes
 Chromium unter `~/.cache/ms-playwright`) gegen den laufenden lokalen Stack
 verifiziert, nicht nur Code-Review. `reconcile_with_data_js.py` blieb
 durchgehend grün.
+
+### 8 offene PRs geprüft und gemergt (Session 2026-07-19, Fortsetzung)
+
+Zu Sessionbeginn lagen 8 offene PRs (#28–#35) aus der vorangegangenen
+Live-Testing-Runde vor — je ein PR pro Fund (V07-Nachbesserung, E09, E10,
+Toolbar-Zeilenabstand, V09, E08-Backlog-Eintrag, PR27-Nachbereitung,
+Session-Ende-Doku). Alle acht wurden geprüft (Diff gelesen, keine
+Berührung der drei geschützten Bestandsdateien, keine offenen
+Review-Anforderungen — Ruleset-Enforcement weiterhin `disabled`) und
+gemerged (`--merge`, Feature-Branches gelöscht):
+
+Reihenfolge: #29, #30, #31, #32, #34 (unabhängige Code-Änderungen in
+`viewer-db/index.html`/`editor-db/index.html`) zuerst, danach die
+dokumentationslastigen PRs #35, #33, #28 — diese drei ändern alle
+`BACKLOG.md`/`KONTEXT.md` an denselben Stellen (Anhängen von Tabellenzeilen
+direkt nach dem jeweils letzten Eintrag) und mussten deshalb nacheinander
+gegen den jeweils aktuellen `main`-Stand aufgelöst werden:
+
+- **#33 nach #35:** Konflikt in `BACKLOG.md`, da beide direkt nach der
+  E07-Zeile neue Zeilen einfügten (#35: E09/E10, #33: E08). Aufgelöst durch
+  Rebase auf `main` + manuelle Reihenfolge E09 → E10 → E08 (chronologisch:
+  E09/E10 wurden in der Live-Testing-Runde erledigt, E08 blieb offen).
+- **#28 nach #35/#33:** Der PR27-Nachbereitung-Branch enthielt zusätzlich
+  zwei ältere Zwischen-Commits zu V09 (eine vorläufige Backlog-Notiz +
+  deren spätere Entfernung „wird durch finale Session-Zusammenfassung
+  ersetzt"), die durch den bereits gemergten finalen V09-Eintrag aus #35
+  überholt waren. Beim Rebase auf `main` wurden beide Konflikte zugunsten
+  des bereits gemergten finalen Stands aufgelöst — Git hat die dadurch
+  leeren Commits automatisch übersprungen, das Ergebnis entspricht exakt
+  dem ursprünglich in #28 vorgesehenen Diff (PR27-Merge-Vermerk in
+  `BACKLOG.md`/`KONTEXT.md`).
+
+Nach allen acht Merges: `main` ist der einzige verbleibende Branch,
+`patientenpfad_interaktiv.html`/`patientenpfad_editor.html`/
+`patientenpfad_data.js` wurden an keiner Stelle berührt (Diff-Check gegen
+den Stand vor #27 bestätigt keine Änderung), keine offenen PRs mehr.
 
 ## Geplante Aufgaben
 

@@ -6,6 +6,7 @@
 **Projektfokus jetzt:** Tooling — Prozesslandkarte als Multi-User-Web-Tool für weitere Arbeitsgruppen (siehe unten)
 **PR #27 gemergt (2026-07-19):** Bündelte Positionspapier-Abschluss + Multi-User-Web-Tool-Prototyp (T01–T09 erledigt, T10/T11 vorbereitet) sowie den vollständigen Viewer-/Editor-Abgleich (V01–V08, E01–E07) — direkt auf `main` per GitHub-UI gemergt (2197dfb)
 **Viewer-/Editor-Abgleich (2026-07-19):** Alle 15 Punkte aus dem Abgleich (V01–V08, E01–E07) sind erledigt — `viewer-db`/`editor-db` funktional auf Stand der Bestandstools, inkl. der beiden größeren Punkte E05 (Akkordeon-Layout) und V02/V03 (neue generische Gruppierungs-Ebene `dimension_values.gruppe`). Direkt im Anschluss gemeinsames Live-Testing mit dem Nutzer: V09 (Matrix Cross-Highlighting) und E09/E10 (Dimension-Formular-Bugs) gefunden und behoben, E08 (Drag&Drop für Reihenfolge) als offener Punkt aufgenommen. Details siehe KONTEXT.md.
+**PRs #28–#35 gemergt (2026-07-19):** Alle acht aus der Live-Testing-Runde entstandenen PRs geprüft und nach `main` gemergt (Details/Konfliktauflösung siehe KONTEXT.md). Keine offenen PRs mehr. **Nächster Schritt: E08 (Drag&Drop für Reihenfolge)** — Design-Frage offen: `process_steps.nr` hat `unique(workgroup_id, nr)`, Umsortieren muss mehrere Zeilen atomar neu nummerieren; `dimension_values.reihenfolge` hat keinen entsprechenden Constraint, dort einfacher. Umfang laut Nutzer: beide Listen (Prozessschritte + Dimension-Werte).
 
 ---
 
