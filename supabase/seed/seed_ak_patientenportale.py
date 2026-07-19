@@ -88,7 +88,7 @@ def build_dimension_specs(meta: dict) -> list:
         ]),
         ("gesetz", "Rechtsgrundlage", "multi_select", False, 7, from_meta("rechtsgrundlagen")),
         ("standard", "Standard", "multi_select", False, 8, from_meta("standards")),
-        ("struktur", "Struktur", "single_select", False, 9, [
+        ("struktur", "Struktur", "multi_select", True, 9, [
             ("unstrukturiert", "Unstrukturiert", "#EF4444"),
             ("teilstrukturiert", "Teilstrukturiert", "#F59E0B"),
             ("strukturiert", "Strukturiert", "#10B981"),
