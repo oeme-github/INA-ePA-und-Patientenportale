@@ -634,6 +634,60 @@
     if (refreshed) renderDimensionValues(refreshed);
   }
 
+  function onDimensionDragStart(e, index) {
+    dragCtx = { kind: 'dimension', index };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    e.currentTarget.classList.add('dragging');
+  }
+  function onDimensionDragOver(e, index) {
+    if (!dragCtx || dragCtx.kind !== 'dimension') return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearDragIndicators();
+    e.currentTarget.classList.add(dropIsBefore(e) ? 'drag-over-top' : 'drag-over-bottom');
+  }
+  function onDimensionDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+  async function onDimensionDrop(e, index) {
+    e.preventDefault();
+    clearDragIndicators();
+    if (!dragCtx || dragCtx.kind !== 'dimension') return;
+    const from = dragCtx.index;
+    const before = dropIsBefore(e);
+    dragCtx = null;
+    const to = before ? index : index + 1;
+    if (from === to || from === to - 1) return; // Position unverändert
+    reorder(dims, from, to);
+    renderDimensionList();
+    await persistDimensionOrder();
+  }
+  function onDimensionDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    clearDragIndicators();
+    dragCtx = null;
+  }
+
+  // dimensions.reihenfolge hat wie dimension_values.reihenfolge keinen
+  // Unique-Constraint — Bulk-Upsert auch hier nur der Konsistenz halber,
+  // nicht wegen Atomizitäts-Zwang.
+  async function persistDimensionOrder() {
+    const payload = dims.map((d, i) => ({
+      id: d.id, workgroup_id: workgroup.id, key: d.key, label: d.label, typ: d.typ,
+      ist_navigationsachse: d.ist_navigationsachse, farbe: d.farbe ?? null, reihenfolge: i + 1,
+    }));
+    const res = await apiFetch('/dimensions?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      alert(`Reihenfolge konnte nicht gespeichert werden (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+    }
+    await reloadDimensions(); // synct lokalen Stand mit dem Server (auch im Fehlerfall)
+  }
+
   // ── Formular: Felder dynamisch aus dims generieren ──────────────────
   function fieldHtml(dim, stepValues) {
     const values = (stepValues && stepValues[dim.key]) || (dim.typ === 'text' ? '' : []);
@@ -784,8 +838,17 @@
   // ── Dimensionen verwalten (T09) ──────────────────────────────────────
   function renderDimensionList() {
     document.getElementById('dimension-count').textContent = `Dimensionen (${dims.length})`;
-    document.getElementById('dimension-list').innerHTML = dims.map(d => `
-      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')">
+    // Dimensionen umsortieren ändert dimensions.reihenfolge, das erfordert laut
+    // RLS-Policy ("Admins verwalten Dimensionen") die Rolle admin – anders als
+    // bei Prozessschritten/Dimension-Werten hier kein "editor" ausreichend.
+    // Griff/Drag-Attribute deshalb nur für Admins rendern (analog zum
+    // deaktivierten "+ Neu"-Button, E09), statt einen Drag zuzulassen, der am
+    // Ende immer mit HTTP 403 fehlschlägt.
+    const canReorder = myRole === 'admin';
+    document.getElementById('dimension-list').innerHTML = dims.map((d, i) => `
+      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')"
+        ${canReorder ? `draggable="true" ondragstart="onDimensionDragStart(event, ${i})" ondragover="onDimensionDragOver(event, ${i})" ondragleave="onDimensionDragLeave(event)" ondrop="onDimensionDrop(event, ${i})" ondragend="onDimensionDragEnd(event)"` : ''}>
+        ${canReorder ? `<span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>` : ''}
         <span class="titel">${escapeHtml(d.label)}</span>
         <span class="typ-badge">${d.typ}</span>
         ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
