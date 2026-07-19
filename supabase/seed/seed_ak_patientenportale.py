@@ -21,6 +21,7 @@ DB-Passwort aus ../.env.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -54,16 +55,47 @@ def load_source_data() -> dict:
 
 
 # (dimension_key, label, typ, ist_navigationsachse, reihenfolge, values)
-# values: Liste von (wert_key, label) oder (wert_key, label, farbe) in
-# Anzeigereihenfolge, oder None (dann aus meta[meta_key] übernommen, values
-# = Text selbst als key, ohne feste Farbe — der Viewer weist dann per Hash
-# einen Wert aus einer Fallback-Palette zu, siehe viewer-db/index.html).
+# values: Liste von (wert_key, label), (wert_key, label, farbe) oder
+# (wert_key, label, farbe, gruppe) in Anzeigereihenfolge, oder None (dann aus
+# meta[meta_key] übernommen, values = Text selbst als key, ohne feste Farbe —
+# der Viewer weist dann per Hash einen Wert aus einer Fallback-Palette zu,
+# siehe viewer-db/index.html).
 #
 # farbe ist ein einzelner Akzent-Hex-Wert (nicht Hintergrund/Text/Rand
 # einzeln) – der Viewer leitet daraus Hintergrund/Textfarbe ab (chipStyle()),
 # damit eine Farbe pro Wert reicht, egal welche AG sie später vergibt.
+#
+# gruppe ist eine optionale Übergruppe (V02/V03) für einen generischen
+# Gruppen-Toggle-Filter im Viewer, z.B. Gesetzes-Paragraf -> Gesetzeskategorie
+# oder Standard -> Standard-Familie. Für "gesetz"/"standard" wird sie hier
+# einmalig aus den bewährten Original-Gruppierungsregeln
+# (patientenpfad_interaktiv.html, getLawGroup()/getStandardGroup()) befüllt;
+# künftige, neue Werte gruppiert die AG selbst im Editor (kein Regex mehr im
+# Client nötig).
+def law_group(value: str) -> str:
+    return re.split(r"\s+(?:§|Art\.|Abs\.)", value)[0].strip()
+
+
+def standard_group(value: str) -> str:
+    if value.startswith("HL7 FHIR"):
+        return "HL7 FHIR"
+    if value.startswith("HL7"):
+        return "HL7"
+    if value.startswith("IHE"):
+        return "IHE"
+    if value.startswith("gematik"):
+        return "gematik"
+    if value.startswith("KBV") or value.startswith("ISiK"):
+        return "KBV / ISiK"
+    if value in ("SNOMED CT", "LOINC", "ICD-10-GM", "OPS"):
+        return "Terminologien"
+    return "Sonstige"
+
+
 def build_dimension_specs(meta: dict) -> list:
-    def from_meta(meta_key):
+    def from_meta(meta_key, group_fn=None):
+        if group_fn:
+            return [(v, v, None, group_fn(v)) for v in meta[meta_key]]
         return [(v, v) for v in meta[meta_key]]
 
     return [
@@ -86,8 +118,8 @@ def build_dimension_specs(meta: dict) -> list:
             ("V", "Verändert", "#B45309"),
             ("G", "Gelöscht", "#DC2626"),
         ]),
-        ("gesetz", "Rechtsgrundlage", "multi_select", False, 7, from_meta("rechtsgrundlagen")),
-        ("standard", "Standard", "multi_select", False, 8, from_meta("standards")),
+        ("gesetz", "Rechtsgrundlage", "multi_select", False, 7, from_meta("rechtsgrundlagen", law_group)),
+        ("standard", "Standard", "multi_select", False, 8, from_meta("standards", standard_group)),
         ("struktur", "Struktur", "multi_select", True, 9, [
             ("unstrukturiert", "Unstrukturiert", "#EF4444"),
             ("teilstrukturiert", "Teilstrukturiert", "#F59E0B"),
@@ -133,17 +165,18 @@ def upsert_dimensions(cur, workgroup_id: str, specs: list) -> dict:
         if values:
             for i, value_spec in enumerate(values, start=1):
                 v_key, v_label, *rest = value_spec
-                v_farbe = rest[0] if rest else None
+                v_farbe = rest[0] if len(rest) > 0 else None
+                v_gruppe = rest[1] if len(rest) > 1 else None
                 cur.execute(
                     """
-                    insert into dimension_values (dimension_id, key, label, reihenfolge, farbe)
-                    values (%s, %s, %s, %s, %s)
+                    insert into dimension_values (dimension_id, key, label, reihenfolge, farbe, gruppe)
+                    values (%s, %s, %s, %s, %s, %s)
                     on conflict (dimension_id, key) do update
                         set label = excluded.label, reihenfolge = excluded.reihenfolge,
-                            farbe = excluded.farbe
+                            farbe = excluded.farbe, gruppe = excluded.gruppe
                     returning id
                     """,
-                    (dim_id, v_key, v_label, i, v_farbe),
+                    (dim_id, v_key, v_label, i, v_farbe, v_gruppe),
                 )
                 value_ids[v_key] = cur.fetchone()[0]
         result[key] = {"id": dim_id, "values": value_ids}
