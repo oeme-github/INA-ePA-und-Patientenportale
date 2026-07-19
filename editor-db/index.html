@@ -341,7 +341,7 @@
         <div id="dimension-values-section" class="field" style="display:none;">
           <label>Werte</label>
           <div id="dimension-values-list"></div>
-          <div class="add-value-row">
+          <div class="add-value-row" id="dim-add-value-row">
             <input type="text" placeholder="Neuer Wert" id="dim-new-value-label">
             <button type="button" onclick="addDimensionValueInManager()">+ Hinzufügen</button>
           </div>
@@ -396,6 +396,15 @@
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // "Fehlt die X-Rolle?" passt nur bei 403 (RLS-Ablehnung) — bei 409 (z.B.
+  // doppelte Prozessschritt-Nr. oder doppelter Dimension-Key) ist es ein
+  // Konflikt, kein Rechteproblem, und die Frage nach der Rolle irreführend.
+  function httpErrorHint(status, roleName) {
+    if (status === 403) return `Fehlt die ${roleName}-Rolle?`;
+    if (status === 409) return 'Konflikt – Wert bereits vergeben (z.B. doppelte Nummer oder doppelter Key)?';
+    return '';
   }
 
   async function apiFetch(path, options = {}) {
@@ -695,6 +704,11 @@
 
     document.getElementById('dim-field-typ').onchange = toggleDimensionValuesSection;
     toggleDimensionValuesSection();
+    // Werte können erst nach dem ersten Speichern angelegt werden (brauchen eine
+    // dimension_id) — addDimensionValueInManager() findet ohne currentDimId keine
+    // Dimension und bricht sonst still ab. "+ Hinzufügen"-Zeile deshalb erst zeigen,
+    // wenn dim existiert, statt eine Eingabe anzubieten, die nichts tut.
+    document.getElementById('dim-add-value-row').style.display = dim ? 'flex' : 'none';
     if (dim) renderDimensionValues(dim);
     else document.getElementById('dimension-values-list').innerHTML = '<p class="field-hint">Erst nach dem ersten Speichern verfügbar.</p>';
   }
@@ -727,7 +741,7 @@
             farbe: payload.farbe, ist_navigationsachse: payload.ist_navigationsachse,
           }),
         });
-        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
         const rows = await res.json();
         if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die admin-Rolle (Row-Level-Security).');
       } else {
@@ -736,16 +750,20 @@
           headers: { Prefer: 'return=representation' },
           body: JSON.stringify({ ...payload, workgroup_id: workgroup.id }),
         });
-        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
         const [created] = await res.json();
         currentDimId = created.id;
         creatingNewDimension = false;
       }
 
+      await reloadDimensions();
+      // renderDimensionForm() setzt Fehler-/Erfolgsmeldung beim Aufbau erst
+      // zurück (nötig beim Wechsel zwischen Dimensionen) — deshalb muss die
+      // Erfolgsmeldung danach gesetzt werden, sonst wird sie im selben Zug
+      // wieder unsichtbar gemacht und war nie zu sehen.
+      renderDimensionForm(currentDimId);
       successBox.textContent = 'Gespeichert.';
       successBox.style.display = 'block';
-      await reloadDimensions();
-      renderDimensionForm(currentDimId);
       updateEmptyHint();
     } catch (err) {
       errorBox.textContent = err.message;
@@ -761,7 +779,7 @@
     if (!confirm('Diese Dimension wirklich löschen? Alle zugehörigen Werte UND alle Zuordnungen zu Prozessschritten gehen dabei verloren.')) return;
     const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, { method: 'DELETE' });
     if (!res.ok) {
-      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
       return;
     }
     currentDimId = null;
@@ -930,7 +948,7 @@
           headers: { Prefer: 'return=representation' },
           body: JSON.stringify({ nr, titel, updated_at: new Date().toISOString(), updated_by: userId }),
         });
-        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
         const rows = await res.json();
         if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die editor-/admin-Rolle (Row-Level-Security).');
       } else {
@@ -939,7 +957,7 @@
           headers: { Prefer: 'return=representation' },
           body: JSON.stringify({ workgroup_id: workgroup.id, nr, titel }),
         });
-        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
         const [created] = await res.json();
         stepId = created.id;
         currentStepId = stepId;
@@ -985,7 +1003,7 @@
     if (!confirm('Diesen Prozessschritt wirklich löschen?')) return;
     const res = await apiFetch(`/process_steps?id=eq.${currentStepId}`, { method: 'DELETE' });
     if (!res.ok) {
-      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
       return;
     }
     currentStepId = null;
