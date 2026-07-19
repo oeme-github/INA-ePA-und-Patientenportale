@@ -98,15 +98,16 @@
       overflow: hidden; line-height: 1.35;
     }
 
-    /* E05: #step-form/#dimension-form sind Singleton-Elemente, die per JS
-       direkt hinter die angeklickte Zeile verschoben werden (insertAdjacentElement) –
-       kein festes rechtes Panel mehr. Kein eigener Scroll-Container (anders als
-       vorher .editor-main): die aufgeklappte Zeile kann an beliebiger Stelle der
-       Liste stehen, ein fester max-height wäre dort nicht verlässlich innerhalb
-       des Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
+    /* E05: #step-form/#dimension-form/#member-form sind Singleton-Elemente,
+       die per JS direkt hinter die angeklickte Zeile verschoben werden
+       (insertAdjacentElement) – kein festes rechtes Panel mehr. Kein
+       eigener Scroll-Container (anders als vorher .editor-main): die
+       aufgeklappte Zeile kann an beliebiger Stelle der Liste stehen, ein
+       fester max-height wäre dort nicht verlässlich innerhalb des
+       Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
        bleibt per position:sticky relativ zum Browser-Fenster kleben (E03),
        solange ein Teil des Formulars sichtbar ist. */
-    #step-form, #dimension-form {
+    #step-form, #dimension-form, #member-form {
       background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
       padding: 20px 24px; margin: 8px 0 12px;
     }
