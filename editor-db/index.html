@@ -72,14 +72,16 @@
        auf einem Vorfahren würde position:sticky in .form-actions (E03) brechen
        (kein Scroll-Container mit unbegrenzter Höhe mehr = sticky bezieht sich
        fälschlich auf .step-list statt den Viewport). */
-    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); }
+    /* Eigene Box je Eintrag (wie im bestehenden patientenpfad_editor.html
+       .step-row), statt einer durchlaufenden Liste mit Trennlinien. */
+    .step-list { display: flex; flex-direction: column; gap: 6px; }
     .step-item {
-      padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
-      display: flex; gap: 8px; align-items: flex-start;
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 9px 12px; cursor: pointer; font-size: 13px;
+      display: flex; gap: 8px; align-items: flex-start; transition: border-color 0.12s;
     }
-    .step-item:last-child { border-bottom: none; }
     .step-item:hover { background: #F9FAFB; }
-    .step-item.active { background: #EFF6FF; }
+    .step-item.active { background: #EFF6FF; border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; padding-top: 1px; }
     /* E08: Drag&Drop für die Reihenfolge – Griff ist rein optisch (die ganze
        Zeile ist draggable="true"), signalisiert aber, wo man greifen soll,
