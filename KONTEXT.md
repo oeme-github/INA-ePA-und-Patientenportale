@@ -22,8 +22,8 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
 | `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v4 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt) |
-| `supabase/seed/` | v3 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt) |
+| `supabase/migrations/` | v5 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 offen) |
+| `supabase/seed/` | v4 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt); `set local app.skip_audit='on'` gegen Protokoll-Rauschen bei erneuten Läufen (PR #46 offen) |
 | `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, gemergt) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
 | `editor-db/index.html` | v10 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt) |
@@ -977,8 +977,82 @@ und technisch umgesetzt (PR #41/#42/#43 gemergt) — die eigentliche
 Rollen-Zuweisung für die produktive `ak-patientenportale`-Workgroup (welche
 echten AG-Mitglieder welche Rolle bekommen) ist keine technische Aufgabe
 mehr, sondern nur noch Ausführung über die neue UI, sobald die AG-Namen
-feststehen. Übrige Checklistenpunkte (Hosting, SSO, Audit-Protokoll,
-AG-Freigabe, Parallelbetrieb, Rückfallplan, Kommunikation) weiterhin offen.
+feststehen.
+
+### Cutover-Checkliste: Hosting (offen), SSO-Entscheidung, Audit-Protokoll (Session 2026-07-19, Fortsetzung)
+
+Restliche Checkliste einzeln mit dem Nutzer durchgesprochen (auf dessen
+Wunsch „einen nach dem anderen", nicht alle sechs auf einmal entschieden):
+
+- **Hosting/Betrieb:** bewusst offen gelassen. Auf Nachfrage, warum der
+  Punkt jetzt wichtig sei, klargestellt: er blockiert aktuell nichts
+  technisch (T01–T12 sind unabhängig vom Hosting-Ort erledigt), wird erst
+  relevant bei der SSO-Redirect-URI-Konfiguration, bei
+  Datenschutz-/Compliance-Fragen (Gesundheitsdaten, DSGVO Art. 9) und bei
+  einer verbindlichen AG-Zusage. Bleibt unentschieden, bis mit
+  gematik/AG abgestimmt.
+- **SSO-Entscheidung** (PR #45): Magic-Link (+ Passwort-Fallback) reicht
+  zum Start, kein hartes Cutover-Kriterium. Institutionelles SSO (T10,
+  Entra ID) bleibt optionaler späterer Ausbau — Scaffolding bleibt
+  deaktiviert, bis jemand mit Azure-AD-Admin-Rechten (gematik/Krankenhaus)
+  die App-Registrierung anstößt (unverändert externe Abhängigkeit, siehe
+  T10 oben).
+- **Audit-/Versionsprotokoll** (PR #46): Nutzerentscheidung — harte
+  Anforderung, nicht verzichtbar. `process_step_audit`
+  (`20260710120000_init_schema.sql`) war seither nur Struktur ohne
+  Befüllung; jetzt per Migration `20260719110000_enable_process_step_audit.sql`
+  aktiv:
+  - **Zwei Schema-Bugs vor der eigentlichen Trigger-Implementierung
+    gefunden und behoben**, sonst hätte das Feature gar nicht
+    funktionieren können: `process_step_audit.process_step_id` hatte einen
+    `on delete cascade`-Fremdschlüssel auf `process_steps` — beim Löschen
+    eines Schritts wäre dessen eigene Löschprotokoll-Zeile sofort wieder
+    mitgelöscht worden (und das Einfügen einer neuen Delete-Zeile hätte
+    ohnehin an der bereits gelöschten Elternzeile mit einer
+    Fremdschlüssel-Verletzung scheitern müssen). Fremdschlüssel entfernt,
+    stattdessen `workgroup_id` denormalisiert direkt in
+    `process_step_audit` mitgeführt (nicht per Join auf `process_steps`
+    ermittelt) — sonst hätte sowohl die RLS-Leseberechtigung nach einer
+    Löschung als auch der Cascade-Trigger auf `process_step_values` (Eltern
+    zu diesem Zeitpunkt bereits weg) ins Leere gelaufen.
+  - Zwei Trigger (`process_steps`, `process_step_values`), beide
+    `security definer` (Tabelle hat bewusst keine Schreib-Policy, siehe
+    Kommentar in `init_schema.sql`). Beide Tabellen nötig, weil die
+    fachlichen Inhalte eines Prozessschritts (Akteure, Rechtsgrundlagen,
+    Ist/Lücke/Forderungen etc.) im generischen Datenmodell nicht in
+    `process_steps` selbst liegen, sondern in `process_step_values` — ein
+    Trigger nur auf `process_steps` hätte fast alle inhaltlichen
+    Änderungen verpasst.
+  - **Rauschunterdrückung für `seed_ak_patientenportale.py`:** Das Skript
+    löscht/schreibt bei jedem (auch wiederholten, bewusst idempotenten)
+    Lauf alle `process_step_values` komplett neu, unabhängig von
+    inhaltlichen Änderungen — ohne Gegenmaßnahme hätte jeder Reseed-Lauf
+    hunderte Protokoll-Zeilen erzeugt und den Verlauf binnen kurzem
+    unbrauchbar gemacht. Skript setzt jetzt `set local
+    app.skip_audit='on'` für seine eigene Transaktion, beide
+    Trigger-Funktionen prüfen das per neuer Hilfsfunktion
+    `audit_should_skip()`.
+
+  Manuell per `curl` gegen den laufenden lokalen Stack verifiziert (Stack
+  war zu Sessionbeginn mit frischem Docker-Volume neu aufgesetzt worden —
+  Migrationen 08/09/10 mussten deshalb erst nachträglich manuell
+  eingespielt werden, siehe T02-Hinweis zu `start.sh`): Titel-Änderung
+  protokolliert (`changed_by` korrekt aus dem JWT), neuer Testschritt +
+  Wert angelegt und wieder gelöscht — alle drei Protokoll-Zeilen (2× insert,
+  1× delete) überleben die Löschung, redundante Werte-Lösch-Zeile beim
+  Cascade korrekt unterdrückt (kein Eintrag, da `workgroup_id`-Lookup für
+  den bereits gelöschten Elternschritt leer bleibt). RLS: `viewer` liest
+  das Protokoll (200), direkter `INSERT`-Versuch ohne Trigger-Umweg bleibt
+  blockiert (403). Seed-Skript erneut laufen lassen → 0 neue
+  Protokoll-Zeilen (Rauschunterdrückung bestätigt).
+  Bewusst nicht Teil dieses PRs: eine Viewer-/Editor-UI zum Durchsuchen des
+  Protokolls — bisher nur über `GET /process_step_audit` abrufbar, bei
+  Bedarf eigener späterer Task.
+
+Damit sind von neun Cutover-Checklistenpunkten vier erledigt (Datenabgleich,
+Rollenkonzept, SSO, Audit-Protokoll) — fünf bleiben offen (Hosting/Betrieb,
+AG-Freigabe, Parallelbetriebs-Zeitraum, Rückfallplan, Kommunikation an die
+AG; „Hosting" wurde bewusst nicht entschieden, siehe oben).
 
 ## Geplante Aufgaben
 
