@@ -174,6 +174,15 @@
       display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
       background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; margin-left: 4px; flex-shrink: 0;
     }
+    /* T12: Rollen-Badge in der Mitgliederliste, Farben analog zu bestehenden
+       Badges (editor wie .badge-role, admin wie .badge-proto/.nav-badge). */
+    .role-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      margin-left: 6px; flex-shrink: 0; border: 1px solid;
+    }
+    .role-badge.role-viewer { background: #F3F4F6; color: var(--c-text-3); border-color: var(--c-border-2); }
+    .role-badge.role-editor { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
+    .role-badge.role-admin  { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
 
     .value-row {
       display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--c-border-1);
@@ -265,6 +274,7 @@
       <div class="sidebar-tabs">
         <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
         <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
+        <button class="tab-btn" data-view="members" onclick="setView('members')">Mitglieder</button>
       </div>
 
       <!-- E05: Akkordeon – Zeile anklicken klappt das Formular direkt darunter
@@ -287,6 +297,22 @@
         </div>
         <div id="new-dimension-slot"></div>
         <div class="step-list" id="dimension-list"></div>
+      </div>
+
+      <!-- T12: Mitglieder-Verwaltung, nur für admin (siehe RLS-Policy "Admins
+           verwalten Mitgliedschaften"). Liste bleibt für andere Rollen leer
+           und ausgeblendet, stattdessen #members-non-admin-hint (siehe
+           startApp()) — vermeidet einen Request, der ohnehin mit 403
+           abgelehnt würde. Kein Drag&Drop/reihenfolge: memberships hat kein
+           Sortierfeld. -->
+      <div id="members-view" style="display:none;">
+        <div class="sidebar-header">
+          <h2 id="member-count">Mitglieder</h2>
+          <button class="btn btn-primary" id="new-member-btn" onclick="newMember()">+ Neu</button>
+        </div>
+        <p id="members-non-admin-hint" class="field-hint" style="display:none;">Mitglieder verwalten erfordert die Rolle <code>admin</code>.</p>
+        <div id="new-member-slot"></div>
+        <div class="step-list" id="member-list"></div>
       </div>
 
       <div id="editor-empty" class="empty-hint" style="display:none;">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
@@ -364,6 +390,32 @@
         <div class="form-message error" id="dim-form-error"></div>
         <div class="form-message success" id="dim-form-success"></div>
       </form>
+
+      <form id="member-form" style="display:none;" onsubmit="return onSaveMember(event)">
+        <p class="field-hint" style="margin-bottom:16px;">Die Person muss sich zuerst selbst registrieren
+          (Login-Screen → Magic-Link oder Passwort), bevor sie hier per E-Mail-Adresse gefunden werden kann —
+          es gibt keine Einladungsmail.</p>
+        <div class="form-row">
+          <div class="field">
+            <label for="member-field-email">E-Mail</label>
+            <input type="email" id="member-field-email" required>
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label for="member-field-rolle">Rolle</label>
+            <select id="member-field-rolle">
+              <option value="viewer">viewer</option>
+              <option value="editor">editor</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="member-save-btn">Speichern</button>
+          <button type="button" class="btn btn-danger" id="member-delete-btn" onclick="onDeleteMember()">Entfernen</button>
+        </div>
+        <div class="form-message error" id="member-form-error"></div>
+        <div class="form-message success" id="member-form-success"></div>
+      </form>
     </div>
   </div>
 
@@ -390,8 +442,10 @@
   let dims = [];
   let steps = [];         // [{ id, nr, titel }]
   let currentStepId = null;
-  let activeView = 'steps';  // 'steps' | 'dimensions' (T09)
+  let activeView = 'steps';  // 'steps' | 'dimensions' (T09) | 'members' (T12)
   let currentDimId = null;
+  let members = [];       // [{ id, user_id, email, rolle, created_at }] — nur für myRole==='admin' geladen (T12)
+  let currentMemberId = null;
   // E05: Akkordeon – #step-form/#dimension-form sind Singleton-DOM-Knoten,
   // die per JS zur passenden Zeile verschoben werden. Referenzen einmal
   // cachen: nach einem innerHTML-Rebuild der Liste ist der Knoten (falls er
@@ -400,9 +454,11 @@
   // JS-Referenz bleibt trotzdem gültig zum erneuten Einhängen.
   const stepFormEl = document.getElementById('step-form');
   const dimensionFormEl = document.getElementById('dimension-form');
+  const memberFormEl = document.getElementById('member-form');
   const emptyHintEl = document.getElementById('editor-empty');
   let creatingNewStep = false;
   let creatingNewDimension = false;
+  let creatingNewMember = false;
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -458,8 +514,19 @@
     newDimBtn.disabled = myRole !== 'admin';
     newDimBtn.title = newDimBtn.disabled ? 'Neue Dimensionen anlegen erfordert die Rolle admin.' : '';
 
+    // T12: Mitglieder verwalten erfordert laut RLS-Policy ("Admins verwalten
+    // Mitgliedschaften") ebenfalls admin. Liste wird nur für admin geladen —
+    // sonst reiner Hinweistext statt eines Requests, der ohnehin mit 403
+    // abgelehnt würde (analog zum newDimBtn-Muster oben).
+    const newMemberBtn = document.getElementById('new-member-btn');
+    newMemberBtn.disabled = myRole !== 'admin';
+    newMemberBtn.title = newMemberBtn.disabled ? 'Mitglieder verwalten erfordert die Rolle admin.' : '';
+    document.getElementById('members-non-admin-hint').style.display = myRole === 'admin' ? 'none' : 'block';
+    document.getElementById('member-list').style.display = myRole === 'admin' ? 'flex' : 'none';
+
     await reloadDimensions();
     await reloadSteps();
+    if (myRole === 'admin') await reloadMembers();
     updateEmptyHint();
   }
 
@@ -808,32 +875,41 @@
   function updateEmptyHint() {
     const isEmpty = activeView === 'steps'
       ? (!currentStepId && !creatingNewStep)
-      : (!currentDimId && !creatingNewDimension);
+      : activeView === 'dimensions'
+        ? (!currentDimId && !creatingNewDimension)
+        : (!currentMemberId && !creatingNewMember);
     emptyHintEl.textContent = activeView === 'steps'
       ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
-      : 'Dimension in der Liste auswählen oder „+ Neu" klicken.';
+      : activeView === 'dimensions'
+        ? 'Dimension in der Liste auswählen oder „+ Neu" klicken.'
+        : 'Mitglied in der Liste auswählen oder „+ Neu" klicken.';
     emptyHintEl.style.display = isEmpty ? 'block' : 'none';
     if (isEmpty) {
-      document.getElementById(activeView === 'steps' ? 'new-step-slot' : 'new-dimension-slot').appendChild(emptyHintEl);
+      const slotId = activeView === 'steps' ? 'new-step-slot' : activeView === 'dimensions' ? 'new-dimension-slot' : 'new-member-slot';
+      document.getElementById(slotId).appendChild(emptyHintEl);
     }
   }
 
-  // ── Ansicht wechseln: Prozessschritte / Dimensionen (T09) ───────────
+  // ── Ansicht wechseln: Prozessschritte / Dimensionen (T09) / Mitglieder (T12) ──
   function setView(view) {
     activeView = view;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
     document.getElementById('steps-view').style.display = view === 'steps' ? 'block' : 'none';
     document.getElementById('dimensions-view').style.display = view === 'dimensions' ? 'block' : 'none';
+    document.getElementById('members-view').style.display = view === 'members' ? 'block' : 'none';
 
     // E05: Akkordeon-Zustand der jeweils anderen Ansicht beim Wechsel schließen,
     // sonst bliebe eine Zeile optisch "aktiv" markiert, ohne dass ihr Formular
     // noch irgendwo eingehängt ist.
     currentStepId = null; creatingNewStep = false;
     currentDimId = null; creatingNewDimension = false;
+    currentMemberId = null; creatingNewMember = false;
     stepFormEl.style.display = 'none';
     dimensionFormEl.style.display = 'none';
+    memberFormEl.style.display = 'none';
     renderStepList();
     renderDimensionList();
+    renderMemberList();
     updateEmptyHint();
   }
 
@@ -1236,6 +1312,179 @@
     creatingNewStep = false;
     stepFormEl.style.display = 'none';
     await reloadSteps();
+    updateEmptyHint();
+  }
+
+  // ── Mitglieder verwalten (T12) ──────────────────────────────────────
+  // Ersetzt den bisherigen Weg (manuelles `docker compose exec ... psql
+  // ... insert into memberships ...`, siehe supabase/README.md) durch eine
+  // UI für admin. Kein Drag&Drop/reihenfolge (memberships hat kein
+  // Sortierfeld), kein echtes Invite-System — die Person muss sich zuerst
+  // selbst registrieren, danach kann ein admin sie per E-Mail-Adresse
+  // finden und ihr eine Rolle zuweisen (lookup_user_by_email()/
+  // list_workgroup_members(), siehe Migration
+  // 20260719100000_add_member_lookup_functions.sql).
+
+  function countAdmins() {
+    return members.filter(m => m.rolle === 'admin').length;
+  }
+
+  async function reloadMembers() {
+    const res = await apiFetch('/rpc/list_workgroup_members', {
+      method: 'POST',
+      body: JSON.stringify({ p_workgroup_id: workgroup.id }),
+    });
+    members = res.ok ? await res.json() : [];
+    renderMemberList();
+  }
+
+  function renderMemberList() {
+    document.getElementById('member-count').textContent = `Mitglieder (${members.length})`;
+    document.getElementById('member-list').innerHTML = members.map(m => `
+      <div class="step-item ${m.id === currentMemberId ? 'active' : ''}" id="member-item-${m.id}" onclick="selectMember('${m.id}')">
+        <span class="titel">${escapeHtml(m.email)}</span>
+        <span class="role-badge role-${m.rolle}">${m.rolle}</span>
+      </div>`).join('') || '<div class="empty-hint">Noch keine Mitglieder.</div>';
+
+    // E05-Muster: das (weiterhin einzige) #member-form-Element direkt hinter
+    // die aufgeklappte Zeile hängen – innerHTML oben hat es aus dem
+    // Dokument entfernt, falls es dort vorher schon eingehängt war.
+    if (currentMemberId) {
+      const row = document.getElementById(`member-item-${currentMemberId}`);
+      if (row) row.insertAdjacentElement('afterend', memberFormEl);
+    }
+  }
+
+  function selectMember(id) {
+    creatingNewMember = false;
+    if (currentMemberId === id) {
+      // Akkordeon: erneuter Klick auf dieselbe Zeile klappt sie zu
+      currentMemberId = null;
+      memberFormEl.style.display = 'none';
+      renderMemberList();
+      updateEmptyHint();
+      return;
+    }
+    currentMemberId = id;
+    renderMemberList();
+    renderMemberForm(id);
+    updateEmptyHint();
+  }
+
+  function newMember() {
+    currentMemberId = null;
+    creatingNewMember = true;
+    renderMemberList();
+    document.getElementById('new-member-slot').appendChild(memberFormEl);
+    renderMemberForm(null);
+    updateEmptyHint();
+  }
+
+  function renderMemberForm(memberId) {
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('member-form').style.display = 'block';
+    document.getElementById('member-form-error').style.display = 'none';
+    document.getElementById('member-form-success').style.display = 'none';
+    document.getElementById('member-delete-btn').style.display = memberId ? 'inline-block' : 'none';
+
+    const member = memberId ? members.find(m => m.id === memberId) : null;
+
+    // E-Mail/user_id sind nach dem Anlegen nicht mehr änderbar — eine
+    // Mitgliedschaft ist an eine bestehende user_id gebunden, nicht an eine
+    // frei bearbeitbare Adresse (analog zu dim-field-key.disabled = !!dim).
+    document.getElementById('member-field-email').value = member?.email ?? '';
+    document.getElementById('member-field-email').disabled = !!member;
+    document.getElementById('member-field-rolle').value = member?.rolle ?? 'viewer';
+  }
+
+  async function onSaveMember(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('member-form-error');
+    const successBox = document.getElementById('member-form-success');
+    const saveBtn = document.getElementById('member-save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+
+    try {
+      const rolle = document.getElementById('member-field-rolle').value;
+
+      if (currentMemberId) {
+        const member = members.find(m => m.id === currentMemberId);
+        // Client-seitiger Selbstschutz vor versehentlichem Aussperren – kein
+        // DB-Constraint (bewusst kein zusätzlicher Migrationsaufwand für
+        // einen Randfall, den eine AG mit 1-2 Admins selten trifft).
+        if (member.rolle === 'admin' && rolle !== 'admin' && countAdmins() <= 1) {
+          throw new Error('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Herabstufen würde niemandem mehr Verwaltungsrechte lassen.');
+        }
+        const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ rolle }),
+        });
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+      } else {
+        const email = document.getElementById('member-field-email').value.trim();
+        const lookupRes = await apiFetch('/rpc/lookup_user_by_email', {
+          method: 'POST',
+          body: JSON.stringify({ p_email: email, p_workgroup_id: workgroup.id }),
+        });
+        if (!lookupRes.ok) throw new Error(`Suche fehlgeschlagen (HTTP ${lookupRes.status}). ${httpErrorHint(lookupRes.status, 'admin')}`);
+        const userId = await lookupRes.json();
+        if (!userId) {
+          throw new Error('Kein Nutzer mit dieser E-Mail-Adresse gefunden. Die Person muss sich zuerst selbst registrieren (Login-Screen → Magic-Link oder Passwort), danach kannst du sie hier hinzufügen.');
+        }
+
+        const res = await apiFetch('/memberships', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ user_id: userId, workgroup_id: workgroup.id, rolle }),
+        });
+        if (!res.ok) {
+          if (res.status === 409) throw new Error('Bereits Mitglied — Rolle stattdessen unten in der Liste ändern.');
+          throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+        }
+        const [created] = await res.json();
+        currentMemberId = created.id;
+        creatingNewMember = false;
+      }
+
+      await reloadMembers();
+      // renderMemberForm() setzt Fehler-/Erfolgsmeldung beim Aufbau erst
+      // zurück (nötig beim Wechsel zwischen Mitgliedern) — deshalb muss die
+      // Erfolgsmeldung danach gesetzt werden, sonst wird sie im selben Zug
+      // wieder unsichtbar gemacht und war nie zu sehen (gleiches Muster wie
+      // bei onSaveDimension()).
+      renderMemberForm(currentMemberId);
+      successBox.textContent = 'Gespeichert.';
+      successBox.style.display = 'block';
+      updateEmptyHint();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = false;
+    }
+    return false;
+  }
+
+  async function onDeleteMember() {
+    if (!currentMemberId) return;
+    const member = members.find(m => m.id === currentMemberId);
+    if (member.rolle === 'admin' && countAdmins() <= 1) {
+      alert('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Entfernen würde niemandem mehr Verwaltungsrechte lassen.');
+      return;
+    }
+    if (!confirm(`Mitgliedschaft von ${member.email} wirklich entfernen?`)) return;
+    const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Entfernen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+      return;
+    }
+    currentMemberId = null;
+    creatingNewMember = false;
+    memberFormEl.style.display = 'none';
+    await reloadMembers();
     updateEmptyHint();
   }
 
