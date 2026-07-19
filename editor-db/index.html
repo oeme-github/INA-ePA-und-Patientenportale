@@ -72,15 +72,25 @@
        auf einem Vorfahren würde position:sticky in .form-actions (E03) brechen
        (kein Scroll-Container mit unbegrenzter Höhe mehr = sticky bezieht sich
        fälschlich auf .step-list statt den Viewport). */
-    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); }
+    /* Eigene Box je Eintrag (wie im bestehenden patientenpfad_editor.html
+       .step-row), statt einer durchlaufenden Liste mit Trennlinien. */
+    .step-list { display: flex; flex-direction: column; gap: 6px; }
     .step-item {
-      padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
-      display: flex; gap: 8px; align-items: flex-start;
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 9px 12px; cursor: pointer; font-size: 13px;
+      display: flex; gap: 8px; align-items: flex-start; transition: border-color 0.12s;
     }
-    .step-item:last-child { border-bottom: none; }
     .step-item:hover { background: #F9FAFB; }
-    .step-item.active { background: #EFF6FF; }
+    .step-item.active { background: #EFF6FF; border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; padding-top: 1px; }
+    /* E08: Drag&Drop für die Reihenfolge – Griff ist rein optisch (die ganze
+       Zeile ist draggable="true"), signalisiert aber, wo man greifen soll,
+       ohne mit dem Klick zum Öffnen der Zeile zu kollidieren (Klick ohne
+       Bewegung löst kein dragstart aus). */
+    .drag-handle { cursor: grab; color: var(--c-text-4); flex-shrink: 0; padding-top: 1px; user-select: none; }
+    .step-item.dragging, .value-row.dragging { opacity: 0.4; }
+    .step-item.drag-over-top, .value-row.drag-over-top { box-shadow: inset 0 2px 0 0 #4F46E5; }
+    .step-item.drag-over-bottom, .value-row.drag-over-bottom { box-shadow: inset 0 -2px 0 0 #4F46E5; }
     /* E04: nicht mehr auf einer Zeile abschneiden ("Durchführung diagnostischer
        Maßna…") — bis zu 2 Zeilen umbrechen, erst danach abschneiden. */
     .step-item .titel {
@@ -461,8 +471,11 @@
 
   function renderStepList() {
     document.getElementById('step-count').textContent = `Prozessschritte (${steps.length})`;
-    document.getElementById('step-list').innerHTML = steps.map(s => `
-      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" id="step-item-${s.id}" onclick="selectStep('${s.id}')">
+    document.getElementById('step-list').innerHTML = steps.map((s, i) => `
+      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" id="step-item-${s.id}" onclick="selectStep('${s.id}')"
+        draggable="true" ondragstart="onStepDragStart(event, ${i})" ondragover="onStepDragOver(event, ${i})"
+        ondragleave="onStepDragLeave(event)" ondrop="onStepDrop(event, ${i})" ondragend="onStepDragEnd(event)">
+        <span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>
         <span class="nr">#${String(s.nr).padStart(2, '0')}</span>
         <span class="titel">${escapeHtml(s.titel)}</span>
       </div>`).join('') || '<div class="empty-hint">Noch keine Prozessschritte.</div>';
@@ -474,6 +487,207 @@
       const row = document.getElementById(`step-item-${currentStepId}`);
       if (row) row.insertAdjacentElement('afterend', stepFormEl);
     }
+  }
+
+  // ── E08: Drag&Drop für Reihenfolge (Prozessschritte + Dimension-Werte) ──
+  // Native HTML5-Drag&Drop, keine externe Bibliothek. Ein gemeinsamer
+  // dragCtx reicht, da immer nur ein Drag gleichzeitig läuft; "kind"
+  // unterscheidet, welche der beiden Listen gerade sortiert wird.
+  let dragCtx = null; // { kind: 'step' } | { kind: 'value', dimId }, jeweils + index
+
+  function clearDragIndicators() {
+    document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el =>
+      el.classList.remove('drag-over-top', 'drag-over-bottom'));
+  }
+
+  // before/after wird aus der Mausposition relativ zur Zeilenmitte abgeleitet,
+  // damit man gezielt vor oder nach einer bestimmten Zeile einsortieren kann
+  // (nicht nur "auf diese Zeile draufziehen tauscht sie").
+  function dropIsBefore(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return (e.clientY - rect.top) < rect.height / 2;
+  }
+
+  // Zielindex nach dem Entfernen des gezogenen Elements neu berechnen –
+  // sonst verschiebt sich der Index aller nachfolgenden Elemente um eins.
+  function reorder(list, from, to) {
+    const [moved] = list.splice(from, 1);
+    if (from < to) to -= 1;
+    list.splice(to, 0, moved);
+  }
+
+  function onStepDragStart(e, index) {
+    dragCtx = { kind: 'step', index };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    e.currentTarget.classList.add('dragging');
+  }
+  function onStepDragOver(e, index) {
+    if (!dragCtx || dragCtx.kind !== 'step') return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearDragIndicators();
+    e.currentTarget.classList.add(dropIsBefore(e) ? 'drag-over-top' : 'drag-over-bottom');
+  }
+  function onStepDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+  async function onStepDrop(e, index) {
+    e.preventDefault();
+    clearDragIndicators();
+    if (!dragCtx || dragCtx.kind !== 'step') return;
+    const from = dragCtx.index;
+    const before = dropIsBefore(e);
+    dragCtx = null;
+    const to = before ? index : index + 1;
+    if (from === to || from === to - 1) return; // Position unverändert
+    reorder(steps, from, to);
+    renderStepList();
+    await persistStepOrder();
+  }
+  function onStepDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    clearDragIndicators();
+    dragCtx = null;
+  }
+
+  // process_steps.nr hat unique(workgroup_id, nr) — inzwischen DEFERRABLE
+  // (Migration 20260719090000), damit ein einzelnes Bulk-Upsert-Statement
+  // (POST mit on_conflict=id + Prefer: resolution=merge-duplicates, von
+  // PostgREST als ein INSERT ... ON CONFLICT DO UPDATE ausgeführt) mehrere
+  // nr-Werte atomar tauschen kann, ohne dass eine Zwischen-Nr kurzzeitig mit
+  // einer noch nicht aktualisierten Zeile kollidiert. Ein sequenzielles
+  // PATCH pro Zeile würde daran scheitern.
+  async function persistStepOrder() {
+    const userId = decodeJwt(getToken()).sub;
+    const nowIso = new Date().toISOString();
+    const payload = steps.map((s, i) => ({
+      id: s.id, workgroup_id: workgroup.id, titel: s.titel, nr: i + 1,
+      updated_at: nowIso, updated_by: userId,
+    }));
+    const res = await apiFetch('/process_steps?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      alert(`Reihenfolge konnte nicht gespeichert werden (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
+    }
+    await reloadSteps(); // synct lokalen Stand mit dem Server (auch im Fehlerfall)
+  }
+
+  function onValueDragStart(e, dimId, index) {
+    dragCtx = { kind: 'value', dimId, index };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    e.currentTarget.classList.add('dragging');
+  }
+  function onValueDragOver(e, dimId, index) {
+    if (!dragCtx || dragCtx.kind !== 'value' || dragCtx.dimId !== dimId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearDragIndicators();
+    e.currentTarget.classList.add(dropIsBefore(e) ? 'drag-over-top' : 'drag-over-bottom');
+  }
+  function onValueDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+  async function onValueDrop(e, dimId, index) {
+    e.preventDefault();
+    clearDragIndicators();
+    if (!dragCtx || dragCtx.kind !== 'value' || dragCtx.dimId !== dimId) return;
+    const from = dragCtx.index;
+    const before = dropIsBefore(e);
+    dragCtx = null;
+    const dim = dims.find(d => d.id === dimId);
+    if (!dim) return;
+    const to = before ? index : index + 1;
+    if (from === to || from === to - 1) return; // Position unverändert
+    reorder(dim.values, from, to);
+    renderDimensionValues(dim);
+    await persistDimensionValueOrder(dim);
+  }
+  function onValueDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    clearDragIndicators();
+    dragCtx = null;
+  }
+
+  // dimension_values.reihenfolge hat keinen Unique-Constraint (anders als
+  // process_steps.nr) — ein Bulk-Upsert ist hier nicht wegen Atomizität
+  // nötig, sondern nur der Konsistenz halber dasselbe Muster wie oben.
+  // Alle Felder (nicht nur reihenfolge) müssen mitgeschickt werden, sonst
+  // würde resolution=merge-duplicates z.B. farbe/gruppe überschreiben.
+  async function persistDimensionValueOrder(dim) {
+    const payload = dim.values.map((v, i) => ({
+      id: v.id, dimension_id: dim.id, key: v.key, label: v.label,
+      farbe: v.farbe ?? null, gruppe: v.gruppe ?? null, reihenfolge: i + 1,
+    }));
+    const res = await apiFetch('/dimension_values?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      alert(`Reihenfolge konnte nicht gespeichert werden (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+    }
+    await reloadDimensions(); // synct lokalen Stand mit dem Server (auch im Fehlerfall)
+    const refreshed = dims.find(d => d.id === dim.id);
+    if (refreshed) renderDimensionValues(refreshed);
+  }
+
+  function onDimensionDragStart(e, index) {
+    dragCtx = { kind: 'dimension', index };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    e.currentTarget.classList.add('dragging');
+  }
+  function onDimensionDragOver(e, index) {
+    if (!dragCtx || dragCtx.kind !== 'dimension') return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearDragIndicators();
+    e.currentTarget.classList.add(dropIsBefore(e) ? 'drag-over-top' : 'drag-over-bottom');
+  }
+  function onDimensionDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+  async function onDimensionDrop(e, index) {
+    e.preventDefault();
+    clearDragIndicators();
+    if (!dragCtx || dragCtx.kind !== 'dimension') return;
+    const from = dragCtx.index;
+    const before = dropIsBefore(e);
+    dragCtx = null;
+    const to = before ? index : index + 1;
+    if (from === to || from === to - 1) return; // Position unverändert
+    reorder(dims, from, to);
+    renderDimensionList();
+    await persistDimensionOrder();
+  }
+  function onDimensionDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    clearDragIndicators();
+    dragCtx = null;
+  }
+
+  // dimensions.reihenfolge hat wie dimension_values.reihenfolge keinen
+  // Unique-Constraint — Bulk-Upsert auch hier nur der Konsistenz halber,
+  // nicht wegen Atomizitäts-Zwang.
+  async function persistDimensionOrder() {
+    const payload = dims.map((d, i) => ({
+      id: d.id, workgroup_id: workgroup.id, key: d.key, label: d.label, typ: d.typ,
+      ist_navigationsachse: d.ist_navigationsachse, farbe: d.farbe ?? null, reihenfolge: i + 1,
+    }));
+    const res = await apiFetch('/dimensions?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      alert(`Reihenfolge konnte nicht gespeichert werden (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+    }
+    await reloadDimensions(); // synct lokalen Stand mit dem Server (auch im Fehlerfall)
   }
 
   // ── Formular: Felder dynamisch aus dims generieren ──────────────────
@@ -626,8 +840,17 @@
   // ── Dimensionen verwalten (T09) ──────────────────────────────────────
   function renderDimensionList() {
     document.getElementById('dimension-count').textContent = `Dimensionen (${dims.length})`;
-    document.getElementById('dimension-list').innerHTML = dims.map(d => `
-      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')">
+    // Dimensionen umsortieren ändert dimensions.reihenfolge, das erfordert laut
+    // RLS-Policy ("Admins verwalten Dimensionen") die Rolle admin – anders als
+    // bei Prozessschritten/Dimension-Werten hier kein "editor" ausreichend.
+    // Griff/Drag-Attribute deshalb nur für Admins rendern (analog zum
+    // deaktivierten "+ Neu"-Button, E09), statt einen Drag zuzulassen, der am
+    // Ende immer mit HTTP 403 fehlschlägt.
+    const canReorder = myRole === 'admin';
+    document.getElementById('dimension-list').innerHTML = dims.map((d, i) => `
+      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')"
+        ${canReorder ? `draggable="true" ondragstart="onDimensionDragStart(event, ${i})" ondragover="onDimensionDragOver(event, ${i})" ondragleave="onDimensionDragLeave(event)" ondrop="onDimensionDrop(event, ${i})" ondragend="onDimensionDragEnd(event)"` : ''}>
+        ${canReorder ? `<span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>` : ''}
         <span class="titel">${escapeHtml(d.label)}</span>
         <span class="typ-badge">${d.typ}</span>
         ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
@@ -669,8 +892,11 @@
   }
 
   function renderDimensionValues(dim) {
-    document.getElementById('dimension-values-list').innerHTML = (dim.values || []).map(v => `
-      <div class="value-row" data-value-id="${v.id}">
+    document.getElementById('dimension-values-list').innerHTML = (dim.values || []).map((v, i) => `
+      <div class="value-row" data-value-id="${v.id}"
+        draggable="true" ondragstart="onValueDragStart(event, '${dim.id}', ${i})" ondragover="onValueDragOver(event, '${dim.id}', ${i})"
+        ondragleave="onValueDragLeave(event)" ondrop="onValueDrop(event, '${dim.id}', ${i})" ondragend="onValueDragEnd(event)">
+        <span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>
         <input type="text" class="value-label" value="${escapeHtml(v.label)}">
         <input type="text" class="value-gruppe" placeholder="Gruppe (optional)" value="${escapeHtml(v.gruppe || '')}" title="Übergruppe für den Gruppen-Filter im Viewer (z.B. Gesetzeskategorie, Standard-Familie)">
         <input type="color" value="${v.farbe || '#94a3b8'}">

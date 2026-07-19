@@ -20,13 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v2 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` ergänzt: `dimension_values.gruppe` für generische Filter-Gruppierung (V02/V03) |
+| `supabase/migrations/` | v3 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08) |
 | `supabase/seed/` | v2 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03) |
 | `supabase/start.sh`, `supabase/stop.sh` | v1 | 2026-07-11 | Neu: kompletter Stack mit einem Aufruf startbar/stoppbar |
-| `viewer-db/index.html` | v6 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand |
-| `editor-db/index.html` | v7 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10) |
+| `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
+| `editor-db/index.html` | v9 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -724,6 +724,124 @@ Nach allen acht Merges: `main` ist der einzige verbleibende Branch,
 `patientenpfad_interaktiv.html`/`patientenpfad_editor.html`/
 `patientenpfad_data.js` wurden an keiner Stelle berührt (Diff-Check gegen
 den Stand vor #27 bestätigt keine Änderung), keine offenen PRs mehr.
+
+### E08 abgeschlossen: Drag&Drop für Reihenfolge (Session 2026-07-19, Fortsetzung)
+
+Umsetzung des in der Live-Testing-Runde zurückgestellten E08 (siehe oben) —
+native HTML5-Drag&Drop (kein externes Sortier-Framework) für beide Listen im
+Editor, jeweils mit Griff-Icon (⠿) pro Zeile und einer Einfüge-Markierung
+(blaue Linie oben/unten an der Zeile, abhängig von der Mausposition relativ
+zur Zeilenmitte), damit gezielt vor oder nach einer bestimmten Zeile
+einsortiert werden kann.
+
+**Design-Frage aus dem Backlog-Eintrag geklärt:** `process_steps` hat
+`unique(workgroup_id, nr)` — ein Umsortieren betrifft mehrere Zeilen
+gleichzeitig, und ein naives sequenzielles Neuschreiben der `nr`-Werte (z.B.
+per PATCH pro Zeile) kollidiert zwangsläufig mit einer noch nicht
+aktualisierten Zeile, sobald sich zwei Werte kreuzen (klassisches
+„Werte tauschen"-Problem bei Unique-Constraints). Lösung in zwei Teilen:
+
+1. **Migration `20260719090000_deferrable_process_steps_nr.sql`:** Der
+   Constraint wird `deferrable` (Default `initially immediate`) — Postgres
+   prüft ihn dadurch nicht mehr pro Zeile, sondern erst am Ende des
+   jeweiligen SQL-Statements. Das reicht aus, solange die komplette
+   Neusortierung in einem einzigen Statement passiert (nicht: über die
+   Transaktion hinweg deferred werden muss).
+2. **Editor sendet die neue Reihenfolge als einen einzigen Bulk-Upsert:**
+   `POST /process_steps?on_conflict=id` mit
+   `Prefer: resolution=merge-duplicates` — PostgREST übersetzt ein
+   Array-Body in genau ein `INSERT ... ON CONFLICT (id) DO UPDATE`-Statement
+   (kein serverseitiger Code nötig, reines PostgREST-Feature). Zusammen mit
+   Schritt 1 ist der Reorder dadurch atomar: entweder alle `nr`-Werte
+   wechseln oder keiner, nie ein Zwischenzustand mit doppelter Nummer.
+
+Manuell per SQL verifiziert (vor der UI-Implementierung, in einer
+zurückgerollten Transaktion): ein einzelnes `UPDATE ... CASE ...`-Statement,
+das zwei `nr`-Werte tauscht, schlägt mit dem alten Constraint sofort fehl,
+läuft mit dem neuen `deferrable`-Constraint anstandslos durch.
+
+`dimension_values.reihenfolge` hat keinen entsprechenden Unique-Constraint —
+dort ist der Bulk-Upsert nur der Konsistenz halber im selben Muster
+umgesetzt (nicht wegen Atomizitäts-Zwang), inkl. aller sonstigen Felder
+(`farbe`/`gruppe`) im Payload, damit `resolution=merge-duplicates` sie nicht
+versehentlich auf `null` zurücksetzt.
+
+**UI:** `renderStepList()`/`renderDimensionValues()` bekommen `draggable`
+auf jede Zeile plus `ondragstart`/`ondragover`/`ondragleave`/`ondrop`/
+`ondragend` (inline, konsistent mit dem übrigen `onclick`-Stil der Datei,
+keine `addEventListener`-Umstellung). Ein gemeinsamer `dragCtx` reicht, da
+nie zwei Drags gleichzeitig laufen; `kind` (`'step'`/`'value'`) und bei
+Werten zusätzlich `dimId` verhindern, dass ein Drop in der falschen Liste
+etwas auslöst. Nach dem Drop: lokales Array clientseitig umsortiert
+(`reorder()`-Hilfsfunktion, korrigiert den Zielindex nach dem Entfernen des
+gezogenen Elements), sofort neu gerendert, danach der Bulk-Upsert
+abgeschickt und anschließend `reloadSteps()`/`reloadDimensions()` — Letzteres
+läuft auch im Fehlerfall (z.B. fehlende `editor`-Rolle), damit der lokale
+Stand nie dauerhaft vom Server abweicht.
+
+Per Playwright end-to-end getestet (Login als `editor@prozesslandkarte.local`,
+echte Maus-Drag-Sequenz mit `mouse.move`/`mouse.down`/`mouse.up`, nicht nur
+DOM-Events simuliert): Reorder in der Prozessschritt-Liste und in einer
+Dimension-Werte-Liste, jeweils mit Reload verifiziert, dass die neue
+Reihenfolge serverseitig persistiert ist, keine Console-Fehler. Testdaten
+danach per SQL wieder auf die ursprüngliche Reihenfolge zurückgesetzt.
+
+### E08-Nachbesserungen aus Nutzer-Review (Session 2026-07-19, Fortsetzung)
+
+Der Nutzer hat die E08-Umsetzung live im Browser getestet (PR #37) und drei
+weitere Punkte zurückgemeldet, alle noch in denselben PR eingearbeitet:
+
+- **Drag&Drop bei Dimensionen ging nicht:** Ursache war, dass die erste
+  Umsetzung nur die Werteliste *innerhalb* einer geöffneten Dimension
+  sortierbar gemacht hatte (`dimension_values.reihenfolge`), nicht die
+  äußere Liste der Dimensionen selbst (Phase, Datenraum, Domäne, ... im
+  Reiter „Dimensionen", `dimensions.reihenfolge`) — genau dort hatte der
+  Nutzer es versucht. Ergänzt: dieselbe Drag&Drop-Mechanik für
+  `renderDimensionList()`, aber Griff/Drag-Attribute nur für Rolle `admin`
+  gerendert (Dimensionen umsortieren erfordert laut RLS-Policy „Admins
+  verwalten Dimensionen" admin, anders als bei Prozessschritten/Dimension-
+  Werten, wo `editor` reicht) — analog zum bereits deaktivierten
+  „+ Neu"-Button aus E09, statt einen Drag zuzulassen, der serverseitig
+  ohnehin immer mit HTTP 403 scheitern würde. Per Playwright verifiziert:
+  admin kann umsortieren (persistiert über Reload), editor sieht korrekt
+  keinen Griff.
+- **Layout-Feedback „Boxen statt Liste":** Im bestehenden
+  `patientenpfad_editor.html` hat jeder Prozessschritt eine eigene
+  umrandete, abgerundete Box (`.step-row`) mit Abstand zum nächsten
+  Eintrag. `editor-db` nutzte bisher eine durchlaufende Liste mit einer
+  gemeinsamen Außenbox und `border-bottom` je Zeile. `.step-list`/
+  `.step-item` (von Prozessschritten UND Dimensionen gemeinsam genutzt) auf
+  dasselbe Boxen-Muster umgestellt: `flex-direction:column` mit 6px Gap,
+  jede Zeile bekommt ihre eigene `border`+`border-radius`. Per Screenshot
+  verifiziert.
+- **Zwei Nebenbefunde beim eigenen Testen des Nutzers** (er hatte dafür eine
+  eigene Test-Navigationsachse „Test" angelegt, single_select,
+  `ist_navigationsachse=true` — bewusst nicht aus der DB entfernt, da vom
+  Nutzer ggf. noch zum Weitertesten gebraucht):
+  1. **Toolbar-Zeilenabstand:** `#toolbar-nav-rows` bündelt beliebig viele
+     `.filter-row` (eine je navSingle-/navMulti-/Gruppen-Dimension) in einem
+     einzigen `.toolbar`-Kindelement — der äußere `.toolbar`-Gap (18px)
+     wirkte deshalb nur um diesen Block als Ganzes, nicht zwischen den
+     einzelnen Zeilen darin. Bei nur 2-3 Nav-Dimensionen kaum auffällig, mit
+     einer vierten (der Test-Achse) klebten die Zeilen sichtbar aneinander.
+     Fix: `#toolbar-nav-rows` bekommt selbst `flex-direction:column;
+     gap:12px`.
+  2. **Zusätzliche navSingle-Dimension unsichtbar auf der Karte:** ein
+     bereits aus der letzten Live-Testing-Runde bekannter, bewusst
+     zurückgestellter Nebenbefund (siehe „Live-Testing mit dem Nutzer"
+     oben) — `extraNavSingle` (jede navSingle-Dimension außer der ersten,
+     die als `sectionDim` die Tab-Gruppierung übernimmt) wirkte zwar als
+     Toolbar-Filter und beim Dimmen (`isDimmedByNav`), tauchte aber weder
+     als Kopf-Chip (nur nicht-navigierende single_select) noch im Detail
+     (`detailDims` schließt alle navDims explizit aus) auf der Karte auf.
+     Fix: analog zu `navMulti` als unbeschrifteter Farb-Chip im
+     `card-badges`-Bereich ergänzt.
+
+Beide Viewer-Fixes per Screenshot gegen die vorhandene Test-Dimension
+verifiziert (Chip „Test01" erscheint jetzt auf Karte #01, Toolbar-Zeilen
+sichtbar getrennt). PR #37 fasst die komplette E08-Umsetzung inkl. aller
+drei Nachbesserungen zusammen, war zum Ende dieser Session noch offen
+(Nutzer wollte sich das Ergebnis erst ansehen, kein Merge-Auftrag erteilt).
 
 ## Geplante Aufgaben
 
