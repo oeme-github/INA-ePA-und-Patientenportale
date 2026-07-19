@@ -49,25 +49,55 @@ async function requestMagicLink(email) {
   const res = await fetch(`${GOTRUE_URL}/otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, create_user: false }),
+    // create_user:true, damit sich neue AG-Mitglieder selbst ein Konto
+    // anlegen können — abgesichert durch eine DB-seitige Einladungsliste
+    // (pending_invites, siehe Migration 20260719120000), nicht unkontrolliert
+    // offen für beliebige E-Mail-Adressen. Ohne bestehende Einladung schlägt
+    // die Kontoanlage serverseitig fehl (siehe Fehlerbehandlung unten).
+    body: JSON.stringify({ email, create_user: true }),
   });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
+    // GoTrue gibt bei einem durch unseren DB-Trigger blockierten Signup
+    // keinen aussagekräftigen Fehlertext durch (nur "Database error saving
+    // new user", HTTP 500) — eigene, verständliche Meldung statt des rohen
+    // GoTrue-Texts.
+    if (res.status >= 500) {
+      throw new Error('Diese E-Mail-Adresse ist noch nicht für eine Registrierung freigegeben. Bitte einen Admin der Arbeitsgruppe bitten, dich einzuladen.');
+    }
     throw new Error(json.error_description || json.msg || 'Magic-Link konnte nicht angefragt werden');
   }
   sessionStorage.setItem('pending_email', email);
 }
 
-async function verifyMagicLinkCode(code) {
-  const email = sessionStorage.getItem('pending_email');
-  if (!email) throw new Error('Keine E-Mail-Adresse für die Bestätigung gefunden — Magic-Link erneut anfordern.');
+async function verifyOtpCode(email, code, type) {
   const res = await fetch(`${GOTRUE_URL}/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'magiclink', email, token: code }),
+    body: JSON.stringify({ type, email, token: code }),
   });
   const json = await res.json();
-  if (!res.ok) throw new Error(json.error_description || json.msg || 'Code ungültig oder abgelaufen');
+  return { ok: res.ok, json };
+}
+
+async function verifyMagicLinkCode(code) {
+  const email = sessionStorage.getItem('pending_email');
+  if (!email) throw new Error('Keine E-Mail-Adresse für die Bestätigung gefunden — Magic-Link erneut anfordern.');
+
+  // GoTrue erzeugt bei /otp mit create_user:true für eine noch unbekannte
+  // E-Mail-Adresse einen signup-Token, für eine bereits bestehende Adresse
+  // dagegen einen magiclink-Token — welcher Fall vorliegt, weiß das
+  // Frontend vorher nicht (die /otp-Antwort ist bewusst immer {}, siehe
+  // requestMagicLink(), Anti-Enumeration). Deshalb magiclink zuerst
+  // versuchen (der häufigere Fall: wiederkehrender Login), bei Fehlschlag
+  // signup nachschieben (Erstregistrierung) statt den Nutzer mit der
+  // irreführenden Meldung "Token has expired or is invalid" hängen zu
+  // lassen, obwohl der Code korrekt war.
+  let { ok, json } = await verifyOtpCode(email, code, 'magiclink');
+  if (!ok) {
+    ({ ok, json } = await verifyOtpCode(email, code, 'signup'));
+  }
+  if (!ok) throw new Error(json.error_description || json.msg || 'Code ungültig oder abgelaufen');
   storeSession(json);
   sessionStorage.removeItem('pending_email');
   return json;
