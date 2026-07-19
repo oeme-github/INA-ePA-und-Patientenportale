@@ -273,7 +273,7 @@
       <div id="dimensions-view" style="display:none;">
         <div class="sidebar-header">
           <h2 id="dimension-count">Dimensionen</h2>
-          <button class="btn btn-primary" onclick="newDimension()">+ Neu</button>
+          <button class="btn btn-primary" id="new-dimension-btn" onclick="newDimension()">+ Neu</button>
         </div>
         <div id="new-dimension-slot"></div>
         <div class="step-list" id="dimension-list"></div>
@@ -430,6 +430,14 @@
     const memberships = await memberRes.json();
     myRole = memberships[0]?.rolle || null;
     document.getElementById('session-role').textContent = myRole || 'ohne Rolle';
+
+    // Neue Dimensionen anlegen erfordert laut RLS-Policy die Rolle admin
+    // (siehe Hinweis im Dimensionsformular) — Button ausgegraut statt
+    // anklickbar-aber-garantiert-403, damit Editoren nicht erst gegen die
+    // Wand laufen müssen, um das zu merken.
+    const newDimBtn = document.getElementById('new-dimension-btn');
+    newDimBtn.disabled = myRole !== 'admin';
+    newDimBtn.title = newDimBtn.disabled ? 'Neue Dimensionen anlegen erfordert die Rolle admin.' : '';
 
     await reloadDimensions();
     await reloadSteps();
