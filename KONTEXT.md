@@ -20,13 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich vollständig abgeschlossen (V01–V08, E01–E07) |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich vollständig abgeschlossen (V01–V09, E01–E10) inkl. Live-Testing-Runde |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
 | `supabase/migrations/` | v2 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` ergänzt: `dimension_values.gruppe` für generische Filter-Gruppierung (V02/V03) |
 | `supabase/seed/` | v2 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03) |
 | `supabase/start.sh`, `supabase/stop.sh` | v1 | 2026-07-11 | Neu: kompletter Stack mit einem Aufruf startbar/stoppbar |
-| `viewer-db/index.html` | v5 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07) |
-| `editor-db/index.html` | v6 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05) |
+| `viewer-db/index.html` | v6 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand |
+| `editor-db/index.html` | v7 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10) |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -610,6 +610,75 @@ außerhalb des Scopes dieser Session (schon vor E05 so).
 `patientenpfad_interaktiv.html`, `patientenpfad_editor.html` und
 `patientenpfad_data.js` wurden in dieser Session an keiner Stelle verändert
 (harte Randbedingung weiterhin eingehalten).
+
+### Live-Testing mit dem Nutzer (Session 2026-07-19, Fortsetzung)
+
+Direkt im Anschluss an den vollständigen Viewer-/Editor-Abgleich hat der
+Nutzer `viewer-db`/`editor-db` live im Browser getestet (lokaler Stack,
+`http.server` auf Port 8095) und dabei mehrere echte Probleme gefunden, die
+noch am selben Tag behoben wurden. Arbeitsweise: pro Fund ein eigener
+Branch/PR (Muster wie im Rest der Session), lokal zusätzlich ein
+Wegwerf-Branch `local-test-alle-fixes` (nie gepusht) aus allen offenen
+Fix-Branches zusammengemergt, damit der Nutzer alles gleichzeitig live sehen
+konnte, ohne auf einzelne Merges warten zu müssen.
+
+- **V07-Nachbesserung** (PR #29): Suche nach „DSGVO" fand keinen Treffer,
+  obwohl Karten das Wort im Feld Rechtsgrundlage tragen — die in dieser
+  Session getroffene Entscheidung, den Suchumfang exakt ans Original
+  anzugleichen (nur Titel/Akteur/Objekt/Detail), erwies sich in der Praxis
+  als zu eng. Auf Nutzerwunsch bewusst breiter als das Original:
+  `SEARCH_DIM_KEYS` um `gesetz`/`standard` erweitert, Ist/Lücke/Forderungen
+  bleiben weiterhin ausgeschlossen.
+- **E09** (PR #30): „+ Neu"-Button bei Dimensionen war für die Rolle
+  `editor` anklickbar, obwohl neue Dimensionen laut RLS-Policy nur `admin`
+  anlegen darf — lief korrekt gegen HTTP 403, aber unnötig. Button wird jetzt
+  nach dem Rollen-Check in `startApp()` deaktiviert, mit erklärendem Tooltip.
+- **E10** (PR #31): Beim Anlegen einer neuen Dimension war die
+  „+ Hinzufügen"-Zeile für Werte schon vor dem Speichern sichtbar und
+  bedienbar, tat aber nichts (`addDimensionValueInManager()` findet ohne
+  `currentDimId` keine Dimension, bricht still ab) — jetzt erst nach dem
+  ersten Speichern sichtbar, konsistent mit dem vorhandenen Hinweistext.
+  Zwei Nebenbefunde beim Testen: die „Gespeichert."-Erfolgsmeldung im
+  Dimension-Formular war faktisch nie sichtbar (das nachfolgende
+  `renderDimensionForm()` setzt Erfolgs-/Fehlermeldung beim Aufbau selbst
+  zurück, ein vorbestehender Bug seit T09) — Reihenfolge korrigiert; und
+  Fehlermeldungen fragten pauschal „Fehlt die Rolle?", auch bei einem reinen
+  Konflikt (HTTP 409, z.B. doppelte Prozessschritt-`nr` oder doppelter
+  Dimension-Key) statt einem Rechteproblem (HTTP 403) — neue
+  `httpErrorHint()`-Hilfsfunktion unterscheidet beide Fälle.
+- **Zeilenabstand Viewer-Toolbar** (PR #32): Mit den neuen Filterzeilen aus
+  dieser Session (Struktur, Gesetz-/Standard-Gruppen, insgesamt jetzt bis zu
+  6 statt 3 Zeilen) wirkte die Toolbar gedrängt. Erster Versuch (Padding
+  12→14px, Zeilenabstand 10→12px) war laut Nutzer-Feedback zu unauffällig,
+  zweiter Versuch deutlich größer (Padding 16px, Zeilenabstand 18px,
+  row-gap 8px beim Umbruch).
+- **V09** (PR #34): Matrix Cross-Highlighting beim Hover fehlte — ein
+  Schritt kann mehrfach in der Matrix auftauchen (mehrere Werte auf X- oder
+  Y-Achse), das Original hebt beim Hover alle Vorkommen hervor und dimmt den
+  Rest. Analog umgesetzt: `data-nr`-Attribut pro Chip, Event-Delegation auf
+  `#karten` (persistiert über alle `render()`-Aufrufe hinweg, im Original
+  auf `#matrix-view`), `.highlighted`/`.dimmed-by-hover`-Klassen.
+- **E08** (PR #33, bewusst nicht umgesetzt): Nutzerwunsch nach Drag&Drop für
+  die Reihenfolge (Prozessschritte `nr` UND Dimension-Werte `reihenfolge`).
+  Auf Nutzerentscheidung in den Backlog aufgenommen statt sofort umgesetzt —
+  echtes Feature mit einer Design-Frage (`process_steps` hat
+  `unique(workgroup_id, nr)`, Drag&Drop müsste beim Umsortieren mehrere
+  Zeilen atomar neu nummerieren; `dimension_values.reihenfolge` hat keinen
+  entsprechenden Constraint, dort einfacher).
+- Dabei nebenbei geklärt: Ein Duplikat bei `nr` ist **nicht** möglich — der
+  DB-Constraint greift zuverlässig, der Editor zeigt (jetzt mit klarerer
+  Meldung) einen Fehler. Und: neue, nicht-navigierende Einfachauswahl-
+  Dimensionen erscheinen automatisch als Chip im Kartenkopf (kein Code
+  nötig); neue Navigationsachsen werden dagegen nur als Toolbar-Filter
+  sichtbar, nie auf der Karte selbst — bei einer zweiten Einfachauswahl-
+  Navigationsachse (über `sectionDim` hinaus) fehlt dafür jede visuelle
+  Rückmeldung auf der Karte (nicht behoben, kleine Lücke, betraf hier nur
+  eine Test-Dimension des Nutzers).
+
+Alle Fixes per Playwright (`playwright` lokal installiert, gecachtes
+Chromium unter `~/.cache/ms-playwright`) gegen den laufenden lokalen Stack
+verifiziert, nicht nur Code-Review. `reconcile_with_data_js.py` blieb
+durchgehend grün.
 
 ## Geplante Aufgaben
 
