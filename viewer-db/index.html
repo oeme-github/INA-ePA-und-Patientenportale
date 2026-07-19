@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Viewer-Prototyp (Datenbank)</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text-1);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .page-header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+    .page-header p { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+    .page-header .badge-proto {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #FEF3C7;
+      color: #78350F;
+      border: 1px solid #FCD34D;
+      vertical-align: middle;
+    }
+
+    .session-box { font-size: 12px; color: var(--c-text-3); text-align: right; white-space: nowrap; }
+    .session-box .email { color: var(--c-text-2); font-weight: 600; }
+    .btn-link {
+      background: none; border: none; color: #4F46E5; font-size: 12px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-top: 4px;
+    }
+    .btn-link:hover { text-decoration: underline; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border-1);
+      padding: 12px 24px;
+      display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .filter-label {
+      font-size: 11px; font-weight: 600; color: var(--c-text-4);
+      text-transform: uppercase; letter-spacing: 0.06em; min-width: 90px;
+    }
+
+    .phase-tab {
+      padding: 5px 13px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: transparent; color: var(--c-text-3); cursor: pointer;
+      font-size: 12px; font-weight: 500; transition: all 0.12s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .phase-tab:hover:not(.active) { border-color: var(--c-border-3); color: var(--c-text-2); }
+    .phase-tab.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+    .phase-tab .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    .dr-toggle {
+      padding: 4px 11px; border-radius: 20px; border: 1px solid transparent;
+      font-size: 12px; font-weight: 500; cursor: pointer; transition: opacity 0.12s; opacity: 0.35;
+    }
+    .dr-toggle.active { opacity: 1; }
+
+    /* ── Generische Chips (Farbe kommt inline aus dimension_values.farbe) ── */
+    .chip {
+      display: inline-block; padding: 3px 9px; border-radius: var(--r-sm); font-size: 11px; font-weight: 500;
+      margin-right: 4px; margin-bottom: 4px;
+    }
+    .chip-sm { padding: 2px 8px; border-radius: 20px; font-size: 11px; margin: 0 4px 4px 0; }
+    .card-tags-primary, .card-tags-secondary { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; align-items: center; }
+    .card-tags-secondary { font-size: 12px; color: var(--c-text-3); }
+    .card-op-badge {
+      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2); vertical-align: middle;
+    }
+
+    .view-switch { display: flex; gap: 4px; margin-left: auto; }
+    .view-btn {
+      padding: 4px 12px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: transparent; color: var(--c-text-3); font-size: 12px; font-weight: 500; cursor: pointer;
+    }
+    .view-btn.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+
+    .matrix-controls select {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px;
+      font-family: inherit; background: var(--c-surface);
+    }
+    .matrix-table { border-collapse: collapse; background: var(--c-surface); font-size: 12px; }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid var(--c-border-1); padding: 6px 8px; text-align: left; vertical-align: top; min-width: 160px;
+    }
+    .matrix-table th { background: #F9FAFB; font-weight: 600; color: var(--c-text-2); font-size: 11px; text-align: center; }
+    .matrix-table th:first-child, .matrix-table td:first-child { text-align: left; font-weight: 500; min-width: auto; }
+    .matrix-table td.matrix-hit { background: #EFF6FF; }
+    .matrix-step-chip {
+      display: block; width: 100%; text-align: left; margin-bottom: 4px; padding: 3px 6px 3px 8px;
+      border: 1px solid var(--c-border-1); border-left: 3px solid var(--c-border-3); border-radius: 4px;
+      background: var(--c-surface); color: #1E40AF; font-size: 11px; font-family: inherit; cursor: pointer;
+    }
+    .matrix-step-chip:hover { background: #EFF6FF; }
+    .matrix-step-chip:last-child { margin-bottom: 0; }
+    .matrix-wrap { overflow-x: auto; }
+
+    .search-input {
+      flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid var(--c-border-2);
+      border-radius: var(--r-sm); font-size: 13px; font-family: inherit;
+      color: var(--c-text-1); background: var(--c-surface); transition: border-color 0.12s;
+    }
+    .search-input:focus { outline: none; border-color: var(--c-border-3); }
+    .search-input::placeholder { color: var(--c-text-4); }
+    mark { background: #FEF08A; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+    /* ── Hauptbereich ── */
+    .main { padding: 20px 24px; }
+    .counter { font-size: 12px; color: var(--c-text-3); margin-bottom: 14px; }
+    .export-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .export-bar .counter { margin-bottom: 0; flex: 1; }
+    .btn-export {
+      padding: 5px 12px; border-radius: var(--r-sm); border: 1px solid var(--c-border-2);
+      background: var(--c-surface); color: var(--c-text-2); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .btn-export:hover { border-color: var(--c-border-3); color: var(--c-text-1); }
+    @media print {
+      .login-screen, .page-header, .toolbar, .export-bar, .session-box { display: none !important; }
+      body { margin: 12px; }
+      .prozess-card { break-inside: avoid; }
+    }
+    .counter strong { color: var(--c-text-2); font-weight: 600; }
+
+    .phase-section { margin-bottom: 32px; }
+    .phase-section-header {
+      display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+      border-radius: var(--r-md); margin-bottom: 14px; border-left: 4px solid transparent;
+    }
+    .phase-section-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .phase-section-count { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--c-text-4); }
+
+    .phase-section-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;
+    }
+
+    .prozess-card {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 14px 16px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s, opacity 0.15s;
+      position: relative;
+    }
+    .prozess-card:hover { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .prozess-card.dimmed { opacity: 0.18; pointer-events: none; }
+    .prozess-card.open { border-color: var(--c-border-3); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .card-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .card-meta-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .card-nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); white-space: nowrap; }
+    .card-titel { font-size: 14px; font-weight: 600; color: var(--c-text-1); line-height: 1.35; margin-bottom: 5px; }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .detail-box {
+      margin-top: 12px; border-top: 1px solid var(--c-border-1); padding-top: 12px;
+      font-size: 13px; color: var(--c-text-2); line-height: 1.65;
+    }
+    .detail-section { margin-top: 12px; }
+    .detail-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--c-text-4); margin-bottom: 6px;
+    }
+
+    .empty-hint {
+      background: var(--c-surface); border: 1px dashed var(--c-border-2); border-radius: var(--r-lg);
+      padding: 24px; text-align: center; color: var(--c-text-3); font-size: 13px;
+    }
+
+    /* ── Login ── */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-box {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 28px 28px 24px; width: 100%; max-width: 340px;
+    }
+    .login-box h1 { font-size: 16px; margin-bottom: 4px; }
+    .login-box p.hint { font-size: 12px; color: var(--c-text-3); margin-bottom: 18px; }
+    .login-box label { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-2); margin: 12px 0 4px; }
+    .login-box input {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit;
+    }
+    .login-box input:focus { outline: none; border-color: var(--c-border-3); }
+    .login-box button {
+      margin-top: 18px; width: 100%; padding: 8px 10px; border: none; border-radius: var(--r-sm);
+      background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-box .btn-link { width: auto; background: none; color: #4F46E5; margin-top: 8px; padding: 0; font-weight: 600; }
+    .login-small-hint { font-size: 11px; color: var(--c-text-4); margin-top: 8px; }
+    .login-error {
+      margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
+      border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
+    }
+    #password-fallback { margin-top: 18px; }
+    #password-fallback summary { font-size: 12px; color: var(--c-text-3); cursor: pointer; }
+    #password-fallback[open] summary { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login-Screen (Inhalt wird von shared/auth.js initLoginScreen() erzeugt) ── -->
+  <div id="login-screen" class="login-screen"></div>
+
+  <!-- ── App (nach Login) ─────────────────────────────────────────── -->
+  <div id="app" style="display:none;">
+    <div class="page-header">
+      <div>
+        <h1>Patientenpfad – Interaktive Prozesskarte <span class="badge-proto">DB-Prototyp</span></h1>
+        <p id="breadcrumb">lädt …</p>
+      </div>
+      <div class="session-box">
+        <div>Angemeldet als <span class="email" id="session-email"></span></div>
+        <button class="btn-link" onclick="logout()">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div id="toolbar-nav-rows"></div>
+      <div class="filter-row">
+        <input type="search" id="search" class="search-input" placeholder="Suche …" oninput="onSearch(this.value)">
+        <div class="view-switch">
+          <button id="view-cards-btn" class="view-btn active" onclick="setView('cards')">Karten</button>
+          <button id="view-matrix-btn" class="view-btn" onclick="setView('matrix')">Matrix</button>
+        </div>
+      </div>
+      <div class="filter-row matrix-controls" id="matrix-controls" style="display:none;">
+        <span class="filter-label">Matrix-Achsen</span>
+        X: <select id="matrix-x-select" onchange="onMatrixAxisChange()"></select>
+        Y: <select id="matrix-y-select" onchange="onMatrixAxisChange()"></select>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="export-bar">
+        <div class="counter" id="counter">lädt …</div>
+        <button class="btn-export" id="btn-expand" onclick="toggleExpandAll()">⊞ Alle aufklappen</button>
+        <button class="btn-export" onclick="exportPDF()" title="Kachelansicht drucken">↓ PDF</button>
+        <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
+        <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
+      </div>
+      <div id="karten"></div>
+    </div>
+  </div>
+
+<script src="../shared/auth.js"></script>
+<script>
+  // ── Konfiguration ────────────────────────────────────────────────
+  // Lokaler Dev-Stack aus ../supabase/docker-compose.yml (siehe dort für
+  // DB_PORT/REST_PORT o.ä.). Für einen anderen Host/andere Ports anpassen.
+  const GOTRUE_URL = 'http://localhost:9999';
+  const REST_URL   = 'http://localhost:8001';
+
+  // ── Farben ───────────────────────────────────────────────────────
+  // dimension_values.farbe ist ein einzelner Akzent-Hex-Wert; Hintergrund/
+  // Text werden daraus abgeleitet (chipStyle). Fehlt farbe (z.B. bei Werten,
+  // die eine AG selbst ergänzt), wird deterministisch aus einer
+  // Fallback-Palette gewählt, damit jede Dimension trotzdem konsistent
+  // eingefärbt ist.
+  const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
+
+  function hashColor(key) {
+    let h = 0;
+    for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return FALLBACK_PALETTE[h % FALLBACK_PALETTE.length];
+  }
+
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const n = parseInt(full, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function mix(a, b, t) { return a.map((c, i) => Math.round(c + (b[i] - c) * t)); }
+  function rgbCss([r, g, b]) { return `rgb(${r},${g},${b})`; }
+
+  function colorOf(value) { return value.farbe || hashColor(value.key); }
+
+  function chipStyle(hex) {
+    const rgb = hexToRgb(hex);
+    const bg = mix(rgb, [255, 255, 255], 0.85);
+    const text = mix(rgb, [0, 0, 0], 0.45);
+    return `background:${rgbCss(bg)};color:${rgbCss(text)};border:1px solid ${hex};`;
+  }
+
+  // ── Dimensionen-Zustand (aus der DB geladen, siehe loadDimensions) ──
+  let dims = [];                 // alle Dimensionen der Workgroup, sortiert nach reihenfolge
+  let dimsByKey = {};
+  let navSingle = [];             // Navigations-Dimensionen, single_select (→ Tab-Leisten)
+  let navMulti = [];              // Navigations-Dimensionen, multi_select (→ Toggle-Filter)
+  let sectionDim = null;          // erste navSingle-Dimension: gruppiert wie bisher "Phase"
+  let extraNavSingle = [];        // weitere navSingle-Dimensionen (selten): wirken wie Filter, nicht wie Sektionen
+  let previewMultiDims = [];      // erste 2 multi_select-Nicht-Nav-Dimensionen: kompakte Vorschau auf der Karte
+  let previewBadgeDim = null;     // dritte multi_select-Nicht-Nav-Dimension: kompaktes Badge neben Vorschau-Zeile 2 (V08)
+  let previewSingleDims = [];     // alle single_select-Nicht-Nav-Dimensionen: Chips im Kartenkopf
+  let detailDims = [];            // alles andere (weitere multi_select + alle text-Dimensionen): nur in der Detailansicht
+  let groupDims = [];             // Nicht-Nav multi_select-Dimensionen mit mind. einem gruppierten Wert (V02/V03)
+  let activeGroups = {};          // { [dimKey]: Set(gruppenName) }
+
+  let activeNavSingle = {};       // { [dimKey]: 'alle' | valueKey }
+  let activeNavMulti = {};        // { [dimKey]: Set(valueKey) }
+
+  let data = [];
+  let searchTerm = '';
+  let openCard = null;
+  let expandAll = false;
+  let view = 'cards';             // 'cards' | 'matrix'
+  let matrixX = null;
+  let matrixY = null;
+
+  // ── Auth: getToken/logout/login-Funktionen kommen aus shared/auth.js ──
+
+  // ── Dimensionen laden (T05: Tabs/Filter/Kartenfelder/Matrix generisch
+  // aus dimensions/dimension_values statt hart codiert) ───────────────
+  async function loadDimensions() {
+    const res = await fetch(
+      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(key,label,farbe,gruppe,reihenfolge)` +
+      `&order=reihenfolge&dimension_values.order=reihenfolge`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    if (!res.ok) throw new Error(`PostgREST-Fehler (Dimensionen, HTTP ${res.status})`);
+    return res.json();
+  }
+
+  function setupDimensions(loadedDims) {
+    dims = loadedDims.map(d => ({ ...d, values: d.dimension_values }));
+    dimsByKey = Object.fromEntries(dims.map(d => [d.key, d]));
+
+    const navDims = dims.filter(d => d.ist_navigationsachse);
+    navSingle = navDims.filter(d => d.typ === 'single_select');
+    navMulti = navDims.filter(d => d.typ === 'multi_select');
+    sectionDim = navSingle[0] || null;
+    extraNavSingle = navSingle.slice(1);
+
+    const nonNavSelectDims = dims.filter(d => !d.ist_navigationsachse && d.typ !== 'text');
+    const nonNavMultiDims = nonNavSelectDims.filter(d => d.typ === 'multi_select');
+    previewMultiDims = nonNavMultiDims.slice(0, 2);
+    // V08: dritte Multi-Select-Dimension (z.B. "Operation") kommt zusätzlich zur
+    // zweiten Vorschau-Zeile als kompaktes Badge auf die geschlossene Karte,
+    // statt nur im aufgeklappten Detail sichtbar zu sein — generisch über
+    // reihenfolge bestimmt, kein hart codierter Dimension-Key.
+    previewBadgeDim = nonNavMultiDims[2] || null;
+    previewSingleDims = nonNavSelectDims.filter(d => d.typ === 'single_select');
+    detailDims = dims.filter(d =>
+      !d.ist_navigationsachse && !previewMultiDims.includes(d) && d !== previewBadgeDim && !previewSingleDims.includes(d)
+    );
+
+    activeNavSingle = Object.fromEntries(navSingle.map(d => [d.key, 'alle']));
+    activeNavMulti = Object.fromEntries(navMulti.map(d => [d.key, new Set(d.values.map(v => v.key))]));
+
+    // V02/V03: generischer Gruppen-Filter für Dimensionen mit gepflegter
+    // dimension_values.gruppe (z.B. Rechtsgrundlage, Standard) — Werte ohne
+    // Gruppe fallen in eine "Sonstige"-Sammelgruppe, analog zum Original.
+    groupDims = nonNavMultiDims.filter(d => d.values.some(v => v.gruppe));
+    activeGroups = Object.fromEntries(groupDims.map(dim => {
+      const groups = [...new Set(dim.values.map(v => v.gruppe || 'Sonstige'))];
+      return [dim.key, new Set(groups)];
+    }));
+
+    const axisDims = dims.filter(d => d.typ !== 'text');
+    matrixX = previewSingleDims[0]?.key || axisDims[0]?.key || null;
+    matrixY = navMulti[0]?.key || axisDims.find(d => d.key !== matrixX)?.key || null;
+  }
+
+  // ── Prozessschritte laden + auf dimsByKey abbilden ──────────────────
+  function groupByDimension(rows) {
+    const byDim = {};
+    for (const row of rows) {
+      const key = row.dimensions.key;
+      (byDim[key] ||= []).push(row);
+    }
+    return byDim;
+  }
+
+  function toStepRecord(step) {
+    const byDim = groupByDimension(step.process_step_values);
+    const values = {};
+    for (const dim of dims) {
+      const rows = byDim[dim.key] || [];
+      values[dim.key] = dim.typ === 'text' ? (rows[0]?.text_value ?? '') : rows.map(r => r.dimension_values);
+    }
+    return { nr: step.nr, titel: step.titel, values };
+  }
+
+  async function loadData() {
+    const res = await fetch(
+      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe,gruppe))&order=nr`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    if (!res.ok) throw new Error(`PostgREST-Fehler (HTTP ${res.status})`);
+    const steps = await res.json();
+    return steps.map(toStepRecord);
+  }
+
+  // ── Kopfzeile/Breadcrumb (V05) ───────────────────────────────────────
+  // Bekannte Pluralformen für die Standard-Navigationsachsen dieser Workgroup;
+  // bei anderen/zusätzlichen Achsen wird einfach das Dimension-Label verwendet
+  // (grammatikalisch nicht perfekt, aber generisch statt hart codiert).
+  const AXIS_LABEL_PLURAL = { phase: 'Phasen', datenraum: 'Datenräume' };
+
+  async function loadWorkgroupName() {
+    const res = await fetch(`${REST_URL}/workgroups?select=name&limit=1`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) return '';
+    const [wg] = await res.json();
+    return wg?.name || '';
+  }
+
+  function renderBreadcrumb(workgroupName) {
+    const axisParts = [...navSingle, ...navMulti].map(dim =>
+      `${dim.values.length} ${AXIS_LABEL_PLURAL[dim.key] || dim.label}`
+    );
+    const parts = [`${data.length} Schritte`, ...axisParts];
+    if (workgroupName) parts.push(workgroupName);
+    document.getElementById('breadcrumb').textContent =
+      `Akteur × Prozess → Datenobjekt · ${parts.join(' · ')}`;
+  }
+
+  async function startApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
+    document.getElementById('counter').textContent = 'lädt …';
+    try {
+      setupDimensions(await loadDimensions());
+      data = await loadData();
+      renderBreadcrumb(await loadWorkgroupName());
+    } catch (err) {
+      document.getElementById('karten').innerHTML = `<div class="empty-hint">${escapeHtml(err.message)}</div>`;
+      document.getElementById('counter').textContent = '';
+      return;
+    }
+    renderToolbar();
+    render();
+  }
+
+  // ── Toolbar (einmalig aus dims gebaut, siehe startApp) ──────────────
+  function renderToolbar() {
+    const rows = [];
+
+    for (const dim of navSingle) {
+      const tabs = [`<button class="phase-tab active" data-dim="${dim.key}" data-val="alle" onclick="setNavSingle('${dim.key}','alle')">Alle</button>`]
+        .concat(dim.values.map(v => `
+          <button class="phase-tab" data-dim="${dim.key}" data-val="${v.key}" onclick="setNavSingle('${dim.key}','${v.key}')">
+            <span class="dot" style="background:${colorOf(v)}"></span>${escapeHtml(v.label)}
+          </button>`));
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${tabs.join('')}</div>`);
+    }
+
+    for (const dim of navMulti) {
+      const toggles = dim.values.map(v => `
+        <button class="dr-toggle active" data-dim="${dim.key}" data-val="${v.key}" style="${chipStyle(colorOf(v))}"
+                onclick="toggleNavMulti('${dim.key}','${v.key}')">${escapeHtml(v.label)}</button>`);
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
+    }
+
+    // V02/V03: Gruppen-Filterzeile pro Dimension mit gepflegter gruppe – arbeitet
+    // auf Gruppennamen statt einzelnen dimension_values, deshalb eigener Zweig
+    // statt Teil der generischen navMulti-Schleife oben (sonst bräuchte jede
+    // Dimension automatisch eine Gruppierungs-UI, auch ohne gepflegte gruppe).
+    for (const dim of groupDims) {
+      const groups = [...activeGroups[dim.key]].sort();
+      const toggles = groups.map(g => `
+        <button class="dr-toggle active" data-group-dim="${dim.key}" data-group="${escapeHtml(g)}"
+                onclick="toggleGroupFilter('${dim.key}', this.dataset.group)">${escapeHtml(g)}</button>`);
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)} (Gruppe)</span>${toggles.join('')}</div>`);
+    }
+
+    document.getElementById('toolbar-nav-rows').innerHTML = rows.join('');
+
+    const axisDims = dims.filter(d => d.typ !== 'text');
+    const axisOptions = axisDims.map(d => `<option value="${d.key}">${escapeHtml(d.label)}</option>`).join('');
+    const xSelect = document.getElementById('matrix-x-select');
+    const ySelect = document.getElementById('matrix-y-select');
+    xSelect.innerHTML = axisOptions;
+    ySelect.innerHTML = axisOptions;
+    xSelect.value = matrixX;
+    ySelect.value = matrixY;
+  }
+
+  function setNavSingle(dimKey, value) {
+    activeNavSingle[dimKey] = value;
+    document.querySelectorAll(`.phase-tab[data-dim="${dimKey}"]`).forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === value);
+    });
+    render();
+  }
+
+  function toggleNavMulti(dimKey, valueKey) {
+    const set = activeNavMulti[dimKey];
+    if (set.has(valueKey)) set.delete(valueKey); else set.add(valueKey);
+    document.querySelector(`.dr-toggle[data-dim="${dimKey}"][data-val="${valueKey}"]`)
+      .classList.toggle('active', set.has(valueKey));
+    render();
+  }
+
+  function toggleGroupFilter(dimKey, group) {
+    const set = activeGroups[dimKey];
+    if (set.has(group)) set.delete(group); else set.add(group);
+    document.querySelector(`.dr-toggle[data-group-dim="${dimKey}"][data-group="${CSS.escape(group)}"]`)
+      .classList.toggle('active', set.has(group));
+    render();
+  }
+
+  function setView(next) {
+    view = next;
+    document.getElementById('view-cards-btn').classList.toggle('active', view === 'cards');
+    document.getElementById('view-matrix-btn').classList.toggle('active', view === 'matrix');
+    document.getElementById('matrix-controls').style.display = view === 'matrix' ? 'flex' : 'none';
+    document.getElementById('btn-expand').style.display = view === 'matrix' ? 'none' : '';
+    render();
+  }
+
+  function onMatrixAxisChange() {
+    matrixX = document.getElementById('matrix-x-select').value;
+    matrixY = document.getElementById('matrix-y-select').value;
+    render();
+  }
+
+  function onSearch(value) {
+    searchTerm = value.trim();
+    render();
+  }
+
+  function toggleDetail(nr) {
+    expandAll = false;
+    openCard = openCard === nr ? null : nr;
+    render();
+  }
+
+  function toggleExpandAll() {
+    expandAll = !expandAll;
+    openCard = null;
+    document.getElementById('btn-expand').textContent = expandAll ? '⊟ Alle zuklappen' : '⊞ Alle aufklappen';
+    render();
+  }
+
+  function getVisibleSteps() {
+    return data.filter(matchesSearch).filter(d => !isDimmed(d));
+  }
+
+  function exportPDF() {
+    window.print();
+  }
+
+  function exportCSV() {
+    const visible = getVisibleSteps();
+    const cols = ['nr', 'titel', ...dims.map(dim => dim.label)];
+    const rowFor = d => [
+      d.nr,
+      d.titel,
+      ...dims.map(dim => {
+        const v = d.values[dim.key];
+        return Array.isArray(v) ? v.map(x => x.label).join(', ') : (v || '');
+      }),
+    ];
+    const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+    const rows = visible.map(d => rowFor(d).map(esc).join(';'));
+    const csv = '﻿' + [cols.map(esc).join(';'), ...rows].join('\r\n');
+    download('patientenpfad_export.csv', csv, 'text/csv;charset=utf-8');
+  }
+
+  function exportJSON() {
+    const visible = getVisibleSteps().map(d => ({
+      nr: d.nr,
+      titel: d.titel,
+      ...Object.fromEntries(dims.map(dim => {
+        const v = d.values[dim.key];
+        return [dim.key, Array.isArray(v) ? v.map(x => x.label) : (v || '')];
+      })),
+    }));
+    download('patientenpfad_export.json', JSON.stringify(visible, null, 2), 'application/json');
+  }
+
+  function download(filename, content, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function highlight(text, term) {
+    const safe = escapeHtml(text || '');
+    if (!term) return safe;
+    const escTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp(`(${escTerm})`, 'ig'), '<mark>$1</mark>');
+  }
+
+  const SEARCH_DIM_KEYS = ['akteur', 'objekt', 'detail'];
+  function matchesSearch(d) {
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    const haystack = [d.titel, ...SEARCH_DIM_KEYS.flatMap(k => {
+      const v = d.values[k];
+      return Array.isArray(v) ? v.map(x => x.label) : (v ? [v] : []);
+    })].join(' ').toLowerCase();
+    return haystack.includes(q);
+  }
+
+  // ── Sichtbarkeit (Dimmen) über die Nav-Multi-/zusätzliche Nav-Single-Filter ──
+  function isDimmedByNav(d) {
+    for (const dim of navMulti) {
+      const active = activeNavMulti[dim.key];
+      const stepVals = (d.values[dim.key] || []).map(v => v.key);
+      if (!stepVals.some(v => active.has(v))) return true;
+    }
+    for (const dim of extraNavSingle) {
+      const active = activeNavSingle[dim.key];
+      if (active !== 'alle') {
+        const stepVal = (d.values[dim.key] || [])[0]?.key;
+        if (stepVal !== active) return true;
+      }
+    }
+    return false;
+  }
+
+  // V02/V03: Gruppen-Filter dimmt nur, wenn der Schritt für diese Dimension
+  // überhaupt Werte hat — sonst würden z.B. Schritte ohne Rechtsgrundlage
+  // fälschlich gedimmt, obwohl "alle Gruppen aktiv" ist.
+  function isDimmedByGroup(d) {
+    for (const dim of groupDims) {
+      const active = activeGroups[dim.key];
+      const stepVals = d.values[dim.key] || [];
+      if (!stepVals.length) continue;
+      const stepGroups = stepVals.map(v => v.gruppe || 'Sonstige');
+      if (!stepGroups.some(g => active.has(g))) return true;
+    }
+    return false;
+  }
+
+  function isDimmed(d) {
+    return isDimmedByNav(d) || isDimmedByGroup(d);
+  }
+
+  // ── Karte als HTML ───────────────────────────────────────────────
+  function renderCard(d) {
+    const dimmed = isDimmed(d);
+    const isOpen = openCard === d.nr || expandAll;
+
+    const headerChips = previewSingleDims.map(dim => {
+      const v = (d.values[dim.key] || [])[0];
+      return v ? `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>` : '';
+    }).join('');
+
+    const previewRows = previewMultiDims.map((dim, i) => {
+      const vals = d.values[dim.key] || [];
+      const isLastRow = i === previewMultiDims.length - 1;
+      const badgeVals = (isLastRow && previewBadgeDim) ? (d.values[previewBadgeDim.key] || []) : [];
+      if (!vals.length && !badgeVals.length) return '';
+      const cls = i === 0 ? 'card-tags-primary' : 'card-tags-secondary';
+      const tags = vals.map(v =>
+        `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`
+      ).join('');
+      const badges = badgeVals.map(v => `<span class="card-op-badge">${escapeHtml(v.key)}</span>`).join('');
+      return `<div class="${cls}">${tags}${badges}</div>`;
+    }).join('');
+
+    const navBadges = navMulti.flatMap(dim => (d.values[dim.key] || []).map(v =>
+      `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`
+    )).join('');
+
+    let detailHtml = '';
+    if (isOpen) {
+      const sections = detailDims.map(dim => {
+        if (dim.typ === 'text') {
+          const text = d.values[dim.key];
+          if (!text) return '';
+          return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div>
+                    <div style="white-space:pre-line;">${highlight(text, searchTerm)}</div></div>`;
+        }
+        const vals = d.values[dim.key] || [];
+        const inner = vals.length
+          ? vals.map(v => `<span class="chip" style="${chipStyle(colorOf(v))}">${highlight(v.label, searchTerm)}</span>`).join('')
+          : `<span style="color:var(--c-text-4);font-size:12px;">–</span>`;
+        return `<div class="detail-section"><div class="detail-section-label">${escapeHtml(dim.label)}</div><div>${inner}</div></div>`;
+      }).join('');
+      detailHtml = `<div class="detail-box">${sections}</div>`;
+    }
+
+    const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
+    const borderStyle = sectionValue ? `border-left:3px solid ${colorOf(sectionValue)};` : '';
+
+    return `
+      <div class="prozess-card ${dimmed ? 'dimmed' : ''} ${isOpen ? 'open' : ''}" style="${borderStyle}"
+           data-nr="${d.nr}" onclick="toggleDetail(${d.nr})">
+        <div class="card-meta">
+          <span class="card-meta-chips">${headerChips}</span>
+          <span class="card-nr">#${String(d.nr).padStart(2, '0')}</span>
+        </div>
+        <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
+        ${previewRows}
+        <div class="card-badges">${navBadges}</div>
+        ${detailHtml}
+      </div>`;
+  }
+
+  // ── Matrix-Ansicht: zwei frei wählbare Dimensionen als Achsen ───────
+  function renderMatrix() {
+    const xDim = dimsByKey[matrixX];
+    const yDim = dimsByKey[matrixY];
+    if (!xDim || !yDim) return '<div class="empty-hint">Keine Achsen wählbar.</div>';
+
+    const visible = data.filter(matchesSearch);
+    const stepsFor = (xv, yv) => visible.filter(d =>
+      (d.values[xDim.key] || []).some(v => v.key === xv.key) &&
+      (d.values[yDim.key] || []).some(v => v.key === yv.key)
+    );
+    const chipFor = d => {
+      const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
+      const style = sectionValue ? `style="border-left-color:${colorOf(sectionValue)};"` : '';
+      return `<button type="button" class="matrix-step-chip" ${style} onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
+    };
+
+    const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
+    const body = xDim.values.map(xv => {
+      const cells = yDim.values.map(yv => {
+        const steps = stepsFor(xv, yv);
+        return `<td class="${steps.length ? 'matrix-hit' : ''}">${steps.map(chipFor).join('')}</td>`;
+      }).join('');
+      return `<tr><th>${escapeHtml(xv.label)}</th>${cells}</tr>`;
+    }).join('');
+
+    return `<div class="matrix-wrap"><table class="matrix-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function openFromMatrix(nr) {
+    openCard = nr;
+    setView('cards');
+    const el = document.querySelector(`.prozess-card[data-nr="${nr}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── Render ───────────────────────────────────────────────────────
+  function render() {
+    if (!data.length) {
+      document.getElementById('counter').textContent = '';
+      document.getElementById('karten').innerHTML =
+        `<div class="empty-hint">Keine Prozessschritte sichtbar. Das kann heißen: die Arbeitsgruppe hat noch keine
+         Mitgliedschaft für diesen Nutzer (Row-Level-Security), oder es wurden noch keine Daten eingespielt
+         (siehe supabase/seed/).</div>`;
+      return;
+    }
+
+    if (view === 'matrix') {
+      document.getElementById('counter').innerHTML =
+        `<strong>${data.filter(matchesSearch).length} von ${data.length}</strong> Prozessschritten in der Matrix`;
+      document.getElementById('karten').innerHTML = renderMatrix();
+      return;
+    }
+
+    const sections = sectionDim
+      ? (activeNavSingle[sectionDim.key] === 'alle' ? sectionDim.values : sectionDim.values.filter(v => v.key === activeNavSingle[sectionDim.key]))
+      : [null];
+    let totalVisible = 0;
+
+    const sectionsHtml = sections.map(sectionValue => {
+      const sectionSteps = sectionValue
+        ? data.filter(d => (d.values[sectionDim.key] || [])[0]?.key === sectionValue.key).filter(matchesSearch)
+        : data.filter(matchesSearch);
+      const visibleCount = sectionSteps.filter(d => !isDimmed(d)).length;
+      totalVisible += visibleCount;
+
+      const countLabel = visibleCount === sectionSteps.length
+        ? `${sectionSteps.length} Schritte`
+        : `${visibleCount} von ${sectionSteps.length} Schritten sichtbar`;
+
+      const headerStyle = sectionValue ? chipStyle(colorOf(sectionValue)) : '';
+      const header = sectionValue
+        ? `<div class="phase-section-header" style="${headerStyle}border-left-color:${colorOf(sectionValue)};">
+             <span class="phase-section-title">${escapeHtml(sectionValue.label)}</span>
+             <span class="phase-section-count">${countLabel}</span>
+           </div>`
+        : '';
+
+      return `
+        <div class="phase-section">
+          ${header}
+          <div class="phase-section-grid">${sectionSteps.map(renderCard).join('')}</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('counter').innerHTML =
+      `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
+    document.getElementById('karten').innerHTML = sectionsHtml;
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  // ssoAzureEnabled: auf true stellen, sobald eine echte Entra-ID-App-
+  // Registrierung existiert und GOTRUE_EXTERNAL_AZURE_* in supabase/.env
+  // gesetzt sind (siehe supabase/README.md, Abschnitt SSO/T10). Ohne das
+  // bleibt der Button bewusst ausgeblendet statt kaputt anklickbar zu sein.
+  initLoginScreen({
+    title: 'Patientenpfad – Viewer',
+    hint: 'Zugriff auf Prozessschritte hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
+    onSuccess: startApp,
+    ssoAzureEnabled: false,
+  });
+
+  if (tryConsumeUrlHashToken() || getToken()) {
+    startApp();
+  }
+</script>
+</body>
+</html>

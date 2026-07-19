@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patientenpfad – Editor-Prototyp (Datenbank)</title>
+  <style>
+    :root {
+      --c-text-1:   #111827;
+      --c-text-2:   #374151;
+      --c-text-3:   #6B7280;
+      --c-text-4:   #9CA3AF;
+      --c-bg:       #F3F4F6;
+      --c-surface:  #ffffff;
+      --c-border-1: #E5E7EB;
+      --c-border-2: #D1D5DB;
+      --c-border-3: #9CA3AF;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--c-bg); color: var(--c-text-1); min-height: 100vh;
+    }
+
+    .page-header {
+      background: var(--c-surface); border-bottom: 1px solid var(--c-border-1);
+      padding: 16px 24px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    }
+    .page-header h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+    .page-header p { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+    .badge-proto {
+      display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; vertical-align: middle;
+    }
+    .badge-role {
+      display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; vertical-align: middle;
+    }
+    .session-box { font-size: 12px; color: var(--c-text-3); text-align: right; white-space: nowrap; }
+    .session-box .email { color: var(--c-text-2); font-weight: 600; }
+    .btn-link {
+      background: none; border: none; color: #4F46E5; font-size: 12px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-top: 4px;
+    }
+    .btn-link:hover { text-decoration: underline; }
+
+    /* E05: Akkordeon statt Sidebar+Panel – ein Spalten-Layout, das Formular
+       klappt direkt unter der angeklickten Zeile auf statt in einem fixen
+       rechten Panel. */
+    .layout { max-width: 880px; margin: 0 auto; padding: 20px 24px; }
+    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .sidebar-header h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-text-4); }
+
+    .btn {
+      padding: 6px 12px; border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--c-text-1); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: var(--c-surface); color: var(--c-text-2); border-color: var(--c-border-2); }
+    .btn-secondary:hover { border-color: var(--c-border-3); }
+    .btn-danger { background: #FEE2E2; color: #7F1D1D; border-color: #FCA5A5; }
+    .btn-danger:hover { background: #FECACA; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* E05: kein overflow:hidden mehr – #step-form/#dimension-form können jetzt
+       als Kind von .step-list eingehängt sein (Akkordeon), und overflow:hidden
+       auf einem Vorfahren würde position:sticky in .form-actions (E03) brechen
+       (kein Scroll-Container mit unbegrenzter Höhe mehr = sticky bezieht sich
+       fälschlich auf .step-list statt den Viewport). */
+    .step-list { background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg); }
+    .step-item {
+      padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--c-border-1); font-size: 13px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-item:hover { background: #F9FAFB; }
+    .step-item.active { background: #EFF6FF; }
+    .step-item .nr { font-size: 11px; font-weight: 600; color: var(--c-text-4); flex-shrink: 0; padding-top: 1px; }
+    /* E04: nicht mehr auf einer Zeile abschneiden ("Durchführung diagnostischer
+       Maßna…") — bis zu 2 Zeilen umbrechen, erst danach abschneiden. */
+    .step-item .titel {
+      color: var(--c-text-1); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; line-height: 1.35;
+    }
+
+    /* E05: #step-form/#dimension-form sind Singleton-Elemente, die per JS
+       direkt hinter die angeklickte Zeile verschoben werden (insertAdjacentElement) –
+       kein festes rechtes Panel mehr. Kein eigener Scroll-Container (anders als
+       vorher .editor-main): die aufgeklappte Zeile kann an beliebiger Stelle der
+       Liste stehen, ein fester max-height wäre dort nicht verlässlich innerhalb
+       des Viewports. Stattdessen scrollt die ganze Seite; .form-actions unten
+       bleibt per position:sticky relativ zum Browser-Fenster kleben (E03),
+       solange ein Teil des Formulars sichtbar ist. */
+    #step-form, #dimension-form {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 20px 24px; margin: 8px 0 12px;
+    }
+    .empty-hint { color: var(--c-text-3); font-size: 13px; padding: 16px 0; text-align: center; }
+
+    .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .form-row .field { flex: 1; }
+    .field { margin-bottom: 16px; }
+    /* Direkter Kind-Selektor (nicht ".field label"): sonst trifft das auch die
+       Checkbox-Labels weiter unten im Feld (E01 — die waren dadurch versehentlich
+       großgeschrieben, z.B. "DSGVO ART. 6 ABS. 1" statt "DSGVO Art. 6 Abs. 1"). */
+    .field > label {
+      display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--c-text-4); margin-bottom: 6px;
+    }
+    .field input[type="text"], .field input[type="number"], .field select, .field textarea {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit; color: var(--c-text-1); background: var(--c-surface);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--c-border-3); }
+    .field textarea { resize: vertical; }
+    .field-hint { font-size: 11px; color: var(--c-text-4); margin-top: 4px; }
+
+    .checkbox-list { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+    /* E02: lange Listen (Schwellwert über Anzahl, nicht über den Dimension-Key —
+       gilt also generisch für jede Dimension mit vielen Werten) bekommen eine
+       feste, scrollbare Box statt den ganzen Formularbereich flach zu füllen. */
+    .checkbox-list-scrollable {
+      max-height: 160px; overflow-y: auto; padding: 8px;
+      border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: #FAFAFA;
+    }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+    .checkbox-item input { width: auto; }
+    /* checkbox-inline (z.B. "Navigationsachse"-Checkbox) ist ein direktes Kind von
+       .field wie die Feld-Überschrift selbst — ohne diese Ausnahme bekäme es
+       trotz E01-Fix dieselbe (hier unerwünschte) Großschreibung. */
+    .field > label.checkbox-inline {
+      text-transform: none; font-size: 13px; font-weight: 400; letter-spacing: normal; color: var(--c-text-1);
+    }
+
+    .add-value-row { display: flex; gap: 6px; margin-top: 8px; }
+    .add-value-row input { flex: 1; padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
+    .add-value-row button {
+      padding: 4px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: var(--c-surface);
+      font-size: 12px; cursor: pointer; color: var(--c-text-2);
+    }
+    .add-value-row button:hover { border-color: var(--c-border-3); }
+    .checkbox-filter {
+      display: block; width: 100%; box-sizing: border-box; margin-bottom: 6px; padding: 4px 8px;
+      border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; font-family: inherit;
+    }
+
+    .sidebar-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 6px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      background: var(--c-surface); color: var(--c-text-3); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .tab-btn.active { background: var(--c-text-1); border-color: var(--c-text-1); color: #fff; }
+
+    .typ-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      background: #F3F4F6; color: var(--c-text-3); border: 1px solid var(--c-border-2); margin-left: 6px; flex-shrink: 0;
+    }
+    .nav-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      background: #FEF3C7; color: #78350F; border: 1px solid #FCD34D; margin-left: 4px; flex-shrink: 0;
+    }
+
+    .value-row {
+      display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--c-border-1);
+    }
+    .value-row:last-child { border-bottom: none; }
+    .value-row input[type="text"] {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; font-family: inherit;
+    }
+    .value-row input[type="text"].value-label { flex: 1; }
+    .value-row input[type="text"].value-gruppe { width: 120px; }
+    .value-row input[type="color"] { width: 32px; height: 28px; padding: 2px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); }
+    .value-row input[type="number"] { width: 52px; padding: 4px 6px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; }
+    .value-row button {
+      padding: 4px 8px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm); background: var(--c-surface);
+      font-size: 11px; cursor: pointer;
+    }
+    .value-row button.btn-danger { background: #FEE2E2; color: #7F1D1D; border-color: #FCA5A5; }
+
+    .checkbox-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .checkbox-inline input { width: auto; }
+
+    .form-actions {
+      display: flex; gap: 8px; border-top: 1px solid var(--c-border-1);
+      /* Full-bleed Fußzeile über die volle Breite von #step-form (negative
+         Ränder heben dessen Polsterung auf, padding stellt sie innerhalb der
+         Fußzeile wieder her). position:sticky/bottom:0 klebt sie ans untere
+         Ende des Browser-Fensters (E03) – da kein Vorfahre einen eigenen
+         Scroll-Container aufspannt, ist der Viewport selbst der Bezugsrahmen. */
+      position: sticky; bottom: 0; margin: 20px -24px -20px; padding: 16px 24px;
+      background: var(--c-surface); box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
+    .form-message {
+      margin-top: 12px; font-size: 12px; padding: 8px 10px; border-radius: var(--r-sm); display: none;
+    }
+    .form-message.error { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
+    .form-message.success { background: #F0FDF4; color: #14532D; border: 1px solid #BBF7D0; }
+
+    /* ── Login (gemeinsam mit viewer-db über shared/auth.js, T08) ── */
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-box {
+      background: var(--c-surface); border: 1px solid var(--c-border-1); border-radius: var(--r-lg);
+      padding: 28px 28px 24px; width: 100%; max-width: 340px;
+    }
+    .login-box h1 { font-size: 16px; margin-bottom: 4px; }
+    .login-box p.hint { font-size: 12px; color: var(--c-text-3); margin-bottom: 18px; }
+    .login-box label { display: block; font-size: 12px; font-weight: 600; color: var(--c-text-2); margin: 12px 0 4px; }
+    .login-box input {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--c-border-2); border-radius: var(--r-sm);
+      font-size: 13px; font-family: inherit;
+    }
+    .login-box input:focus { outline: none; border-color: var(--c-border-3); }
+    .login-box button {
+      margin-top: 18px; width: 100%; padding: 8px 10px; border: none; border-radius: var(--r-sm);
+      background: var(--c-text-1); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .login-box button:disabled { opacity: 0.5; cursor: default; }
+    .login-box .btn-link { width: auto; background: none; color: #4F46E5; margin-top: 8px; padding: 0; font-weight: 600; }
+    .login-small-hint { font-size: 11px; color: var(--c-text-4); margin-top: 8px; }
+    .login-error {
+      margin-top: 12px; font-size: 12px; color: #7F1D1D; background: #FEE2E2;
+      border: 1px solid #FCA5A5; border-radius: var(--r-sm); padding: 8px 10px; display: none;
+    }
+    #password-fallback { margin-top: 18px; }
+    #password-fallback summary { font-size: 12px; color: var(--c-text-3); cursor: pointer; }
+    #password-fallback[open] summary { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Login-Screen (Inhalt wird von shared/auth.js initLoginScreen() erzeugt) ── -->
+  <div id="login-screen" class="login-screen"></div>
+
+  <!-- ── App (nach Login) ─────────────────────────────────────────── -->
+  <div id="app" style="display:none;">
+    <div class="page-header">
+      <div>
+        <h1>Patientenpfad – Editor <span class="badge-proto">DB-Prototyp</span></h1>
+        <p>T06+T07: Formularfelder werden dynamisch aus <code>dimensions</code> generiert. Schreibt per PostgREST,
+          abgesichert durch Row-Level-Security statt GitHub-Personal-Access-Token. Der bestehende
+          <code>patientenpfad_editor.html</code> bleibt unverändert parallel nutzbar.</p>
+      </div>
+      <div class="session-box">
+        <div>Angemeldet als <span class="email" id="session-email"></span><span class="badge-role" id="session-role"></span></div>
+        <button class="btn-link" onclick="logout()">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
+        <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
+      </div>
+
+      <!-- E05: Akkordeon – Zeile anklicken klappt das Formular direkt darunter
+           auf (kein festes rechtes Panel mehr). #step-form/#dimension-form
+           sind Singleton-Elemente, die per JS zur passenden Zeile verschoben
+           werden (siehe renderStepList()/renderDimensionList()). -->
+      <div id="steps-view">
+        <div class="sidebar-header">
+          <h2 id="step-count">Prozessschritte</h2>
+          <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
+        </div>
+        <div id="new-step-slot"></div>
+        <div class="step-list" id="step-list"></div>
+      </div>
+
+      <div id="dimensions-view" style="display:none;">
+        <div class="sidebar-header">
+          <h2 id="dimension-count">Dimensionen</h2>
+          <button class="btn btn-primary" onclick="newDimension()">+ Neu</button>
+        </div>
+        <div id="new-dimension-slot"></div>
+        <div class="step-list" id="dimension-list"></div>
+      </div>
+
+      <div id="editor-empty" class="empty-hint" style="display:none;">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+
+      <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
+        <div class="form-row">
+          <div class="field" style="max-width:120px;">
+            <label for="field-nr">Nr.</label>
+            <input type="number" id="field-nr" required min="1">
+          </div>
+          <div class="field">
+            <label for="field-titel">Titel</label>
+            <input type="text" id="field-titel" required>
+          </div>
+        </div>
+        <div id="dynamic-fields"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="save-btn">Speichern</button>
+          <button type="button" class="btn btn-danger" id="delete-btn" onclick="onDeleteStep()">Löschen</button>
+        </div>
+        <div class="form-message error" id="form-error"></div>
+        <div class="form-message success" id="form-success"></div>
+      </form>
+
+      <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
+        <p class="field-hint" style="margin-bottom:16px;">Neue Dimensionen anlegen/bearbeiten erfordert die Rolle
+          <code>admin</code> (Row-Level-Security) — mit <code>editor</code> kann man nur Werte innerhalb
+          bestehender Dimensionen pflegen (siehe Prozessschritt-Formular).</p>
+        <div class="form-row">
+          <div class="field" style="max-width:200px;">
+            <label for="dim-field-key">Key</label>
+            <input type="text" id="dim-field-key" required>
+            <p class="field-hint">Technischer Bezeichner, z.B. <code>prioritaet</code>.</p>
+          </div>
+          <div class="field">
+            <label for="dim-field-label">Label</label>
+            <input type="text" id="dim-field-label" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="dim-field-typ">Typ</label>
+            <select id="dim-field-typ">
+              <option value="single_select">single_select (Auswahl, ein Wert)</option>
+              <option value="multi_select">multi_select (Auswahl, mehrere Werte)</option>
+              <option value="text">text (Freitext)</option>
+            </select>
+          </div>
+          <div class="field" style="max-width:120px;">
+            <label for="dim-field-reihenfolge">Reihenfolge</label>
+            <input type="number" id="dim-field-reihenfolge" min="1">
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label for="dim-field-farbe">Farbe (optional)</label>
+            <input type="color" id="dim-field-farbe" style="width:100%;height:34px;padding:2px;">
+          </div>
+        </div>
+        <div class="field">
+          <label class="checkbox-inline"><input type="checkbox" id="dim-field-nav"> Navigationsachse (Tab-Leiste bzw. Toggle-Filter im Viewer)</label>
+        </div>
+
+        <div id="dimension-values-section" class="field" style="display:none;">
+          <label>Werte</label>
+          <div id="dimension-values-list"></div>
+          <div class="add-value-row">
+            <input type="text" placeholder="Neuer Wert" id="dim-new-value-label">
+            <button type="button" onclick="addDimensionValueInManager()">+ Hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="dim-save-btn">Speichern</button>
+          <button type="button" class="btn btn-danger" id="dim-delete-btn" onclick="onDeleteDimension()">Löschen</button>
+        </div>
+        <div class="form-message error" id="dim-form-error"></div>
+        <div class="form-message success" id="dim-form-success"></div>
+      </form>
+    </div>
+  </div>
+
+<script src="../shared/auth.js"></script>
+<script>
+  // ── Konfiguration ────────────────────────────────────────────────
+  const GOTRUE_URL = 'http://localhost:9999';
+  const REST_URL   = 'http://localhost:8001';
+
+  // ── Farben (identisch zu viewer-db, siehe shared/auth.js für Auth) ──
+  const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
+  function hashColor(key) {
+    let h = 0;
+    for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return FALLBACK_PALETTE[h % FALLBACK_PALETTE.length];
+  }
+  function colorOf(value) { return value.farbe || hashColor(value.key); }
+
+  // ── Auth: getToken/logout/decodeJwt/login-Funktionen kommen aus shared/auth.js ──
+
+  // ── Zustand ──────────────────────────────────────────────────────
+  let workgroup = null;   // { id, key, name }
+  let myRole = null;      // 'viewer' | 'editor' | 'admin' (aus memberships)
+  let dims = [];
+  let steps = [];         // [{ id, nr, titel }]
+  let currentStepId = null;
+  let activeView = 'steps';  // 'steps' | 'dimensions' (T09)
+  let currentDimId = null;
+  // E05: Akkordeon – #step-form/#dimension-form sind Singleton-DOM-Knoten,
+  // die per JS zur passenden Zeile verschoben werden. Referenzen einmal
+  // cachen: nach einem innerHTML-Rebuild der Liste ist der Knoten (falls er
+  // gerade dort eingehängt war) aus dem Dokument entfernt und über
+  // document.getElementById() nicht mehr auffindbar – die gecachte
+  // JS-Referenz bleibt trotzdem gültig zum erneuten Einhängen.
+  const stepFormEl = document.getElementById('step-form');
+  const dimensionFormEl = document.getElementById('dimension-form');
+  const emptyHintEl = document.getElementById('editor-empty');
+  let creatingNewStep = false;
+  let creatingNewDimension = false;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${REST_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken()}`,
+        ...(options.headers || {}),
+      },
+    });
+    if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
+    return res;
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  async function startApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('session-email').textContent = sessionStorage.getItem('user_email') || '';
+
+    const wgRes = await apiFetch('/workgroups?select=id,key,name&limit=1');
+    const workgroups = await wgRes.json();
+    if (!workgroups.length) {
+      document.getElementById('step-list').innerHTML =
+        `<div class="empty-hint">Keine Arbeitsgruppe sichtbar. Fehlt eine Mitgliedschaft (memberships) für diesen Nutzer?</div>`;
+      return;
+    }
+    workgroup = workgroups[0];
+
+    const memberRes = await apiFetch(`/memberships?select=rolle&workgroup_id=eq.${workgroup.id}&user_id=eq.${decodeJwt(getToken()).sub}`);
+    const memberships = await memberRes.json();
+    myRole = memberships[0]?.rolle || null;
+    document.getElementById('session-role').textContent = myRole || 'ohne Rolle';
+
+    await reloadDimensions();
+    await reloadSteps();
+    updateEmptyHint();
+  }
+
+  async function reloadSteps() {
+    const res = await apiFetch(`/process_steps?select=id,nr,titel&workgroup_id=eq.${workgroup.id}&order=nr`);
+    steps = await res.json();
+    renderStepList();
+  }
+
+  function renderStepList() {
+    document.getElementById('step-count').textContent = `Prozessschritte (${steps.length})`;
+    document.getElementById('step-list').innerHTML = steps.map(s => `
+      <div class="step-item ${s.id === currentStepId ? 'active' : ''}" id="step-item-${s.id}" onclick="selectStep('${s.id}')">
+        <span class="nr">#${String(s.nr).padStart(2, '0')}</span>
+        <span class="titel">${escapeHtml(s.titel)}</span>
+      </div>`).join('') || '<div class="empty-hint">Noch keine Prozessschritte.</div>';
+
+    // E05: das (weiterhin einzige) #step-form-Element direkt hinter die
+    // aufgeklappte Zeile hängen – innerHTML oben hat es aus dem Dokument
+    // entfernt, falls es dort vorher schon eingehängt war.
+    if (currentStepId) {
+      const row = document.getElementById(`step-item-${currentStepId}`);
+      if (row) row.insertAdjacentElement('afterend', stepFormEl);
+    }
+  }
+
+  // ── Formular: Felder dynamisch aus dims generieren ──────────────────
+  function fieldHtml(dim, stepValues) {
+    const values = (stepValues && stepValues[dim.key]) || (dim.typ === 'text' ? '' : []);
+
+    if (dim.typ === 'text') {
+      return `
+        <div class="field" data-dim="${dim.key}" data-typ="text">
+          <label>${escapeHtml(dim.label)}</label>
+          <textarea rows="4">${escapeHtml(values)}</textarea>
+        </div>`;
+    }
+
+    if (dim.typ === 'single_select') {
+      const selectedKey = values[0]?.key || '';
+      const options = ['<option value="">–</option>'].concat(
+        dim.values.map(v => `<option value="${escapeHtml(v.key)}" ${v.key === selectedKey ? 'selected' : ''}>${escapeHtml(v.label)}</option>`)
+      ).join('');
+      return `
+        <div class="field" data-dim="${dim.key}" data-typ="single_select">
+          <label>${escapeHtml(dim.label)}</label>
+          <select>${options}</select>
+          ${addValueRow(dim)}
+        </div>`;
+    }
+
+    // multi_select
+    const selectedKeys = new Set(values.map(v => v.key));
+    const checkboxes = dim.values.map(v => `
+      <label class="checkbox-item">
+        <input type="checkbox" value="${escapeHtml(v.key)}" ${selectedKeys.has(v.key) ? 'checked' : ''}>
+        ${escapeHtml(v.label)}
+      </label>`).join('');
+    // E02: Schwellwert über die Anzahl der Werte, nicht über den Dimension-Key —
+    // gilt generisch für jede Dimension mit vielen Optionen (bei unserem
+    // aktuellen Datensatz betrifft das Datenobjekt/Rechtsgrundlage/Standard,
+    // aber fest verdrahtet ist nur die Zahl 10, nicht die Dimensionen selbst).
+    const isLong = dim.values.length > 10;
+    const scrollClass = isLong ? ' checkbox-list-scrollable' : '';
+    // E07: Filtertext-Input für dieselben langen Listen wie E02 – gleicher
+    // Schwellwert, kein eigener Sonderfall.
+    const filterHtml = isLong
+      ? `<input type="text" class="checkbox-filter" placeholder="${escapeHtml(dim.label)} filtern …" oninput="filterCheckboxList(this)">`
+      : '';
+    return `
+      <div class="field" data-dim="${dim.key}" data-typ="multi_select">
+        <label>${escapeHtml(dim.label)}</label>
+        ${filterHtml}
+        <div class="checkbox-list${scrollClass}">${checkboxes}</div>
+        ${addValueRow(dim)}
+      </div>`;
+  }
+
+  function filterCheckboxList(input) {
+    const q = input.value.trim().toLowerCase();
+    const list = input.nextElementSibling;
+    list.querySelectorAll('.checkbox-item').forEach(item => {
+      item.style.display = (!q || item.textContent.trim().toLowerCase().includes(q)) ? '' : 'none';
+    });
+  }
+
+  function addValueRow(dim) {
+    // E06: Navigations-Dimensionen (Phase, Datenraum) sind strukturelle Kategorien,
+    // die selten erweitert werden — die Schnellzugriff-Zeile wäre hier nur Rauschen.
+    // Neue Werte bleiben trotzdem möglich, nur über die "Dimensionen"-Ansicht.
+    if (dim.ist_navigationsachse) {
+      return `<p class="field-hint">Neue Werte für „${escapeHtml(dim.label)}" über die Ansicht „Dimensionen" anlegen.</p>`;
+    }
+    return `
+      <div class="add-value-row">
+        <input type="text" placeholder="Neuer Wert für ${escapeHtml(dim.label)}" id="new-value-${dim.key}">
+        <button type="button" onclick="addDimensionValue('${dim.key}')">+ Hinzufügen</button>
+      </div>`;
+  }
+
+  async function addDimensionValue(dimKey) {
+    const dim = dims.find(d => d.key === dimKey);
+    const input = document.getElementById(`new-value-${dimKey}`);
+    const label = input.value.trim();
+    if (!label) return;
+    const maxOrder = Math.max(0, ...dim.values.map(v => v.reihenfolge));
+    const res = await apiFetch('/dimension_values', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ dimension_id: dim.id, key: label, label, reihenfolge: maxOrder + 1 }),
+    });
+    if (!res.ok) {
+      alert(`Wert konnte nicht angelegt werden (HTTP ${res.status}). Fehlende editor-Rolle?`);
+      return;
+    }
+    const [created] = await res.json();
+    dim.values.push(created);
+    input.value = '';
+    // Nur das betroffene Feld aktualisieren, nicht das ganze Formular neu laden –
+    // sonst gehen unsaved Änderungen an anderen Feldern verloren.
+    addOptionToField(dim, created);
+  }
+
+  function addOptionToField(dim, created) {
+    const field = document.querySelector(`.field[data-dim="${dim.key}"]`);
+    if (!field) return;
+    if (dim.typ === 'single_select') {
+      const option = document.createElement('option');
+      option.value = created.key;
+      option.textContent = created.label;
+      field.querySelector('select').appendChild(option);
+    } else {
+      const item = document.createElement('label');
+      item.className = 'checkbox-item';
+      item.innerHTML = `<input type="checkbox" value="${escapeHtml(created.key)}">${escapeHtml(created.label)}`;
+      field.querySelector('.checkbox-list').appendChild(item);
+    }
+  }
+
+  // E05: zeigt den Leer-Hinweis nur, wenn in der aktiven Ansicht weder eine
+  // bestehende Zeile aufgeklappt noch ein neuer Eintrag in Erstellung ist.
+  function updateEmptyHint() {
+    const isEmpty = activeView === 'steps'
+      ? (!currentStepId && !creatingNewStep)
+      : (!currentDimId && !creatingNewDimension);
+    emptyHintEl.textContent = activeView === 'steps'
+      ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
+      : 'Dimension in der Liste auswählen oder „+ Neu" klicken.';
+    emptyHintEl.style.display = isEmpty ? 'block' : 'none';
+    if (isEmpty) {
+      document.getElementById(activeView === 'steps' ? 'new-step-slot' : 'new-dimension-slot').appendChild(emptyHintEl);
+    }
+  }
+
+  // ── Ansicht wechseln: Prozessschritte / Dimensionen (T09) ───────────
+  function setView(view) {
+    activeView = view;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+    document.getElementById('steps-view').style.display = view === 'steps' ? 'block' : 'none';
+    document.getElementById('dimensions-view').style.display = view === 'dimensions' ? 'block' : 'none';
+
+    // E05: Akkordeon-Zustand der jeweils anderen Ansicht beim Wechsel schließen,
+    // sonst bliebe eine Zeile optisch "aktiv" markiert, ohne dass ihr Formular
+    // noch irgendwo eingehängt ist.
+    currentStepId = null; creatingNewStep = false;
+    currentDimId = null; creatingNewDimension = false;
+    stepFormEl.style.display = 'none';
+    dimensionFormEl.style.display = 'none';
+    renderStepList();
+    renderDimensionList();
+    updateEmptyHint();
+  }
+
+  // ── Dimensionen verwalten (T09) ──────────────────────────────────────
+  function renderDimensionList() {
+    document.getElementById('dimension-count').textContent = `Dimensionen (${dims.length})`;
+    document.getElementById('dimension-list').innerHTML = dims.map(d => `
+      <div class="step-item ${d.id === currentDimId ? 'active' : ''}" id="dimension-item-${d.id}" onclick="selectDimension('${d.id}')">
+        <span class="titel">${escapeHtml(d.label)}</span>
+        <span class="typ-badge">${d.typ}</span>
+        ${d.ist_navigationsachse ? '<span class="nav-badge">Nav</span>' : ''}
+      </div>`).join('') || '<div class="empty-hint">Noch keine Dimensionen.</div>';
+
+    // E05: das (weiterhin einzige) #dimension-form-Element direkt hinter die
+    // aufgeklappte Zeile hängen – innerHTML oben hat es aus dem Dokument
+    // entfernt, falls es dort vorher schon eingehängt war.
+    if (currentDimId) {
+      const row = document.getElementById(`dimension-item-${currentDimId}`);
+      if (row) row.insertAdjacentElement('afterend', dimensionFormEl);
+    }
+  }
+
+  function selectDimension(id) {
+    creatingNewDimension = false;
+    if (currentDimId === id) {
+      // Akkordeon: erneuter Klick auf dieselbe Zeile klappt sie zu
+      currentDimId = null;
+      dimensionFormEl.style.display = 'none';
+      renderDimensionList();
+      updateEmptyHint();
+      return;
+    }
+    currentDimId = id;
+    renderDimensionList();
+    renderDimensionForm(id);
+    updateEmptyHint();
+  }
+
+  function newDimension() {
+    currentDimId = null;
+    creatingNewDimension = true;
+    renderDimensionList();
+    document.getElementById('new-dimension-slot').appendChild(dimensionFormEl);
+    const nextOrder = dims.length ? Math.max(...dims.map(d => d.reihenfolge)) + 1 : 1;
+    renderDimensionForm(null, { reihenfolge: nextOrder });
+    updateEmptyHint();
+  }
+
+  function renderDimensionValues(dim) {
+    document.getElementById('dimension-values-list').innerHTML = (dim.values || []).map(v => `
+      <div class="value-row" data-value-id="${v.id}">
+        <input type="text" class="value-label" value="${escapeHtml(v.label)}">
+        <input type="text" class="value-gruppe" placeholder="Gruppe (optional)" value="${escapeHtml(v.gruppe || '')}" title="Übergruppe für den Gruppen-Filter im Viewer (z.B. Gesetzeskategorie, Standard-Familie)">
+        <input type="color" value="${v.farbe || '#94a3b8'}">
+        <input type="number" value="${v.reihenfolge}" title="Reihenfolge">
+        <button type="button" onclick="saveDimensionValueRow('${v.id}')">Speichern</button>
+        <button type="button" class="btn-danger" onclick="deleteDimensionValueRow('${v.id}')">Löschen</button>
+      </div>`).join('') || '<p class="field-hint">Noch keine Werte.</p>';
+  }
+
+  function toggleDimensionValuesSection() {
+    const typ = document.getElementById('dim-field-typ').value;
+    document.getElementById('dimension-values-section').style.display = typ === 'text' ? 'none' : 'block';
+  }
+
+  function renderDimensionForm(dimId, draft) {
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('dimension-form').style.display = 'block';
+    document.getElementById('dim-form-error').style.display = 'none';
+    document.getElementById('dim-form-success').style.display = 'none';
+    document.getElementById('dim-delete-btn').style.display = dimId ? 'inline-block' : 'none';
+
+    const dim = dimId ? dims.find(d => d.id === dimId) : null;
+
+    document.getElementById('dim-field-key').value = dim?.key ?? '';
+    document.getElementById('dim-field-key').disabled = !!dim;
+    document.getElementById('dim-field-label').value = dim?.label ?? '';
+    document.getElementById('dim-field-typ').value = dim?.typ ?? 'single_select';
+    document.getElementById('dim-field-reihenfolge').value = dim?.reihenfolge ?? draft?.reihenfolge ?? 1;
+    document.getElementById('dim-field-farbe').value = dim?.farbe ?? '#94a3b8';
+    document.getElementById('dim-field-nav').checked = !!dim?.ist_navigationsachse;
+
+    document.getElementById('dim-field-typ').onchange = toggleDimensionValuesSection;
+    toggleDimensionValuesSection();
+    if (dim) renderDimensionValues(dim);
+    else document.getElementById('dimension-values-list').innerHTML = '<p class="field-hint">Erst nach dem ersten Speichern verfügbar.</p>';
+  }
+
+  async function onSaveDimension(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('dim-form-error');
+    const successBox = document.getElementById('dim-form-success');
+    const saveBtn = document.getElementById('dim-save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+
+    try {
+      const payload = {
+        key: document.getElementById('dim-field-key').value.trim(),
+        label: document.getElementById('dim-field-label').value.trim(),
+        typ: document.getElementById('dim-field-typ').value,
+        reihenfolge: Number(document.getElementById('dim-field-reihenfolge').value) || 1,
+        farbe: document.getElementById('dim-field-farbe').value,
+        ist_navigationsachse: document.getElementById('dim-field-nav').checked,
+      };
+
+      if (currentDimId) {
+        const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({
+            label: payload.label, typ: payload.typ, reihenfolge: payload.reihenfolge,
+            farbe: payload.farbe, ist_navigationsachse: payload.ist_navigationsachse,
+          }),
+        });
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        const rows = await res.json();
+        if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die admin-Rolle (Row-Level-Security).');
+      } else {
+        const res = await apiFetch('/dimensions', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ ...payload, workgroup_id: workgroup.id }),
+        });
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+        const [created] = await res.json();
+        currentDimId = created.id;
+        creatingNewDimension = false;
+      }
+
+      successBox.textContent = 'Gespeichert.';
+      successBox.style.display = 'block';
+      await reloadDimensions();
+      renderDimensionForm(currentDimId);
+      updateEmptyHint();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = false;
+    }
+    return false;
+  }
+
+  async function onDeleteDimension() {
+    if (!currentDimId) return;
+    if (!confirm('Diese Dimension wirklich löschen? Alle zugehörigen Werte UND alle Zuordnungen zu Prozessschritten gehen dabei verloren.')) return;
+    const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die admin-Rolle?`);
+      return;
+    }
+    currentDimId = null;
+    creatingNewDimension = false;
+    dimensionFormEl.style.display = 'none';
+    await reloadDimensions();
+    updateEmptyHint();
+  }
+
+  async function reloadDimensions() {
+    const dimsRes = await apiFetch(
+      `/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,farbe,dimension_values(id,key,label,farbe,gruppe,reihenfolge)` +
+      `&workgroup_id=eq.${workgroup.id}&order=reihenfolge&dimension_values.order=reihenfolge`
+    );
+    dims = (await dimsRes.json()).map(d => ({ ...d, values: d.dimension_values }));
+    renderDimensionList();
+  }
+
+  async function addDimensionValueInManager() {
+    const dim = dims.find(d => d.id === currentDimId);
+    const input = document.getElementById('dim-new-value-label');
+    const label = input.value.trim();
+    if (!dim || !label) return;
+    const maxOrder = Math.max(0, ...dim.values.map(v => v.reihenfolge));
+    const res = await apiFetch('/dimension_values', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ dimension_id: dim.id, key: label, label, reihenfolge: maxOrder + 1 }),
+    });
+    if (!res.ok) {
+      alert(`Wert konnte nicht angelegt werden (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    const [created] = await res.json();
+    dim.values.push(created);
+    input.value = '';
+    renderDimensionValues(dim);
+  }
+
+  async function saveDimensionValueRow(valueId) {
+    const row = document.querySelector(`.value-row[data-value-id="${valueId}"]`);
+    const label = row.querySelector('.value-label').value.trim();
+    const gruppe = row.querySelector('.value-gruppe').value.trim() || null;
+    const farbe = row.querySelector('input[type="color"]').value;
+    const reihenfolge = Number(row.querySelector('input[type="number"]').value) || 1;
+    const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ label, gruppe, farbe, reihenfolge }),
+    });
+    if (!res.ok) {
+      alert(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    await reloadDimensions();
+    const dim = dims.find(d => d.id === currentDimId);
+    if (dim) renderDimensionValues(dim);
+  }
+
+  async function deleteDimensionValueRow(valueId) {
+    if (!confirm('Diesen Wert wirklich löschen? Er wird auch aus allen Prozessschritten entfernt, die ihn verwenden.')) return;
+    const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
+      return;
+    }
+    await reloadDimensions();
+    const dim = dims.find(d => d.id === currentDimId);
+    if (dim) renderDimensionValues(dim);
+  }
+
+  // ── Schritt auswählen / neu / speichern / löschen ───────────────────
+  function selectStep(id) {
+    creatingNewStep = false;
+    if (currentStepId === id) {
+      // Akkordeon: erneuter Klick auf dieselbe Zeile klappt sie zu
+      currentStepId = null;
+      stepFormEl.style.display = 'none';
+      renderStepList();
+      updateEmptyHint();
+      return;
+    }
+    currentStepId = id;
+    renderStepList();
+    renderForm(id);
+    updateEmptyHint();
+  }
+
+  function newStep() {
+    currentStepId = null;
+    creatingNewStep = true;
+    renderStepList();
+    document.getElementById('new-step-slot').appendChild(stepFormEl);
+    const nextNr = steps.length ? Math.max(...steps.map(s => s.nr)) + 1 : 1;
+    renderForm(null, { nr: nextNr, titel: '' });
+    updateEmptyHint();
+  }
+
+  async function renderForm(stepId, draft) {
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('step-form').style.display = 'block';
+    document.getElementById('form-error').style.display = 'none';
+    document.getElementById('form-success').style.display = 'none';
+    document.getElementById('delete-btn').style.display = stepId ? 'inline-block' : 'none';
+
+    let stepValues = {};
+    let nr = draft?.nr ?? '';
+    let titel = draft?.titel ?? '';
+
+    if (stepId) {
+      const res = await apiFetch(
+        `/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(id,key,label,farbe))&id=eq.${stepId}`
+      );
+      const [step] = await res.json();
+      nr = step.nr;
+      titel = step.titel;
+      for (const row of step.process_step_values) {
+        const key = row.dimensions.key;
+        const dim = dims.find(d => d.key === key);
+        if (dim.typ === 'text') stepValues[key] = row.text_value;
+        else (stepValues[key] ||= []).push(row.dimension_values);
+      }
+    }
+
+    document.getElementById('field-nr').value = nr;
+    document.getElementById('field-titel').value = titel;
+    document.getElementById('dynamic-fields').innerHTML =
+      dims.map(dim => fieldHtml(dim, stepValues)).join('');
+  }
+
+  function readFormValues() {
+    const values = {};
+    document.querySelectorAll('#dynamic-fields .field').forEach(el => {
+      const dimKey = el.dataset.dim;
+      const typ = el.dataset.typ;
+      if (typ === 'text') {
+        values[dimKey] = el.querySelector('textarea').value.trim();
+      } else if (typ === 'single_select') {
+        const v = el.querySelector('select').value;
+        values[dimKey] = v ? [v] : [];
+      } else {
+        values[dimKey] = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      }
+    });
+    return values;
+  }
+
+  async function onSaveStep(event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('form-error');
+    const successBox = document.getElementById('form-success');
+    const saveBtn = document.getElementById('save-btn');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+    saveBtn.disabled = true;
+
+    try {
+      const nr = Number(document.getElementById('field-nr').value);
+      const titel = document.getElementById('field-titel').value.trim();
+      const userId = decodeJwt(getToken()).sub;
+
+      let stepId = currentStepId;
+      if (stepId) {
+        const res = await apiFetch(`/process_steps?id=eq.${stepId}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ nr, titel, updated_at: new Date().toISOString(), updated_by: userId }),
+        });
+        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        const rows = await res.json();
+        if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die editor-/admin-Rolle (Row-Level-Security).');
+      } else {
+        const res = await apiFetch('/process_steps', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ workgroup_id: workgroup.id, nr, titel }),
+        });
+        if (!res.ok) throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+        const [created] = await res.json();
+        stepId = created.id;
+        currentStepId = stepId;
+        creatingNewStep = false;
+      }
+
+      const formValues = readFormValues();
+      for (const dim of dims) {
+        await apiFetch(`/process_step_values?process_step_id=eq.${stepId}&dimension_id=eq.${dim.id}`, { method: 'DELETE' });
+        const value = formValues[dim.key];
+        if (dim.typ === 'text') {
+          if (value) await apiFetch('/process_step_values', {
+            method: 'POST',
+            body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, text_value: value }),
+          });
+        } else {
+          for (const valueKey of value) {
+            const dv = dim.values.find(v => v.key === valueKey);
+            if (!dv) continue;
+            await apiFetch('/process_step_values', {
+              method: 'POST',
+              body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, dimension_value_id: dv.id }),
+            });
+          }
+        }
+      }
+
+      successBox.textContent = 'Gespeichert.';
+      successBox.style.display = 'block';
+      await reloadSteps();
+      updateEmptyHint();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      saveBtn.disabled = false;
+    }
+    return false;
+  }
+
+  async function onDeleteStep() {
+    if (!currentStepId) return;
+    if (!confirm('Diesen Prozessschritt wirklich löschen?')) return;
+    const res = await apiFetch(`/process_steps?id=eq.${currentStepId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlt die editor-Rolle?`);
+      return;
+    }
+    currentStepId = null;
+    creatingNewStep = false;
+    stepFormEl.style.display = 'none';
+    await reloadSteps();
+    updateEmptyHint();
+  }
+
+  // ── Start ────────────────────────────────────────────────────────
+  // ssoAzureEnabled: siehe Kommentar in viewer-db/index.html — auf true
+  // stellen, sobald eine echte Entra-ID-App-Registrierung existiert.
+  initLoginScreen({
+    title: 'Patientenpfad – Editor',
+    hint: 'Schreiben erfordert die Rolle <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe ' +
+          '(Row-Level-Security) — mit <code>viewer</code> kann man sich anmelden und lesen, aber Speichern schlägt fehl.',
+    onSuccess: startApp,
+    ssoAzureEnabled: false,
+  });
+
+  if (tryConsumeUrlHashToken() || getToken()) {
+    startApp();
+  }
+</script>
+</body>
+</html>
