@@ -65,7 +65,7 @@ eingeholt werden kann — sie ersetzt sie nicht.
 - [x] **Datenabgleich grün** (Stand 2026-07-19, PR #38/#39 gemergt): `supabase/seed/reconcile_with_data_js.py` läuft ohne Abweichungen (Exit-Code 0) — Snapshot, vor dem tatsächlichen Cutover erneut zu prüfen, falls die AG zwischenzeitlich weiter über den bestehenden Editor gepflegt hat
 - [x] **Rollenkonzept final** (Stand 2026-07-19, PR #41/#42/#43 gemergt): Muster entschieden — mehrere Editoren aus der AG (dezentrale Datenpflege), Admin auf 1–2 Personen beschränkt. Pflege künftig per neuer Mitglieder-Verwaltungs-UI im Editor (T12) statt manuellem `psql`-Insert. Tatsächliche Namen/Zuweisung für die produktive Workgroup steht noch aus (kein technischer Punkt mehr, sondern nur noch Ausführung).
 - [ ] **Hosting/Betrieb geklärt:** Wer betreibt den Stack langfristig (Nutzer selbst vs. gematik) — siehe offene Entscheidung oben
-- [ ] **SSO-Entscheidung:** Reicht E-Mail/Magic-Link zum Start, oder muss institutionelles SSO (T10) vorher stehen?
+- [x] **SSO-Entscheidung** (Stand 2026-07-19): Magic-Link (+ Passwort-Fallback) reicht zum Start — kein hartes Cutover-Kriterium. Institutionelles SSO (T10, Entra ID) bleibt optionaler späterer Ausbau, T10-Scaffolding bleibt deaktiviert, bis jemand mit Azure-AD-Admin-Rechten (gematik/Krankenhaus) die App-Registrierung anstößt.
 - [ ] **Audit-/Versionsprotokoll geklärt:** Ist der Git-Commit-Verlauf-Ersatz (`process_step_audit`-Tabelle, aktuell nur angelegt, nicht aktiv genutzt) ausreichend, oder ein hartes Kriterium?
 - [ ] **AG-Freigabe eingeholt:** Plenum/Ansprechpartner der AG hat den Parallelbetrieb bewertet und dem Wechsel zugestimmt
 - [ ] **Parallelbetriebs-Zeitraum definiert:** Wie lange laufen altes und neues Tool nebeneinander, bevor endgültig umgestellt wird?
