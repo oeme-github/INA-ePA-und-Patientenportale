@@ -184,12 +184,26 @@ def upsert_dimensions(cur, workgroup_id: str, specs: list) -> dict:
 
 
 def upsert_process_step(cur, workgroup_id: str, nr: int, titel: str) -> str:
+    # kein ON CONFLICT (workgroup_id, nr): der Constraint ist seit E08
+    # (20260719090000_deferrable_process_steps_nr.sql) deferrable, und
+    # Postgres lässt deferrable Unique-Constraints nicht als ON-CONFLICT-
+    # Arbiter zu. Deshalb explizit UPDATE-dann-INSERT statt Upsert.
+    cur.execute(
+        """
+        update process_steps
+        set titel = %s, updated_at = now()
+        where workgroup_id = %s and nr = %s
+        returning id
+        """,
+        (titel, workgroup_id, nr),
+    )
+    row = cur.fetchone()
+    if row is not None:
+        return row[0]
     cur.execute(
         """
         insert into process_steps (workgroup_id, nr, titel)
         values (%s, %s, %s)
-        on conflict (workgroup_id, nr) do update
-            set titel = excluded.titel, updated_at = now()
         returning id
         """,
         (workgroup_id, nr, titel),
