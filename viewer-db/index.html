@@ -521,12 +521,14 @@
     return safe.replace(new RegExp(`(${escTerm})`, 'ig'), '<mark>$1</mark>');
   }
 
+  const SEARCH_DIM_KEYS = ['akteur', 'objekt', 'detail'];
   function matchesSearch(d) {
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
-    const haystack = [d.titel, ...Object.values(d.values).flatMap(v =>
-      Array.isArray(v) ? v.map(x => x.label) : [v]
-    )].join(' ').toLowerCase();
+    const haystack = [d.titel, ...SEARCH_DIM_KEYS.flatMap(k => {
+      const v = d.values[k];
+      return Array.isArray(v) ? v.map(x => x.label) : (v ? [v] : []);
+    })].join(' ').toLowerCase();
     return haystack.includes(q);
   }
 
