@@ -20,13 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39, offen) |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42, offen) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v3 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08) |
-| `supabase/seed/` | v3 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, offen) |
-| `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, offen) |
+| `supabase/migrations/` | v4 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 offen) |
+| `supabase/seed/` | v3 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt) |
+| `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, gemergt) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
-| `editor-db/index.html` | v9 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste |
+| `editor-db/index.html` | v10 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, offen) |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -881,14 +881,104 @@ Lokaler Stack zwischenzeitlich vom Nutzer versehentlich gestoppt (während
 `start.sh` lief) und danach erneut gestartet — kein Bug, nur Timing. Am
 Sessionende regulär gestoppt (`stop.sh`, Daten bleiben erhalten).
 
-Beide PRs (#38, #39) sind offen, der Nutzer übernimmt Review/Merge selbst
-in der nächsten Sitzung. Cutover-Checkliste: Punkt „Datenabgleich grün" ist
-damit für den aktuellen Stand bestätigt (bleibt aber ein Snapshot — vor
-einem tatsächlichen Cutover erneut zu prüfen, falls die AG zwischenzeitlich
-weiter über den bestehenden Editor gepflegt hat). Die übrigen
-Checklistenpunkte (Rollenkonzept, Hosting, SSO, Audit-Protokoll,
-AG-Freigabe, Parallelbetrieb, Rückfallplan, Kommunikation) wurden in dieser
-Session nicht behandelt.
+Beide PRs (#38, #39) waren zu Sessionende offen, der Nutzer hat sie
+zusammen mit dem Doku-PR #40 inzwischen selbst gemergt. Cutover-Checkliste:
+Punkt „Datenabgleich grün" ist damit für den damaligen Stand bestätigt
+(bleibt aber ein Snapshot — vor einem tatsächlichen Cutover erneut zu
+prüfen, falls die AG zwischenzeitlich weiter über den bestehenden Editor
+gepflegt hat).
+
+### Cutover-Checkliste: Rollenkonzept final + Mitglieder-UI (T12) (Session 2026-07-19, Fortsetzung)
+
+Nächster Checklistenpunkt aus BACKLOG.md: „Rollenkonzept final — Wer
+bekommt welche `memberships`-Rolle in der produktiven Workgroup? Wer
+pflegt das?" Vor einer Entscheidung zunächst eine Bestandsaufnahme des
+bereits existierenden Rollenmodells (Explore-Agent, verifiziert gegen
+`supabase/migrations/20260710120000_init_schema.sql:104-212`):
+
+- Schema/RLS sind bereits vollständig: `memberships` (`user_id ×
+  workgroup_id × rolle`, `check`-Constraint statt Enum, `unique(user_id,
+  workgroup_id)`), Hierarchie viewer < editor < admin über
+  `has_workgroup_role()`. Policies unterscheiden sauber: viewer nur lesen,
+  editor zusätzlich Prozessschritte/Dimension-Werte, admin zusätzlich
+  Dimensionen selbst UND Mitgliedschaften.
+  Es existiert bereits eine Policy `"Admins verwalten Mitgliedschaften"` —
+  technisch war Selbstverwaltung also schon lange möglich.
+- Die eigentliche Lücke war rein operativ: keine UI, Mitgliedschaften
+  wurden ausschließlich per manuellem `docker compose exec ... psql ...
+  insert into memberships ...` angepasst (dokumentiert in
+  `supabase/README.md` für die drei Testnutzer).
+
+Nutzerentscheidung auf dieser Grundlage: **Rollenmuster** — mehrere
+Editoren aus der AG (dezentrale Datenpflege, analog zur bisherigen
+informellen UAG-Arbeitsweise), Admin bleibt auf 1–2 Personen beschränkt.
+**Pflegeweg** — dafür wird eine Mitglieder-Verwaltungs-UI gebaut (T12),
+analog zur bestehenden Dimensionen-Verwaltung aus T09, statt weiter
+manuell per DB-Zugriff zu pflegen.
+
+**Umsetzung in zwei PRs** (Begründung: der DB-Teil enthält bewussten
+RLS-Bypass und verdient isolierten Review, analog zum Muster der kleinen
+Einzel-PRs #38/#39/#40):
+
+- **PR #41 — `supabase/migrations/20260719100000_add_member_lookup_functions.sql`:**
+  zwei neue `security definer`-RPCs, `lookup_user_by_email(p_email,
+  p_workgroup_id)` und `list_workgroup_members(p_workgroup_id)`. Nötig, weil
+  `auth.users` im `auth`-Schema liegt und über PostgREST nicht erreichbar
+  ist (`PGRST_DB_SCHEMA=public`) — der naheliegende Alternativweg über die
+  GoTrue-Admin-API scheidet aus, weil er einen `service_role`-JWT braucht,
+  den ein im Browser eingeloggter Admin nicht haben soll (voller
+  RLS-Bypass). Beide Funktionen prüfen den `admin`-Status selbst (RLS greift
+  bei `security definer` nicht), sonst könnte jeder eingeloggte Nutzer
+  beliebige E-Mail→user_id-Zuordnungen abfragen.
+  **Bug beim manuellen Verifizieren gefunden und behoben:**
+  `list_workgroup_members` schlug mit „structure of query does not match
+  function result type" fehl — `auth.users.email` ist
+  `character varying(255)`, nicht `text`, der deklarierte Rückgabetyp
+  brauchte einen expliziten `::text`-Cast. Per `curl` gegen die laufende
+  DB verifiziert: Admin-JWT liest Mitgliederliste, Editor-JWT bekommt 403,
+  unbekannte E-Mail liefert `null`.
+- **PR #42 — dritte Sidebar-Ansicht „Mitglieder" in `editor-db/index.html`:**
+  aufbauend auf PR #41 (Branch `feature/member-management-ui` von
+  `feature/member-lookup-functions` abgezweigt, PR zielt auf PR #41 statt
+  `main`). Wiederverwendet konsequent bestehende Muster statt neuer
+  Abstraktionen: `httpErrorHint()`, `.step-list`/`.step-item`-Layout (E05),
+  das Akkordeon-Singleton-Formular-Pattern (`memberFormEl` analog
+  `dimensionFormEl`), `escapeHtml()`/`apiFetch()`. Bewusst **kein**
+  Drag&Drop/Bulk-Upsert (`memberships` hat kein `reihenfolge`-Feld) und
+  **kein echtes Invite-System** (keine Token-Tabelle, kein Mailversand) —
+  eine Person registriert sich zuerst selbst (Magic-Link/Passwort, bereits
+  vorhanden über `shared/auth.js`), danach kann ein Admin sie per
+  E-Mail-Adresse finden und ihr eine Rolle zuweisen. Für eine kleine AG mit
+  1–2 Admins bewusst kein Overengineering.
+  **Client-seitiger Selbstschutz** (kein DB-Constraint, bewusst nur
+  Frontend): Die letzte `admin`-Rolle einer Workgroup lässt sich weder
+  herabstufen noch entfernen — verhindert versehentliches
+  Selbst-Aussperren, ohne dafür zusätzlichen Migrationsaufwand für einen
+  Randfall zu betreiben, den eine kleine AG selten trifft.
+
+Per Playwright end-to-end verifiziert (Skript gegen den laufenden lokalen
+Stack, `NODE_PATH` auf ein vorhandenes `node_modules/playwright` eines
+anderen lokalen Repos gesetzt, da hier selbst keins installiert ist):
+Admin sieht/verwaltet die Mitgliederliste (3 bestehende Testnutzer),
+neuer Testnutzer (registriert + per Mailpit-Code bestätigt, bewusst ohne
+Membership) wird per E-Mail gefunden und mit Rolle `editor` hinzugefügt,
+Negativfälle (unbekannte E-Mail → kontrollierte Meldung; bereits Mitglied
+→ 409 mit eigener Meldung statt generischem Konflikttext), Rolle auf
+`viewer` geändert, Mitgliedschaft entfernt, RLS-Grenzfall mit
+`editor`-Rolle (nur Hinweistext, keine Liste, „+ Neu" deaktiviert, kein
+unnötiger 403-Request), Selbstschutz bei letztem Admin (beide Aktionen
+vor jedem Server-Request blockiert, per `alert()`/Fehlermeldung statt
+stillem Fehlschlag). Test-Nutzer-Account danach wieder gelöscht,
+`reconcile_with_data_js.py` bleibt grün (memberships ist nicht Teil des
+Datenabgleichs).
+
+Cutover-Checkliste: „Rollenkonzept final" ist damit inhaltlich entschieden
+und technisch umgesetzt (PR #41/#42 offen) — die eigentliche
+Rollen-Zuweisung für die produktive `ak-patientenportale`-Workgroup (welche
+echten AG-Mitglieder welche Rolle bekommen) ist keine technische Aufgabe
+mehr, sondern nur noch Ausführung über die neue UI, sobald die AG-Namen
+feststehen. Übrige Checklistenpunkte (Hosting, SSO, Audit-Protokoll,
+AG-Freigabe, Parallelbetrieb, Rückfallplan, Kommunikation) weiterhin offen.
 
 ## Geplante Aufgaben
 
