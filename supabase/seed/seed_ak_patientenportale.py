@@ -312,6 +312,14 @@ def main():
     dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@localhost:{db_port}/postgres"
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
+            # Das Skript schreibt process_step_values bei jedem (auch
+            # wiederholten) Lauf komplett neu (siehe seed_process_step_values:
+            # DELETE + Reinsert), unabhängig davon, ob sich inhaltlich etwas
+            # geändert hat. Ohne diese Bremse würde jeder erneute Lauf das
+            # Änderungsprotokoll (process_step_audit, siehe Migration
+            # 20260719110000) mit hunderten Zeilen fluten. `set local` gilt
+            # nur für diese eine Transaktion (siehe conn.commit() unten).
+            cur.execute("set local app.skip_audit = 'on'")
             workgroup_id = upsert_workgroup(cur)
             specs = build_dimension_specs(meta)
             dims = upsert_dimensions(cur, workgroup_id, specs)
