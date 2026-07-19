@@ -137,6 +137,11 @@
     }
     .matrix-step-chip:hover { background: #EFF6FF; }
     .matrix-step-chip:last-child { margin-bottom: 0; }
+    /* V09: Cross-Highlighting – ein Schritt kann mehrfach in der Matrix auftauchen
+       (mehrere Werte auf X- oder Y-Achse), Hover über einen Chip hebt alle Chips
+       desselben Schritts hervor und dimmt den Rest, analog zum Original. */
+    .matrix-step-chip.highlighted { outline: 2px solid currentColor; font-weight: 700; filter: brightness(0.92); }
+    .matrix-step-chip.dimmed-by-hover { opacity: 0.25; }
     .matrix-wrap { overflow-x: auto; }
 
     .search-input {
@@ -759,7 +764,7 @@
     const chipFor = d => {
       const sectionValue = sectionDim ? (d.values[sectionDim.key] || [])[0] : null;
       const style = sectionValue ? `style="border-left-color:${colorOf(sectionValue)};"` : '';
-      return `<button type="button" class="matrix-step-chip" ${style} onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
+      return `<button type="button" class="matrix-step-chip" ${style} data-nr="${d.nr}" onclick="openFromMatrix(${d.nr})">#${String(d.nr).padStart(2, '0')} ${escapeHtml(d.titel)}</button>`;
     };
 
     const head = `<tr><th></th>${yDim.values.map(yv => `<th>${escapeHtml(yv.label)}</th>`).join('')}</tr>`;
@@ -834,6 +839,28 @@
       `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
     document.getElementById('karten').innerHTML = sectionsHtml;
   }
+
+  // ── Matrix Cross-Highlighting (V09) ─────────────────────────────────
+  // #karten selbst bleibt über alle render()-Aufrufe hinweg im DOM (nur sein
+  // Inhalt wird ersetzt) – ein einmalig delegierter Listener reicht deshalb,
+  // analog zum Original (dort auf #matrix-view, hier auf #karten, da die
+  // Matrix hier in denselben Container wie die Kartenansicht rendert).
+  const kartenEl = document.getElementById('karten');
+  kartenEl.addEventListener('mouseover', e => {
+    const chip = e.target.closest('.matrix-step-chip[data-nr]');
+    if (!chip) return;
+    const nr = chip.dataset.nr;
+    document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c => {
+      const same = c.dataset.nr === nr;
+      c.classList.toggle('highlighted', same);
+      c.classList.toggle('dimmed-by-hover', !same);
+    });
+  });
+  kartenEl.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.matrix-step-chip[data-nr]').forEach(c =>
+      c.classList.remove('highlighted', 'dimmed-by-hover')
+    );
+  });
 
   // ── Start ────────────────────────────────────────────────────────
   // ssoAzureEnabled: auf true stellen, sobald eine echte Entra-ID-App-
