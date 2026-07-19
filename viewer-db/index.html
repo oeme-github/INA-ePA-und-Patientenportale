@@ -78,6 +78,13 @@
        war zu unauffällig, jetzt deutlich mehr Luft zwischen den Zeilen und
        beim Umbruch innerhalb einer Zeile. */
     .filter-row { display: flex; align-items: center; column-gap: 8px; row-gap: 8px; flex-wrap: wrap; }
+    /* #toolbar-nav-rows bündelt beliebig viele .filter-row (eine je navSingle/
+       navMulti/Gruppen-Dimension) in einem einzigen .toolbar-Kindelement — der
+       äußere .toolbar-gap (18px) wirkt deshalb nur vor/nach diesem Block als
+       Ganzes, nicht zwischen den einzelnen Zeilen darin (Nutzer-Feedback: bei
+       mehr als den ursprünglichen 2-3 Nav-Dimensionen kleben die Zeilen
+       aneinander). */
+    #toolbar-nav-rows { display: flex; flex-direction: column; gap: 12px; }
     .filter-label {
       font-size: 11px; font-weight: 600; color: var(--c-text-4);
       text-transform: uppercase; letter-spacing: 0.06em; min-width: 90px;
@@ -711,9 +718,17 @@
       return `<div class="${cls}">${tags}${badges}</div>`;
     }).join('');
 
+    // Nutzer-Feedback: eine zweite (dritte, ...) navSingle-Dimension war zwar in
+    // Toolbar-Filter und Dimmen wirksam (siehe isDimmedByNav), tauchte aber
+    // nirgends auf der Karte auf — weder als Kopf-Chip (nur nonNav single_select)
+    // noch im Detail (detailDims schließt alle navDims explizit aus). Analog zu
+    // navMulti als unbeschrifteter Farb-Chip im Badge-Bereich ergänzt.
     const navBadges = navMulti.flatMap(dim => (d.values[dim.key] || []).map(v =>
       `<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`
-    )).join('');
+    )).concat(extraNavSingle.flatMap(dim => {
+      const v = (d.values[dim.key] || [])[0];
+      return v ? [`<span class="chip chip-sm" style="${chipStyle(colorOf(v))}">${escapeHtml(v.label)}</span>`] : [];
+    })).join('');
 
     let detailHtml = '';
     if (isOpen) {
