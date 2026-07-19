@@ -20,11 +20,11 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge) |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39, offen) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
 | `supabase/migrations/` | v3 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08) |
-| `supabase/seed/` | v2 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03) |
-| `supabase/start.sh`, `supabase/stop.sh` | v1 | 2026-07-11 | Neu: kompletter Stack mit einem Aufruf startbar/stoppbar |
+| `supabase/seed/` | v3 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, offen) |
+| `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, offen) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
 | `editor-db/index.html` | v9 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
@@ -848,6 +848,47 @@ aber `start.sh` spielt neue Migrationsdateien nur beim allerersten Start
 ein (siehe T02) — in dieser Session direkt per `docker exec psql` gegen den
 laufenden lokalen Stack eingespielt; eine weitere Umgebung (Staging o.ä.)
 bräuchte das manuell nachgezogen.
+
+### Cutover-Checkliste: Datenabgleich + zwei Bugfixes (Session 2026-07-19, Fortsetzung)
+
+Session-Einstieg über die Cutover-Checkliste (BACKLOG.md) begonnen, erster
+Punkt „Datenabgleich grün" geprüft. Dabei zwei eigenständige, vom
+Cutover-Thema unabhängige Fixes gefunden und behoben:
+
+- **PR #38 — Ausführungsrechte für `start.sh`/`stop.sh` fehlten im Git-Index**
+  (`100644` statt `100755`). Ursache: `core.fileMode=false` in diesem Repo,
+  lokales `chmod +x` wird dadurch nie automatisch erkannt/committed. Nach
+  einem frischen `git clone` musste man bisher manuell `chmod +x` setzen,
+  bevor die Skripte liefen. Fix: `git update-index --chmod=+x` (umgeht
+  `core.fileMode`), Skripte sind jetzt als `100755` hinterlegt.
+- **PR #39 — Seed-Skript seit E08 (PR #37) kaputt:**
+  `seed_ak_patientenportale.py`s `upsert_process_step()` nutzte
+  `ON CONFLICT (workgroup_id, nr)`. Die E08-Migration
+  (`20260719090000_deferrable_process_steps_nr.sql`) macht genau diesen
+  Constraint `deferrable` — Postgres lässt deferrable Unique-Constraints
+  aber nicht als `ON CONFLICT`-Arbiter zu. Der Editor selbst ist nicht
+  betroffen (bulk-upsertet per `on_conflict=id` gegen den Primärschlüssel),
+  nur das Seed-Skript. Fix: explizites UPDATE-dann-INSERT statt
+  ON-CONFLICT-Upsert.
+- **Nebenbefund beim ersten Reconcile-Lauf** (vor dem Fix, mit dem alten
+  Skript-Stand nicht neu seedbar): Die ersten drei Prozessschritte waren in
+  der DB um eine Position rotiert (`nr` 1↔2↔3 vertauschte Inhalte) —
+  vermutlich ein Rest vom E08-Drag&Drop-Testing (PR #37), das nicht
+  zurückgesetzt/neu geseedet wurde. Nach dem Seed-Skript-Fix erneut
+  geseedet: `reconcile_with_data_js.py` läuft wieder grün (25/25 identisch).
+
+Lokaler Stack zwischenzeitlich vom Nutzer versehentlich gestoppt (während
+`start.sh` lief) und danach erneut gestartet — kein Bug, nur Timing. Am
+Sessionende regulär gestoppt (`stop.sh`, Daten bleiben erhalten).
+
+Beide PRs (#38, #39) sind offen, der Nutzer übernimmt Review/Merge selbst
+in der nächsten Sitzung. Cutover-Checkliste: Punkt „Datenabgleich grün" ist
+damit für den aktuellen Stand bestätigt (bleibt aber ein Snapshot — vor
+einem tatsächlichen Cutover erneut zu prüfen, falls die AG zwischenzeitlich
+weiter über den bestehenden Editor gepflegt hat). Die übrigen
+Checklistenpunkte (Rollenkonzept, Hosting, SSO, Audit-Protokoll,
+AG-Freigabe, Parallelbetrieb, Rückfallplan, Kommunikation) wurden in dieser
+Session nicht behandelt.
 
 ## Geplante Aufgaben
 

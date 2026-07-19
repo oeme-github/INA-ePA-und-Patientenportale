@@ -8,6 +8,7 @@
 **Viewer-/Editor-Abgleich (2026-07-19):** Alle 15 Punkte aus dem Abgleich (V01–V08, E01–E07) sind erledigt — `viewer-db`/`editor-db` funktional auf Stand der Bestandstools, inkl. der beiden größeren Punkte E05 (Akkordeon-Layout) und V02/V03 (neue generische Gruppierungs-Ebene `dimension_values.gruppe`). Direkt im Anschluss gemeinsames Live-Testing mit dem Nutzer: V09 (Matrix Cross-Highlighting) und E09/E10 (Dimension-Formular-Bugs) gefunden und behoben, E08 (Drag&Drop für Reihenfolge) als offener Punkt aufgenommen. Details siehe KONTEXT.md.
 **PRs #28–#35 gemergt (2026-07-19):** Alle acht aus der Live-Testing-Runde entstandenen PRs geprüft und nach `main` gemergt (Details/Konfliktauflösung siehe KONTEXT.md). Keine offenen PRs mehr.
 **E08 abgeschlossen, PR #37 gemergt (2026-07-19):** Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst) im Editor umgesetzt, inkl. Nachbesserungen aus Nutzer-Review (Boxen-Layout je Listeneintrag, Viewer-Toolbar-Zeilenabstand, zusätzliche Nav-Dimension jetzt als Karten-Badge sichtbar). Details siehe KONTEXT.md. Damit ist der komplette Viewer-/Editor-Abgleich (V01–V09, E01–E10, E08) abgeschlossen — keine offenen PRs mehr. Migration `20260719090000_deferrable_process_steps_nr.sql` ist auf `main`, aber nur im lokalen Dev-Stack eingespielt (siehe KONTEXT.md T02-Hinweis: `start.sh` spielt neue Migrationsdateien nicht automatisch nach, nur beim Erststart) — bei einer weiteren Umgebung (Staging o.ä.) manuell nachziehen.
+**Cutover-Checkliste begonnen, PR #38/#39 offen (2026-07-19):** Erster Punkt „Datenabgleich grün" geprüft, dabei zwei eigenständige Bugs gefunden und behoben — fehlende Ausführungsrechte für `start.sh`/`stop.sh` im Git-Index (PR #38) und ein seit E08 kaputtes Seed-Skript (`ON CONFLICT` gegen den jetzt deferrable `nr`-Constraint, PR #39). Nach dem Fix läuft `reconcile_with_data_js.py` wieder grün (25/25). Details siehe KONTEXT.md. Beide PRs offen, Nutzer übernimmt Review/Merge selbst. Übrige Checklistenpunkte noch offen.
 
 ---
 
@@ -59,7 +60,7 @@ und erfordert eine Entscheidung/Freigabe der AG, keine technische
 Einzelperson-Entscheidung. Diese Liste hilft, wann diese Freigabe sinnvoll
 eingeholt werden kann — sie ersetzt sie nicht.
 
-- [ ] **Datenabgleich grün:** `supabase/seed/reconcile_with_data_js.py` läuft ohne Abweichungen (Exit-Code 0) gegen den *aktuellen* Stand von `patientenpfad_data.js` — nicht nur den Stand von T03
+- [x] **Datenabgleich grün** (Stand 2026-07-19, PR #38/#39 offen): `supabase/seed/reconcile_with_data_js.py` läuft ohne Abweichungen (Exit-Code 0) — Snapshot, vor dem tatsächlichen Cutover erneut zu prüfen, falls die AG zwischenzeitlich weiter über den bestehenden Editor gepflegt hat
 - [ ] **Rollenkonzept final:** Wer bekommt welche `memberships`-Rolle (viewer/editor/admin) in der produktiven Workgroup? Wer pflegt das?
 - [ ] **Hosting/Betrieb geklärt:** Wer betreibt den Stack langfristig (Nutzer selbst vs. gematik) — siehe offene Entscheidung oben
 - [ ] **SSO-Entscheidung:** Reicht E-Mail/Magic-Link zum Start, oder muss institutionelles SSO (T10) vorher stehen?
