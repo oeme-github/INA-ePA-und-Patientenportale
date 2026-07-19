@@ -129,6 +129,10 @@
       font-size: 12px; cursor: pointer; color: var(--c-text-2);
     }
     .add-value-row button:hover { border-color: var(--c-border-3); }
+    .checkbox-filter {
+      display: block; width: 100%; box-sizing: border-box; margin-bottom: 6px; padding: 4px 8px;
+      border: 1px solid var(--c-border-2); border-radius: var(--r-sm); font-size: 12px; font-family: inherit;
+    }
 
     .sidebar-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
     .tab-btn {
@@ -445,13 +449,28 @@
     // gilt generisch für jede Dimension mit vielen Optionen (bei unserem
     // aktuellen Datensatz betrifft das Datenobjekt/Rechtsgrundlage/Standard,
     // aber fest verdrahtet ist nur die Zahl 10, nicht die Dimensionen selbst).
-    const scrollClass = dim.values.length > 10 ? ' checkbox-list-scrollable' : '';
+    const isLong = dim.values.length > 10;
+    const scrollClass = isLong ? ' checkbox-list-scrollable' : '';
+    // E07: Filtertext-Input für dieselben langen Listen wie E02 – gleicher
+    // Schwellwert, kein eigener Sonderfall.
+    const filterHtml = isLong
+      ? `<input type="text" class="checkbox-filter" placeholder="${escapeHtml(dim.label)} filtern …" oninput="filterCheckboxList(this)">`
+      : '';
     return `
       <div class="field" data-dim="${dim.key}" data-typ="multi_select">
         <label>${escapeHtml(dim.label)}</label>
+        ${filterHtml}
         <div class="checkbox-list${scrollClass}">${checkboxes}</div>
         ${addValueRow(dim)}
       </div>`;
+  }
+
+  function filterCheckboxList(input) {
+    const q = input.value.trim().toLowerCase();
+    const list = input.nextElementSibling;
+    list.querySelectorAll('.checkbox-item').forEach(item => {
+      item.style.display = (!q || item.textContent.trim().toLowerCase().includes(q)) ? '' : 'none';
+    });
   }
 
   function addValueRow(dim) {
