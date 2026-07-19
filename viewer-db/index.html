@@ -69,11 +69,15 @@
       position: sticky; top: 0; z-index: 10;
       background: var(--c-surface);
       border-bottom: 1px solid var(--c-border-1);
-      padding: 12px 24px;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 16px 24px;
+      display: flex; flex-direction: column; gap: 18px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
-    .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    /* Nutzer-Feedback: mit den neuen Filterzeilen (Struktur, Gesetz-/Standard-
+       Gruppen) wirkte die Toolbar zu gedrängt — erster Versuch (gap 10→12px)
+       war zu unauffällig, jetzt deutlich mehr Luft zwischen den Zeilen und
+       beim Umbruch innerhalb einer Zeile. */
+    .filter-row { display: flex; align-items: center; column-gap: 8px; row-gap: 8px; flex-wrap: wrap; }
     .filter-label {
       font-size: 11px; font-weight: 600; color: var(--c-text-4);
       text-transform: uppercase; letter-spacing: 0.06em; min-width: 90px;
