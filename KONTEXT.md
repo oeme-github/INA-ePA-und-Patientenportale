@@ -20,12 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-11 | T02–T11, PR #27, Viewer-/Editor-Abgleich, Priorisierung + Phase 1/E02 |
+| `KONTEXT.md` | – | 2026-07-19 | T02–T11, PR #27, Viewer-/Editor-Abgleich vollständig abgeschlossen (V01–V08, E01–E07) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/seed/` | v1 | 2026-07-11 | Neu: Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11) |
+| `supabase/migrations/` | v2 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` ergänzt: `dimension_values.gruppe` für generische Filter-Gruppierung (V02/V03) |
+| `supabase/seed/` | v2 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03) |
 | `supabase/start.sh`, `supabase/stop.sh` | v1 | 2026-07-11 | Neu: kompletter Stack mit einem Aufruf startbar/stoppbar |
-| `viewer-db/index.html` | v3 | 2026-07-11 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08) |
-| `editor-db/index.html` | v4 | 2026-07-11 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06) |
+| `viewer-db/index.html` | v5 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07) |
+| `editor-db/index.html` | v6 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05) |
 | `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -505,12 +506,110 @@ BACKLOG.md) — **Phase 1 (Quick Wins) und E02 sind erledigt:**
 
 Alle sieben Punkte per Headless-Chrome verifiziert (nicht nur Code-Review).
 
-**Offen/unentschieden:** E03 (Sticky-Save-Button — nach E02 neu bewertet:
-bleibt sinnvoll, Save-Button sitzt bei einem datenreichen Schritt immer noch
-bei ~1365px) und E05 (Akkordeon- statt Sidebar+Panel-Layout — echte
-Architekturfrage mit größerem Umbauaufwand, bewusst nicht im Vorbeigehen
-entschieden). Rest von Phase 3/4 (V01–V04, V06, V07, E07) noch nicht
-begonnen.
+**Offen/unentschieden (Stand 2026-07-11):** E03 (Sticky-Save-Button — nach E02
+neu bewertet: bleibt sinnvoll, Save-Button sitzt bei einem datenreichen
+Schritt immer noch bei ~1365px) und E05 (Akkordeon- statt Sidebar+Panel-
+Layout — echte Architekturfrage mit größerem Umbauaufwand, bewusst nicht im
+Vorbeigehen entschieden). Rest von Phase 3/4 (V01–V04, V06, V07, E07) noch
+nicht begonnen. **Alle diese Punkte sind in der Session 2026-07-19
+abgeschlossen worden, siehe unten.**
+
+### Viewer-/Editor-Abgleich vollständig abgeschlossen (Session 2026-07-19)
+
+Alle 15 Punkte aus dem Viewer-/Editor-Abgleich (V01–V08, E01–E07) sind jetzt
+erledigt. Nach Phase 1 (E01, E02, E04, E06, V05, V08, Session 2026-07-11)
+wurden die verbleibenden 9 Punkte in dieser Session umgesetzt, jeweils per
+Playwright (Headless-Chromium) gegen den laufenden lokalen Stack end-to-end
+verifiziert:
+
+- **V01 — Struktur-Filter:** `struktur` war in `viewer-db` bereits als
+  Dimension vorhanden, aber `typ='single_select'`/nicht-navigierend — reiner
+  Datenfix im Seed-Skript (`typ='multi_select'`, `ist_navigationsachse=true`)
+  lässt den schon bestehenden generischen Toggle-Filter-Mechanismus
+  (identisch zum Datenraum-Filter) automatisch greifen, kein Code in
+  `viewer-db/index.html` nötig.
+- **V07 — Suchumfang:** `matchesSearch()` durchsuchte bisher alle Felder
+  inkl. Ist/Lücke/Forderungen — auf Titel/Akteur/Objekt/Detail eingeschränkt,
+  analog zum Original.
+- **V06 — Matrix-Zellen:** zeigten bisher nur eine Zahl, obwohl
+  `renderMatrix()` das gefilterte Array pro Zelle schon berechnete. Jetzt
+  klickbare, phasenfarbige Chips (Klick wechselt zur Kartenansicht und öffnet
+  den Schritt dort — `viewer-db` hat kein separates Modal wie das Original).
+- **V04 — Export-Toolbar:** "Alle aufklappen"/PDF/CSV/JSON ergänzt, aber
+  bewusst *nicht* mit der hart codierten Spaltenliste des Originals nachgebaut
+  — CSV/JSON leiten ihre Spalten generisch aus den aktuell geladenen `dims`
+  ab, damit sie zu jeder Arbeitsgruppe passen. PDF nutzt `window.print()` mit
+  neuer `@media print`-Regel (Login/Header/Toolbar ausgeblendet).
+- **V02/V03 — Rechtsgrundlage-/Standard-Gruppierung:** bewusste
+  Design-Entscheidung (Nutzerentscheidung in dieser Session) *gegen* den
+  client-seitigen Regex-/`startsWith`-Nachbau des Originals, *für* eine neue
+  generische Gruppierungs-Ebene: `dimension_values.gruppe` (additive Migration
+  `20260719080000_add_dimension_value_gruppe.sql`). Seed-Skript befüllt
+  Gesetz/Standard einmalig mit den bewährten Original-Gruppierungsregeln
+  (`law_group()`/`standard_group()`, danach reine Stammdaten statt
+  Code-Logik). Editor bekommt ein optionales "Gruppe"-Pflegefeld pro Wert
+  (analog zur Farbe), damit die AG künftige Werte selbst gruppieren kann.
+  Viewer bekommt einen eigenen generischen Gruppen-Toggle-Filter
+  (`groupDims`/`activeGroups`/`toggleGroupFilter`), der wie der
+  Datenraum-Filter funktioniert, aber auf `gruppe` statt einzelnen
+  Dimension-Werten arbeitet — bewusst ein eigener Rendering-Zweig, damit nicht
+  jede Dimension automatisch eine Gruppierungs-UI bekommt. `isDimmedByGroup`
+  dimmt nur, wenn ein Schritt für die Dimension überhaupt Werte hat (sonst
+  würden z.B. Schritte ohne Rechtsgrundlage fälschlich gedimmt).
+- **E07 — Checkbox-Filter im Editor:** Filtertext-Input über denselben langen
+  Checkbox-Listen wie E02 (>10 Werte, generischer Schwellwert). Neu über
+  `addOptionToField()` ergänzte Werte bleiben bewusst immer sichtbar (kein
+  erneutes Filtern nötig).
+- **E03 — Sticky Speichern-Button:** ursprünglich per `position:sticky`
+  relativ zu `.editor-main` (fester `max-height`-Scroll-Container) gelöst —
+  musste nach E05 (siehe unten) überarbeitet werden, da die aufgeklappte
+  Zeile jetzt an beliebiger Stelle der Liste stehen kann und ein fester
+  `calc(100vh - Npx)`-Wert dort nicht mehr verlässlich innerhalb des
+  Viewports lag (per Playwright als echter Bug entdeckt: Save-Button lag
+  bei einer weiter unten geöffneten Zeile außerhalb des sichtbaren Bereichs).
+  Endgültige Lösung: kein eigener Scroll-Container mehr, die ganze Seite
+  scrollt, `.form-actions` klebt per `position:sticky; bottom:0` direkt am
+  Browser-Viewport — dafür musste `overflow:hidden` auf `.step-list` entfernt
+  werden (das hätte sticky sonst fälschlich auf `.step-list` statt den
+  Viewport bezogen, ein bekanntes CSS-Sticky-in-overflow-Gotcha).
+- **E05 — Akkordeon-Layout:** größter Umbau der Liste. Sidebar+Panel (320px
+  Liste links, immer sichtbares Formular rechts) ersetzt durch: Zeile
+  anklicken klappt das Formular direkt darunter auf, einheitlich für
+  Prozessschritte- und Dimensionen-Ansicht. `#step-form`/`#dimension-form`
+  bleiben Singleton-DOM-Knoten (die gesamte Feld-/Speicher-/Lösch-Logik
+  bleibt unverändert, layoutunabhängig) — bei jedem Listen-Rerender werden sie
+  per `insertAdjacentElement()` hinter die aufgeklappte Zeile verschoben.
+  Referenzen dafür einmalig gecacht (`stepFormEl`/`dimensionFormEl`/
+  `emptyHintEl`), da ein `innerHTML`-Rebuild der Liste einen zuvor
+  eingehängten Formularknoten aus dem Dokument entfernt (danach über
+  `getElementById` nicht mehr auffindbar, die gecachte Referenz bleibt aber
+  gültig). Zwei neue State-Flags (`creatingNewStep`/`creatingNewDimension`)
+  unterscheiden "nichts ausgewählt" von "neuer Eintrag in Erstellung" für den
+  (jetzt schlankeren, nicht mehr Panel-füllenden) Leer-Hinweis.
+  Akkordeon-Verhalten: erneuter Klick auf dieselbe Zeile klappt sie zu, Klick
+  auf eine andere Zeile klappt die vorherige zu, Tab-Wechsel zwischen
+  Prozessschritte/Dimensionen schließt beide.
+
+Per Playwright verifiziert (u.a.): vollständiger Speichern/Löschen-Roundtrip
+für einen neu angelegten Schritt, Sticky-Footer bleibt beim Seiten-Scroll
+unabhängig von der Position der aufgeklappten Zeile am unteren Fensterrand
+(auch bei Zeile 11 von 25 getestet, nicht nur der ersten), Gruppen-Filter
+dimmt korrekt nach OR-Semantik (wie der bestehende Datenraum-Filter).
+`reconcile_with_data_js.py` läuft nach allen Änderungen weiterhin grün
+(25/25 identisch) — `gruppe` ist reine UI-Metaebene ohne Entsprechung in
+`patientenpfad_data.js`, daher unverändert im Abgleich.
+
+**Nebenbefund (kein E05-Bug, vorbestehend):** Nach dem *ersten* Speichern
+eines neu angelegten Prozessschritts wird der Löschen-Button nicht
+automatisch eingeblendet, da `onSaveStep()` nach dem Speichern `renderForm()`
+nicht erneut aufruft (anders als `onSaveDimension()`). Betrifft nur die
+Button-Sichtbarkeit direkt nach dem allerersten Speichern eines neuen
+Eintrags — erneutes Anklicken der Zeile zeigt ihn korrekt. Nicht behoben, da
+außerhalb des Scopes dieser Session (schon vor E05 so).
+
+`patientenpfad_interaktiv.html`, `patientenpfad_editor.html` und
+`patientenpfad_data.js` wurden in dieser Session an keiner Stelle verändert
+(harte Randbedingung weiterhin eingehalten).
 
 ## Geplante Aufgaben
 

@@ -5,6 +5,7 @@
 **Positionspapier:** Abgeschlossen und eingereicht (2026-07-10, manuell durch die AG außerhalb dieses Repos)
 **Projektfokus jetzt:** Tooling — Prozesslandkarte als Multi-User-Web-Tool für weitere Arbeitsgruppen (siehe unten)
 **PR #27 offen:** Bündelt Positionspapier-Abschluss + Multi-User-Web-Tool-Prototyp (T01–T09 erledigt, T10/T11 vorbereitet), wartet auf Review
+**Viewer-/Editor-Abgleich (2026-07-19):** Alle 15 Punkte aus dem Abgleich (V01–V08, E01–E07) sind jetzt erledigt — `viewer-db`/`editor-db` funktional auf Stand der Bestandstools, inkl. der beiden größeren Punkte E05 (Akkordeon-Layout) und V02/V03 (neue generische Gruppierungs-Ebene `dimension_values.gruppe`). Details siehe KONTEXT.md.
 
 ---
 
@@ -77,13 +78,13 @@ Datenabgleich (`reconcile_with_data_js.py`) läuft wieder grün.
 
 | ID | Aufgabe | Priorität | Status |
 |----|---------|-----------|--------|
-| V01 | Struktur-Filter ergänzen (klickbare Chips strukturiert/teilstrukturiert/unstrukturiert) | Mittel | 📋 Offen |
-| V02 | Rechtsgrundlage-Filter ergänzen — Original gruppiert 37 Einzelgesetze automatisch in ~13 Kategorien (Regex auf `§`/`Art.`/`Abs.`); Design-Frage, ob generisch nachbaubar oder eigene "Übergruppe"-Dimension nötig | Mittel | 📋 Offen |
-| V03 | Standard-Filter ergänzen — analog zu V02, Original gruppiert per hart codierten `startsWith`-Regeln ("HL7 FHIR", "IHE", "gematik", "Terminologien", "Sonstige") | Mittel | 📋 Offen |
-| V04 | Export-Toolbar ergänzen: "Alle aufklappen", PDF/CSV/JSON | Niedrig | 📋 Offen |
+| V01 | Struktur-Filter ergänzen (klickbare Chips strukturiert/teilstrukturiert/unstrukturiert) | Mittel | ✅ Erledigt (2026-07-19) — reiner Datenfix im Seed-Skript (`struktur`: `single_select`/nicht-navigierend → `multi_select`/`ist_navigationsachse=true`), generischer Toggle-Filter-Mechanismus greift automatisch |
+| V02 | Rechtsgrundlage-Filter ergänzen — Original gruppiert 37 Einzelgesetze automatisch in ~13 Kategorien (Regex auf `§`/`Art.`/`Abs.`); Design-Frage, ob generisch nachbaubar oder eigene "Übergruppe"-Dimension nötig | Mittel | ✅ Erledigt (2026-07-19) — neue generische Gruppierungs-Ebene: `dimension_values.gruppe` (Migration), Seed-Skript befüllt Gesetz/Standard einmalig mit den bewährten Original-Regeln, Editor bekommt ein "Gruppe"-Pflegefeld, Viewer einen eigenen Gruppen-Toggle-Filter |
+| V03 | Standard-Filter ergänzen — analog zu V02, Original gruppiert per hart codierten `startsWith`-Regeln ("HL7 FHIR", "IHE", "gematik", "Terminologien", "Sonstige") | Mittel | ✅ Erledigt (2026-07-19) — siehe V02, gleicher generischer Mechanismus |
+| V04 | Export-Toolbar ergänzen: "Alle aufklappen", PDF/CSV/JSON | Niedrig | ✅ Erledigt (2026-07-19) — CSV/JSON generisch aus `dims` abgeleitet (keine hart codierte Spaltenliste wie im Original), PDF via `window.print()` + neue `@media print`-Regel |
 | V05 | Kopfzeile/Breadcrumb ergänzen ("Akteur × Prozess → Datenobjekt · 25 Schritte · 3 Phasen · 4 Datenräume · AK Patientenportale ↗") | Niedrig | ✅ Erledigt (2026-07-11) — dynamisch berechnet (Schritte-/Achsen-Anzahl aus `dims`, Workgroup-Name aus DB), ohne externen Link |
-| V06 | Matrix: Zellen sollen Schritt-Titel zeigen (anklickbar, farbcodiert nach Phase) statt nur Zahlen | Mittel | 📋 Offen |
-| V07 | Suchumfang klären: aktuell durchsucht `viewer-db` alle Felder (auch Ist/Lücke/Forderungen), Original nur Titel/Akteur/Objekt/Detail — gewollt oder angleichen? | Niedrig | 📋 Offen |
+| V06 | Matrix: Zellen sollen Schritt-Titel zeigen (anklickbar, farbcodiert nach Phase) statt nur Zahlen | Mittel | ✅ Erledigt (2026-07-19) — Zelle berechnete das gefilterte Array schon vorher, reduzierte es nur auf `.length`; jetzt klickbare, phasenfarbige Chips (Klick wechselt zur Kartenansicht und öffnet den Schritt) |
+| V07 | Suchumfang klären: aktuell durchsucht `viewer-db` alle Felder (auch Ist/Lücke/Forderungen), Original nur Titel/Akteur/Objekt/Detail — gewollt oder angleichen? | Niedrig | ✅ Erledigt (2026-07-19) — an Original angeglichen: nur noch Titel/Akteur/Objekt/Detail |
 | V08 | Operation-Badge ("E"/"E,V") zusätzlich auf der geschlossenen Karte anzeigen, nicht nur im aufgeklappten Detail | Niedrig | ✅ Erledigt (2026-07-11) — generisch als dritte Multi-Select-Dimension (reihenfolge-basiert) neben Vorschau-Zeile 2 |
 
 ### Editor-Abgleich: editor-db vs. patientenpfad_editor.html (Session 2026-07-11)
@@ -96,11 +97,11 @@ unübersichtlich"), verglichen mit dem Layout-Prinzip von
 |----|---------|-----------|--------|
 | E01 | **CSS-Bug:** Selektor `.field label` trifft versehentlich auch jedes Checkbox-Label (technisch ebenfalls ein `<label>`) — dadurch stehen aktuell alle Checkbox-Texte in Großbuchstaben (z.B. "DSGVO ART. 6 ABS. 1" statt "DSGVO Art. 6 Abs. 1"), nicht nur die Feld-Überschrift wie beabsichtigt | Hoch | ✅ Erledigt (2026-07-11) — `.field label` → `.field > label` (direkter Kind-Selektor); zusätzlich dieselbe Ausnahme für das "Navigationsachse"-Checkbox-Label in der Dimensionen-Ansicht ergänzt |
 | E02 | Große Checkbox-Listen (Datenobjekt: 25, Rechtsgrundlage: 37, Standard: 36 Einträge) laufen flach und unbegrenzt durch — ein Schritt-Formular kommt so auf ~2200px Scrollhöhe. Original steckt diese Listen in feste, scrollbare Boxen (~150px, eigener Scrollbalken). Vermutlich Hauptursache für "unübersichtlich" | Hoch | ✅ Erledigt (2026-07-11) — Schwellwert generisch über Werteanzahl (>10), nicht über Dimension-Key; Formular jetzt ~1985px statt ~2200px, Rechtsgrundlage/Standard scrollen sichtbar in eigener Box |
-| E03 | Kein sichtbarer Speichern-Button ohne komplett nach unten zu scrollen (Folge von E02) — sticky/fixierter Speichern-Bereich sinnvoll | Hoch | 📋 Offen |
-| E04 | Sidebar (Schritt-/Dimensionsliste) mit 280px schmal, lange Titel werden abgeschnitten ("Durchführung diagnostischer Maßna…") | Mittel | ✅ Erledigt (2026-07-11) — Sidebar auf 320px verbreitert, Titel brechen jetzt auf bis zu 2 Zeilen um statt abzuschneiden |
-| E05 | Layoutprinzip überdenken: Original nutzt ein Akkordeon (Zeile anklicken → Formular klappt direkt darunter auf, kompaktes 2-spaltiges Grid für kurze Felder), aktuell Liste links + immer sichtbares Formular rechts, einspaltig | Mittel | 📋 Offen |
+| E03 | Kein sichtbarer Speichern-Button ohne komplett nach unten zu scrollen (Folge von E02) — sticky/fixierter Speichern-Bereich sinnvoll | Hoch | ✅ Erledigt (2026-07-19) — `.form-actions` ist jetzt eine per `position:sticky` an den Browser-Viewport geklebte Fußzeile (nach E05 überarbeitet, siehe dort) |
+| E04 | Sidebar (Schritt-/Dimensionsliste) mit 280px schmal, lange Titel werden abgeschnitten ("Durchführung diagnostischer Maßna…") | Mittel | ✅ Erledigt (2026-07-11) — Sidebar auf 320px verbreitert, Titel brechen jetzt auf bis zu 2 Zeilen um statt abzuschneiden (durch E05 inzwischen ohnehin volle Breite statt fester Sidebar) |
+| E05 | Layoutprinzip überdenken: Original nutzt ein Akkordeon (Zeile anklicken → Formular klappt direkt darunter auf, kompaktes 2-spaltiges Grid für kurze Felder), aktuell Liste links + immer sichtbares Formular rechts, einspaltig | Mittel | ✅ Erledigt (2026-07-19) — Sidebar+Panel durch Akkordeon ersetzt (einheitlich für Prozessschritte und Dimensionen); Speichern/Formular-Logik unverändert, nur das Formular-Element wird per JS hinter die aufgeklappte Zeile verschoben |
 | E06 | "+ Hinzufügen"-Zeile für neue Werte erscheint bei jedem Feld, auch bei selten erweiterten wie Phase/Struktur — unnötiges visuelles Rauschen | Niedrig | ✅ Erledigt (2026-07-11) — bei Navigations-Dimensionen (Phase, Datenraum) durch Hinweistext auf die Dimensionen-Ansicht ersetzt, Werte-Pflege bleibt dort möglich |
-| E07 | Keine Such-/Filterfunktion innerhalb der langen Checkbox-Listen (z.B. 37 Rechtsgrundlagen durchsuchen) | Niedrig | 📋 Offen |
+| E07 | Keine Such-/Filterfunktion innerhalb der langen Checkbox-Listen (z.B. 37 Rechtsgrundlagen durchsuchen) | Niedrig | ✅ Erledigt (2026-07-19) — Filtertext-Input für dieselben Felder wie E02 (>10 Werte), blendet nicht passende Checkbox-Zeilen aus |
 
 ---
 
