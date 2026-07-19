@@ -333,6 +333,8 @@
   let previewBadgeDim = null;     // dritte multi_select-Nicht-Nav-Dimension: kompaktes Badge neben Vorschau-Zeile 2 (V08)
   let previewSingleDims = [];     // alle single_select-Nicht-Nav-Dimensionen: Chips im Kartenkopf
   let detailDims = [];            // alles andere (weitere multi_select + alle text-Dimensionen): nur in der Detailansicht
+  let groupDims = [];             // Nicht-Nav multi_select-Dimensionen mit mind. einem gruppierten Wert (V02/V03)
+  let activeGroups = {};          // { [dimKey]: Set(gruppenName) }
 
   let activeNavSingle = {};       // { [dimKey]: 'alle' | valueKey }
   let activeNavMulti = {};        // { [dimKey]: Set(valueKey) }
@@ -351,7 +353,7 @@
   // aus dimensions/dimension_values statt hart codiert) ───────────────
   async function loadDimensions() {
     const res = await fetch(
-      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(key,label,farbe,reihenfolge)` +
+      `${REST_URL}/dimensions?select=id,key,label,typ,ist_navigationsachse,reihenfolge,dimension_values(key,label,farbe,gruppe,reihenfolge)` +
       `&order=reihenfolge&dimension_values.order=reihenfolge`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
@@ -386,6 +388,15 @@
     activeNavSingle = Object.fromEntries(navSingle.map(d => [d.key, 'alle']));
     activeNavMulti = Object.fromEntries(navMulti.map(d => [d.key, new Set(d.values.map(v => v.key))]));
 
+    // V02/V03: generischer Gruppen-Filter für Dimensionen mit gepflegter
+    // dimension_values.gruppe (z.B. Rechtsgrundlage, Standard) — Werte ohne
+    // Gruppe fallen in eine "Sonstige"-Sammelgruppe, analog zum Original.
+    groupDims = nonNavMultiDims.filter(d => d.values.some(v => v.gruppe));
+    activeGroups = Object.fromEntries(groupDims.map(dim => {
+      const groups = [...new Set(dim.values.map(v => v.gruppe || 'Sonstige'))];
+      return [dim.key, new Set(groups)];
+    }));
+
     const axisDims = dims.filter(d => d.typ !== 'text');
     matrixX = previewSingleDims[0]?.key || axisDims[0]?.key || null;
     matrixY = navMulti[0]?.key || axisDims.find(d => d.key !== matrixX)?.key || null;
@@ -413,7 +424,7 @@
 
   async function loadData() {
     const res = await fetch(
-      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe))&order=nr`,
+      `${REST_URL}/process_steps?select=nr,titel,process_step_values(text_value,dimensions(key),dimension_values(key,label,farbe,gruppe))&order=nr`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
     if (res.status === 401) { logout(); throw new Error('Sitzung abgelaufen — bitte erneut anmelden.'); }
@@ -485,6 +496,18 @@
       rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)}</span>${toggles.join('')}</div>`);
     }
 
+    // V02/V03: Gruppen-Filterzeile pro Dimension mit gepflegter gruppe – arbeitet
+    // auf Gruppennamen statt einzelnen dimension_values, deshalb eigener Zweig
+    // statt Teil der generischen navMulti-Schleife oben (sonst bräuchte jede
+    // Dimension automatisch eine Gruppierungs-UI, auch ohne gepflegte gruppe).
+    for (const dim of groupDims) {
+      const groups = [...activeGroups[dim.key]].sort();
+      const toggles = groups.map(g => `
+        <button class="dr-toggle active" data-group-dim="${dim.key}" data-group="${escapeHtml(g)}"
+                onclick="toggleGroupFilter('${dim.key}', this.dataset.group)">${escapeHtml(g)}</button>`);
+      rows.push(`<div class="filter-row"><span class="filter-label">${escapeHtml(dim.label)} (Gruppe)</span>${toggles.join('')}</div>`);
+    }
+
     document.getElementById('toolbar-nav-rows').innerHTML = rows.join('');
 
     const axisDims = dims.filter(d => d.typ !== 'text');
@@ -510,6 +533,14 @@
     if (set.has(valueKey)) set.delete(valueKey); else set.add(valueKey);
     document.querySelector(`.dr-toggle[data-dim="${dimKey}"][data-val="${valueKey}"]`)
       .classList.toggle('active', set.has(valueKey));
+    render();
+  }
+
+  function toggleGroupFilter(dimKey, group) {
+    const set = activeGroups[dimKey];
+    if (set.has(group)) set.delete(group); else set.add(group);
+    document.querySelector(`.dr-toggle[data-group-dim="${dimKey}"][data-group="${CSS.escape(group)}"]`)
+      .classList.toggle('active', set.has(group));
     render();
   }
 
@@ -547,7 +578,7 @@
   }
 
   function getVisibleSteps() {
-    return data.filter(matchesSearch).filter(d => !isDimmedByNav(d));
+    return data.filter(matchesSearch).filter(d => !isDimmed(d));
   }
 
   function exportPDF() {
@@ -630,9 +661,27 @@
     return false;
   }
 
+  // V02/V03: Gruppen-Filter dimmt nur, wenn der Schritt für diese Dimension
+  // überhaupt Werte hat — sonst würden z.B. Schritte ohne Rechtsgrundlage
+  // fälschlich gedimmt, obwohl "alle Gruppen aktiv" ist.
+  function isDimmedByGroup(d) {
+    for (const dim of groupDims) {
+      const active = activeGroups[dim.key];
+      const stepVals = d.values[dim.key] || [];
+      if (!stepVals.length) continue;
+      const stepGroups = stepVals.map(v => v.gruppe || 'Sonstige');
+      if (!stepGroups.some(g => active.has(g))) return true;
+    }
+    return false;
+  }
+
+  function isDimmed(d) {
+    return isDimmedByNav(d) || isDimmedByGroup(d);
+  }
+
   // ── Karte als HTML ───────────────────────────────────────────────
   function renderCard(d) {
-    const dimmed = isDimmedByNav(d);
+    const dimmed = isDimmed(d);
     const isOpen = openCard === d.nr || expandAll;
 
     const headerChips = previewSingleDims.map(dim => {
@@ -755,7 +804,7 @@
       const sectionSteps = sectionValue
         ? data.filter(d => (d.values[sectionDim.key] || [])[0]?.key === sectionValue.key).filter(matchesSearch)
         : data.filter(matchesSearch);
-      const visibleCount = sectionSteps.filter(d => !isDimmedByNav(d)).length;
+      const visibleCount = sectionSteps.filter(d => !isDimmed(d)).length;
       totalVisible += visibleCount;
 
       const countLabel = visibleCount === sectionSteps.length
