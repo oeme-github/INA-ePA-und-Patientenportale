@@ -183,6 +183,7 @@
     .role-badge.role-viewer { background: #F3F4F6; color: var(--c-text-3); border-color: var(--c-border-2); }
     .role-badge.role-editor { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
     .role-badge.role-admin  { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
+    .role-badge.role-pending { background: var(--c-bg); color: var(--c-text-3); border-color: var(--c-border-2); font-style: italic; }
 
     .value-row {
       display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--c-border-1);
@@ -392,9 +393,12 @@
       </form>
 
       <form id="member-form" style="display:none;" onsubmit="return onSaveMember(event)">
-        <p class="field-hint" style="margin-bottom:16px;">Die Person muss sich zuerst selbst registrieren
-          (Login-Screen → Magic-Link oder Passwort), bevor sie hier per E-Mail-Adresse gefunden werden kann —
-          es gibt keine Einladungsmail.</p>
+        <p class="field-hint" style="margin-bottom:16px;">Existiert unter der E-Mail-Adresse noch kein Konto,
+          wird eine Einladung gespeichert — es gibt keine Einladungsmail, die Person muss sich selbst per
+          Magic-Link registrieren, danach wird die Mitgliedschaft automatisch aktiv.</p>
+        <p class="field-hint" id="member-pending-hint" style="display:none; margin-bottom:16px;">Diese Person hat
+          sich noch nicht registriert — die Mitgliedschaft wird automatisch aktiv, sobald sie sich per Magic-Link
+          anmeldet.</p>
         <div class="form-row">
           <div class="field">
             <label for="member-field-email">E-Mail</label>
@@ -1318,31 +1322,48 @@
   // ── Mitglieder verwalten (T12) ──────────────────────────────────────
   // Ersetzt den bisherigen Weg (manuelles `docker compose exec ... psql
   // ... insert into memberships ...`, siehe supabase/README.md) durch eine
-  // UI für admin. Kein Drag&Drop/reihenfolge (memberships hat kein
-  // Sortierfeld), kein echtes Invite-System — die Person muss sich zuerst
-  // selbst registrieren, danach kann ein admin sie per E-Mail-Adresse
-  // finden und ihr eine Rolle zuweisen (lookup_user_by_email()/
-  // list_workgroup_members(), siehe Migration
-  // 20260719100000_add_member_lookup_functions.sql).
+  // UI für admin. Kein Drag&Drop/reihenfolge (weder memberships noch
+  // pending_invites haben ein Sortierfeld).
+  //
+  // Zwei Fälle beim Hinzufügen einer E-Mail-Adresse (lookup_user_by_email(),
+  // siehe Migration 20260719100000): Existiert bereits ein Konto, wird
+  // sofort eine echte memberships-Zeile angelegt. Existiert noch keins,
+  // wird stattdessen eine pending_invites-Zeile angelegt (Migration
+  // 20260719120000) — sobald sich die Person per Magic-Link registriert,
+  // greift serverseitig ein Trigger, der automatisch die vorgesehene
+  // Mitgliedschaft anlegt und die Einladung verbraucht. `members` führt
+  // beide Arten in einer Liste (Flag `pending`), damit ein admin auf einen
+  // Blick sieht, wer schon aktiv ist und wer noch eingeladen, aber nicht
+  // registriert ist.
 
   function countAdmins() {
-    return members.filter(m => m.rolle === 'admin').length;
+    return members.filter(m => !m.pending && m.rolle === 'admin').length;
   }
 
   async function reloadMembers() {
-    const res = await apiFetch('/rpc/list_workgroup_members', {
-      method: 'POST',
-      body: JSON.stringify({ p_workgroup_id: workgroup.id }),
-    });
-    members = res.ok ? await res.json() : [];
+    const [membersRes, invitesRes] = await Promise.all([
+      apiFetch('/rpc/list_workgroup_members', {
+        method: 'POST',
+        body: JSON.stringify({ p_workgroup_id: workgroup.id }),
+      }),
+      apiFetch(`/pending_invites?select=id,email,rolle&workgroup_id=eq.${workgroup.id}&order=email`),
+    ]);
+    const active = membersRes.ok ? await membersRes.json() : [];
+    const invites = invitesRes.ok ? await invitesRes.json() : [];
+    members = [
+      ...active.map(m => ({ ...m, pending: false })),
+      ...invites.map(i => ({ ...i, pending: true })),
+    ];
     renderMemberList();
   }
 
   function renderMemberList() {
-    document.getElementById('member-count').textContent = `Mitglieder (${members.length})`;
+    const activeCount = members.filter(m => !m.pending).length;
+    document.getElementById('member-count').textContent = `Mitglieder (${activeCount})`;
     document.getElementById('member-list').innerHTML = members.map(m => `
       <div class="step-item ${m.id === currentMemberId ? 'active' : ''}" id="member-item-${m.id}" onclick="selectMember('${m.id}')">
         <span class="titel">${escapeHtml(m.email)}</span>
+        ${m.pending ? '<span class="role-badge role-pending">eingeladen</span>' : ''}
         <span class="role-badge role-${m.rolle}">${m.rolle}</span>
       </div>`).join('') || '<div class="empty-hint">Noch keine Mitglieder.</div>';
 
@@ -1389,12 +1410,15 @@
 
     const member = memberId ? members.find(m => m.id === memberId) : null;
 
-    // E-Mail/user_id sind nach dem Anlegen nicht mehr änderbar — eine
-    // Mitgliedschaft ist an eine bestehende user_id gebunden, nicht an eine
-    // frei bearbeitbare Adresse (analog zu dim-field-key.disabled = !!dim).
+    // E-Mail ist nach dem Anlegen nicht mehr änderbar — eine Mitgliedschaft
+    // ist an eine bestehende user_id gebunden, eine Einladung an die exakte
+    // Adresse, die der Trigger beim Signup abgleicht (analog zu
+    // dim-field-key.disabled = !!dim).
     document.getElementById('member-field-email').value = member?.email ?? '';
     document.getElementById('member-field-email').disabled = !!member;
     document.getElementById('member-field-rolle').value = member?.rolle ?? 'viewer';
+    document.getElementById('member-delete-btn').textContent = member?.pending ? 'Einladung zurückziehen' : 'Entfernen';
+    document.getElementById('member-pending-hint').style.display = member?.pending ? 'block' : 'none';
   }
 
   async function onSaveMember(event) {
@@ -1411,18 +1435,27 @@
 
       if (currentMemberId) {
         const member = members.find(m => m.id === currentMemberId);
-        // Client-seitiger Selbstschutz vor versehentlichem Aussperren – kein
-        // DB-Constraint (bewusst kein zusätzlicher Migrationsaufwand für
-        // einen Randfall, den eine AG mit 1-2 Admins selten trifft).
-        if (member.rolle === 'admin' && rolle !== 'admin' && countAdmins() <= 1) {
-          throw new Error('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Herabstufen würde niemandem mehr Verwaltungsrechte lassen.');
+        if (member.pending) {
+          const res = await apiFetch(`/pending_invites?id=eq.${currentMemberId}`, {
+            method: 'PATCH',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify({ rolle }),
+          });
+          if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+        } else {
+          // Client-seitiger Selbstschutz vor versehentlichem Aussperren –
+          // kein DB-Constraint (bewusst kein zusätzlicher Migrationsaufwand
+          // für einen Randfall, den eine AG mit 1-2 Admins selten trifft).
+          if (member.rolle === 'admin' && rolle !== 'admin' && countAdmins() <= 1) {
+            throw new Error('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Herabstufen würde niemandem mehr Verwaltungsrechte lassen.');
+          }
+          const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, {
+            method: 'PATCH',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify({ rolle }),
+          });
+          if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
         }
-        const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, {
-          method: 'PATCH',
-          headers: { Prefer: 'return=representation' },
-          body: JSON.stringify({ rolle }),
-        });
-        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
       } else {
         const email = document.getElementById('member-field-email').value.trim();
         const lookupRes = await apiFetch('/rpc/lookup_user_by_email', {
@@ -1431,21 +1464,37 @@
         });
         if (!lookupRes.ok) throw new Error(`Suche fehlgeschlagen (HTTP ${lookupRes.status}). ${httpErrorHint(lookupRes.status, 'admin')}`);
         const userId = await lookupRes.json();
-        if (!userId) {
-          throw new Error('Kein Nutzer mit dieser E-Mail-Adresse gefunden. Die Person muss sich zuerst selbst registrieren (Login-Screen → Magic-Link oder Passwort), danach kannst du sie hier hinzufügen.');
-        }
 
-        const res = await apiFetch('/memberships', {
-          method: 'POST',
-          headers: { Prefer: 'return=representation' },
-          body: JSON.stringify({ user_id: userId, workgroup_id: workgroup.id, rolle }),
-        });
-        if (!res.ok) {
-          if (res.status === 409) throw new Error('Bereits Mitglied — Rolle stattdessen unten in der Liste ändern.');
-          throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+        if (userId) {
+          const res = await apiFetch('/memberships', {
+            method: 'POST',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify({ user_id: userId, workgroup_id: workgroup.id, rolle }),
+          });
+          if (!res.ok) {
+            if (res.status === 409) throw new Error('Bereits Mitglied — Rolle stattdessen unten in der Liste ändern.');
+            throw new Error(`Anlegen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+          }
+          const [created] = await res.json();
+          currentMemberId = created.id;
+        } else {
+          // Kein Konto unter dieser E-Mail-Adresse — Einladung statt
+          // Mitgliedschaft anlegen. Wird automatisch zur echten
+          // Mitgliedschaft, sobald sich die Person per Magic-Link
+          // registriert (siehe Migration 20260719120000, Trigger
+          // provision_membership_from_invite).
+          const res = await apiFetch('/pending_invites', {
+            method: 'POST',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify({ workgroup_id: workgroup.id, email, rolle }),
+          });
+          if (!res.ok) {
+            if (res.status === 409) throw new Error('Diese E-Mail-Adresse ist bereits eingeladen — Rolle stattdessen unten in der Liste ändern.');
+            throw new Error(`Einladen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+          }
+          const [created] = await res.json();
+          currentMemberId = created.id;
         }
-        const [created] = await res.json();
-        currentMemberId = created.id;
         creatingNewMember = false;
       }
 
@@ -1456,7 +1505,10 @@
       // wieder unsichtbar gemacht und war nie zu sehen (gleiches Muster wie
       // bei onSaveDimension()).
       renderMemberForm(currentMemberId);
-      successBox.textContent = 'Gespeichert.';
+      const saved = members.find(m => m.id === currentMemberId);
+      successBox.textContent = saved?.pending
+        ? 'Einladung gespeichert — wird automatisch zur Mitgliedschaft, sobald sich die Person per Magic-Link registriert.'
+        : 'Gespeichert.';
       successBox.style.display = 'block';
       updateEmptyHint();
     } catch (err) {
@@ -1471,16 +1523,27 @@
   async function onDeleteMember() {
     if (!currentMemberId) return;
     const member = members.find(m => m.id === currentMemberId);
-    if (member.rolle === 'admin' && countAdmins() <= 1) {
-      alert('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Entfernen würde niemandem mehr Verwaltungsrechte lassen.');
-      return;
+
+    if (member.pending) {
+      if (!confirm(`Einladung an ${member.email} wirklich zurückziehen?`)) return;
+      const res = await apiFetch(`/pending_invites?id=eq.${currentMemberId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        alert(`Zurückziehen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+        return;
+      }
+    } else {
+      if (member.rolle === 'admin' && countAdmins() <= 1) {
+        alert('Das ist die letzte admin-Rolle dieser Arbeitsgruppe — Entfernen würde niemandem mehr Verwaltungsrechte lassen.');
+        return;
+      }
+      if (!confirm(`Mitgliedschaft von ${member.email} wirklich entfernen?`)) return;
+      const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        alert(`Entfernen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
+        return;
+      }
     }
-    if (!confirm(`Mitgliedschaft von ${member.email} wirklich entfernen?`)) return;
-    const res = await apiFetch(`/memberships?id=eq.${currentMemberId}`, { method: 'DELETE' });
-    if (!res.ok) {
-      alert(`Entfernen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
-      return;
-    }
+
     currentMemberId = null;
     creatingNewMember = false;
     memberFormEl.style.display = 'none';
