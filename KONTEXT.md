@@ -20,13 +20,13 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt) |
+| `KONTEXT.md` | – | 2026-07-21 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt), T13/T14 (PR #48–#53), Verlauf-Ansicht + Rauschreduktion (T13, PR #55) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v6 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 gemergt); `20260719120000_add_invite_gated_signup.sql`: Einladungsliste `pending_invites` + zwei Trigger auf `auth.users` (T14, PR #50 gemergt) |
+| `supabase/migrations/` | v7 | 2026-07-21 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 gemergt); `20260719120000_add_invite_gated_signup.sql`: Einladungsliste `pending_invites` + zwei Trigger auf `auth.users` (T14, PR #50 gemergt); `20260721090000_add_list_audit_actors.sql`: `list_audit_actors` (viewer-gated) löst `changed_by` zu E-Mail auf (T13, PR #55) |
 | `supabase/seed/` | v4 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt); `set local app.skip_audit='on'` gegen Protokoll-Rauschen bei erneuten Läufen (PR #46 gemergt) |
 | `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, gemergt) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
-| `editor-db/index.html` | v11 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt — ursprünglich fälschlich nur in Zwischenbranch gemergt, per PR #49 nachträglich nach main gebracht); T14: Einladungen direkt in der Mitglieder-Verwaltung (PR #52, gemergt); CSS-Fix: `#member-form` fehlte in der Box-Styling-Selektorliste (PR #53, gemergt) |
+| `editor-db/index.html` | v12 | 2026-07-21 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt — ursprünglich fälschlich nur in Zwischenbranch gemergt, per PR #49 nachträglich nach main gebracht); T14: Einladungen direkt in der Mitglieder-Verwaltung (PR #52, gemergt); CSS-Fix: `#member-form` fehlte in der Box-Styling-Selektorliste (PR #53, gemergt); T13: „Verlauf"-Abschnitt pro Prozessschritt im Formular + Diff-vor-dem-Schreiben in `onSaveStep()` gegen Protokoll-Rauschen (PR #55, gemergt) |
 | `shared/auth.js` | v3 | 2026-07-19 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID); `create_user:true` + magiclink→signup-Verify-Fallback für Erstregistrierung (T14, PR #51 gemergt) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
@@ -1168,6 +1168,64 @@ brauchen (hier: PR #51 für den vollen Registrierungs-Kreis bei PR #52),
 wurde die betroffene Datei nur *temporär* für den Testlauf überschrieben
 (`git show <branch>:<datei> > <datei>`, danach `git checkout HEAD --
 <datei>`), nie in den eigentlichen PR-Commit übernommen.
+
+### T13: Verlauf-Ansicht + Rauschreduktion beim Speichern (Session 2026-07-21)
+
+Backlog-Punkt T13 (siehe PR #48) umgesetzt: `process_step_audit` (seit PR
+#46 aktiv befüllt) war bisher nur über `GET /process_step_audit` erreichbar
+— jetzt gibt es eine echte Oberfläche. Scope mit dem Nutzer abgestimmt:
+nur Editor, pro Prozessschritt (kein neuer Sidebar-Tab, kein Umbau von
+`viewer-db`) — deckt sich mit dem ursprünglichen Backlog-Vorschlag "eigene
+Verlauf-Ansicht pro Prozessschritt im Editor".
+
+**Root-Cause-Bug gefunden und behoben (auf Nutzerwunsch, nicht nur
+kosmetisch gefiltert):** Beim Design wurde sichtbar, dass `onSaveStep()`
+bei jedem Speichern alle `process_step_values`-Zeilen eines Schritts
+löschte und für **jede** Dimension komplett neu einfügte — unabhängig
+davon, ob sich der Wert geändert hatte. Das Auditlog protokollierte das
+treu mit und war dadurch extrem verrauscht (ein Klick auf „Speichern"
+konnte 8–10 Protokollzeilen ohne echte inhaltliche Änderung erzeugen).
+Nutzer-Einwand: "Ein Auditlog muss doch nur Änderungen mitschreiben."
+Fix an der Quelle statt Filterung in der neuen UI: `onSaveStep()` vergleicht
+jetzt die abgeschickten Formularwerte gegen die beim Öffnen des Formulars
+geladene Baseline (`originalNr`/`originalTitel`/`originalStepValues`) und
+überspringt PATCH bzw. DELETE+INSERT für Felder/Dimensionen, die
+unverändert sind. Bewusste Vereinfachung: der Diff ist pro Dimension, nicht
+pro Einzelwert — bei Mehrfachauswahl-Dimensionen wird bei jeder Änderung
+weiterhin die ganze Dimension neu geschrieben (delete-all+insert-all),
+das reicht, weil die dominante Rauschquelle das unveränderte Neuschreiben
+*aller* Dimensionen war, nicht fehlendes Fein-Diffing. Bewusst akzeptierte
+Nebenwirkung: `updated_at`/`updated_by` auf `process_steps` werden jetzt
+nur noch bei `nr`/`titel`-Änderungen aktualisiert, nicht mehr bei reinen
+Dimensionswert-Änderungen — beide Spalten werden aktuell nirgends im UI
+angezeigt, daher unkritisch.
+
+**Neue RPC `list_audit_actors`** (Migration `20260721090000`, Muster von
+`list_workgroup_members`): löst `process_step_audit.changed_by` (rohe
+`auth.users`-UUID, kein PostgREST-Embedding möglich) zu E-Mail-Adressen
+auf. Bewusst **viewer**-gated statt admin-gated wie die bestehenden
+Member-RPCs — das Änderungsprotokoll selbst ist laut RLS-Policy ab
+`viewer` lesbar, eine Verlaufs-Ansicht, die heimlich `admin` voraussetzt,
+wäre falsch. Liefert nur Akteure, die tatsächlich in `process_step_audit`
+dieser Arbeitsgruppe auftauchen (kein Zugriff auf ganz `auth.users`), auch
+für inzwischen aus der Arbeitsgruppe entfernte Nutzer (kein Join über
+`memberships`, das Protokoll überlebt deren Entfernen bewusst).
+
+**UI:** neuer „Verlauf"-Abschnitt als Teil des bestehenden `#step-form`
+(kein eigenes Singleton-Formular-Element, erbt die Box-Optik — vermeidet
+die PR-#53-Klasse von Bug), nur bei bestehenden Schritten sichtbar,
+chronologisch absteigend, mit lesbarer Beschreibung pro Zeile (Titel/Nr.-
+Änderung bzw. Dimension + hinzugefügter/entfernter/geänderter Wert) sowie
+Zeitpunkt und Akteur.
+
+**Verifiziert per Playwright** (editor- und viewer-Rolle): Speichern ohne
+Änderung erzeugt keine neue Protokollzeile; Titeländerung erzeugt genau
+eine; reine Dimensionsänderung erzeugt das erwartete Lösch+Einfüge-Paar
+für genau diese Dimension, aber keine `process_steps`-Update-Zeile; neuer,
+ungespeicherter Prozessschritt zeigt keinen Verlauf-Abschnitt, nach dem
+Speichern erscheint „Prozessschritt angelegt"; Rolle `viewer` sieht den
+Verlauf inkl. aufgelöster Akteurs-E-Mail, keine 403. `reconcile_with_data_js.py`
+läuft weiterhin grün (25/25).
 
 ## Geplante Aufgaben
 
