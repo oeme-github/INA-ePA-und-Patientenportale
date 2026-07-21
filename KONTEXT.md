@@ -22,12 +22,12 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
 | `KONTEXT.md` | – | 2026-07-19 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
-| `supabase/migrations/` | v5 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 offen) |
-| `supabase/seed/` | v4 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt); `set local app.skip_audit='on'` gegen Protokoll-Rauschen bei erneuten Läufen (PR #46 offen) |
+| `supabase/migrations/` | v6 | 2026-07-19 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 gemergt); `20260719120000_add_invite_gated_signup.sql`: Einladungsliste `pending_invites` + zwei Trigger auf `auth.users` (T14, PR #50 gemergt) |
+| `supabase/seed/` | v4 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt); `set local app.skip_audit='on'` gegen Protokoll-Rauschen bei erneuten Läufen (PR #46 gemergt) |
 | `supabase/start.sh`, `supabase/stop.sh` | v2 | 2026-07-19 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte (`100755`) jetzt im Git-Index hinterlegt statt nur lokal per `chmod` (PR #38, gemergt) |
 | `viewer-db/index.html` | v7 | 2026-07-19 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar |
-| `editor-db/index.html` | v10 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt) |
-| `shared/auth.js` | v2 | 2026-07-11 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID) |
+| `editor-db/index.html` | v11 | 2026-07-19 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt — ursprünglich fälschlich nur in Zwischenbranch gemergt, per PR #49 nachträglich nach main gebracht); T14: Einladungen direkt in der Mitglieder-Verwaltung (PR #52, gemergt); CSS-Fix: `#member-form` fehlte in der Box-Styling-Selektorliste (PR #53, gemergt) |
+| `shared/auth.js` | v3 | 2026-07-19 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID); `create_user:true` + magiclink→signup-Verify-Fallback für Erstregistrierung (T14, PR #51 gemergt) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
@@ -1053,6 +1053,121 @@ Damit sind von neun Cutover-Checklistenpunkten vier erledigt (Datenabgleich,
 Rollenkonzept, SSO, Audit-Protokoll) — fünf bleiben offen (Hosting/Betrieb,
 AG-Freigabe, Parallelbetriebs-Zeitraum, Rückfallplan, Kommunikation an die
 AG; „Hosting" wurde bewusst nicht entschieden, siehe oben).
+
+### T13-Backlog-Eintrag + gefundener Bug: T12 fehlte in main (Session 2026-07-19, Fortsetzung)
+
+Nutzer fragte "Was bedeutet 'Signups not allowed for otp'" — das führte zu
+einer größeren Kette an Funden und Umsetzungen:
+
+- **T13 (Backlog-Eintrag, PR #48):** Auf Nutzerwunsch neuer Punkt „Viewer-/
+  Editor-UI für das Änderungsprotokoll" (`process_step_audit` ist seit PR
+  #46 aktiv befüllt, aber nirgends im UI sichtbar) — bewusst nur
+  dokumentiert, nicht umgesetzt.
+- **Echter Bug gefunden (PR #49):** Der Nutzer meldete, die Mitglieder-UI
+  (T12) sei im Editor nicht mehr sichtbar. Ursache: PR #42 hatte als
+  Ziel-Branch `feature/member-lookup-functions` (PR #41) statt `main`
+  gesetzt (T12 baute auf den dortigen RPCs auf). Nach dem Merge von #41
+  hätte GitHub den Ziel-Branch automatisch auf `main` umstellen sollen —
+  das passiert aber nur, wenn der Basis-Branch beim Merge zusätzlich
+  gelöscht wird, was hier nicht geschah. #42 wurde deshalb zwar als
+  „gemergt" markiert, landete aber nur im Zwischenbranch. Verifiziert per
+  `git merge-base --is-ancestor <merge-commit> origin/main` (negativ).
+  Fix: fehlenden Commit per `git cherry-pick` sauber nach `main`
+  übernommen, keine Konflikte, per Playwright erneut verifiziert.
+  **Lehre für künftige gestapelte PRs:** nach jedem Merge aktiv per
+  `git merge-base --is-ancestor` prüfen, ob der Inhalt wirklich in `main`
+  gelandet ist — `gh pr list --state merged` zeigt nur, dass der PR selbst
+  geschlossen wurde, nicht wohin.
+
+### T14: Einladungs-gesteuerte Selbstregistrierung (Session 2026-07-19, Fortsetzung)
+
+Ausgangspunkt: Nutzerfrage "Was bedeutet 'Signups not allowed for otp'"
+deckte auf, dass `shared/auth.js` `/otp` bisher mit `create_user:false`
+aufrief — Magic-Link funktionierte **nie** zur Erstregistrierung, nur für
+bestehende Accounts. Es gab überhaupt keinen Weg, wie ein neues
+AG-Mitglied sich selbst ein Konto anlegen konnte; die drei Testnutzer
+wurden bislang ausschließlich manuell per `curl POST /signup` erzeugt —
+das widersprach der ursprünglichen T12-Doku ("Person registriert sich
+zuerst selbst"), die das fälschlich als bereits funktionierend annahm.
+
+**Entscheidung mit dem Nutzer:** `create_user:true` (automatische
+Kontoerstellung), aber mit mehr Kontrolle als "jede beliebige E-Mail-
+Adresse kann sich registrieren" — zwei Optionen abgewogen (Domain-
+Allowlist vs. Vorab-Freigabeliste/Einladung), Nutzer entschied sich für
+die Einladungsliste als vollständigere, feinkörnigere Lösung.
+
+**Umsetzung in drei PRs** (gleiches Muster wie T12 — DB-Teil mit bewusstem
+RLS-Bypass isoliert vom UI-Code):
+
+- **PR #50 — Migration `20260719120000_add_invite_gated_signup.sql`:**
+  neue Tabelle `pending_invites` (`workgroup_id`, `email`, `rolle`,
+  `invited_by`), RLS nur für `admin` (analog `memberships`). Zwei Trigger
+  auf `auth.users`: `gate_new_user_signup` (`BEFORE INSERT`, blockiert die
+  Kontoanlage ohne passende Einladung) und
+  `provision_membership_from_invite` (`AFTER INSERT`, legt bei Erfolg
+  automatisch die vorgesehene(n) `memberships`-Zeile(n) an und verbraucht
+  die Einladung(en) — als Schleife, falls jemand für mehrere Workgroups
+  gleichzeitig eingeladen ist). Beide `security definer`, da
+  `pending_invites` selbst nur per RLS für `admin` lesbar/schreibbar ist,
+  GoTrue aber unter einer eigenen, privilegierten DB-Rolle schreibt.
+  Manuell verifiziert: Signup ohne Einladung → HTTP 500 „Database error
+  saving new user" (GoTrue gibt den eigenen Trigger-Fehlertext nicht
+  durch), Signup mit Einladung → 200, Mitgliedschaft automatisch mit
+  vorgesehener Rolle, Einladung verschwindet. Bestehender Nutzer kann
+  trotz `create_user:true` weiterhin normal per Magic-Link einloggen (kein
+  `INSERT`, Gate greift nicht). RLS: `editor` bekommt 403 beim Anlegen
+  einer Einladung, `admin` 201.
+- **PR #51 — `shared/auth.js`:** `create_user:true` + verständliche
+  Fehlermeldung statt rohem GoTrue-500er. **Zweiter Bug beim Testen
+  gefunden:** GoTrue erzeugt bei `create_user:true` für eine noch
+  unbekannte E-Mail-Adresse einen `signup`-Token, für eine bereits
+  bestehende Adresse dagegen einen `magiclink`-Token —
+  `verifyMagicLinkCode()` verifizierte bisher fest mit `type:'magiclink'`,
+  was bei einer echten Erstregistrierung mit der irreführenden Meldung
+  „Token has expired or is invalid" fehlschlug, obwohl der Code korrekt
+  war (per `curl` isoliert reproduziert: derselbe Code scheitert mit
+  `type=signup` erfolgreich, mit `type=magiclink` schlägt er fehl). Fix:
+  `magiclink` zuerst versuchen (häufigerer Fall, wiederkehrender Login),
+  bei Fehlschlag automatisch `signup` nachschieben — keine Vorab-
+  Unterscheidung nötig, da die `/otp`-Antwort bewusst immer `{}` ist
+  (Anti-Enumeration, GoTrue verrät nicht, ob ein Account schon existiert).
+- **PR #52 — Editor-UI (T12-Erweiterung):** Trägt ein `admin` in der
+  Mitglieder-Verwaltung eine E-Mail ohne bestehendes Konto ein, wird jetzt
+  automatisch eine Einladung statt nur einer Fehlermeldung angelegt.
+  Mitgliederliste führt aktive Mitgliedschaften und Einladungen gemeinsam
+  (Flag `pending`), Einladungen mit eigenem Badge „eingeladen" (kein Login-
+  UI-Refresh nötig, da PostgREST-Response bereits alle nötigen Felder
+  liefert). Rolle ändern / „Einladung zurückziehen" statt „Entfernen" für
+  Einladungen, ohne den Selbstschutz-Mechanismus für den letzten Admin
+  (eine Einladung ist noch keine aktive Mitgliedschaft).
+
+**Kompletter Kreis per Playwright end-to-end verifiziert** (zwei
+Browser-Tabs gleichzeitig, einer als Admin, einer als neue Person): Admin
+lädt eine E-Mail-Adresse mit Rolle `editor` ein → Person registriert sich
+tatsächlich per Magic-Link (Code aus Mailpit) → Login erfolgreich, Rolle
+korrekt `editor` → nach Neuladen zeigt die Admin-Ansicht die Person ohne
+„eingeladen"-Badge als aktives Mitglied (kein Live-Refresh in dieser App,
+wie bei allen anderen Listen — das ist kein Bug, sondern bestehendes
+Verhalten).
+
+**PR #53 (Nachbesserung aus Nutzer-Screenshot):** `#member-form` fehlte in
+der CSS-Selektorliste, die `#step-form`/`#dimension-form` ihre Karten-
+Optik (Hintergrund/Rahmen/Radius) gibt — Hinweistexte/Felder einer
+aufgeklappten Mitglieder-Zeile hingen dadurch ohne Box lose auf der
+Seite, nur die Speichern-Leiste war umrandet. Ein-Zeilen-Fix, per
+Screenshot verifiziert.
+
+**Nebenbefund (zweimal wiederholt):** Sowohl bei T12 (PR #49) als auch
+beim Einladungssystem geriet der lokale Testserver mehrfach auf einen
+veralteten Checkout, weil Branches vor einem Nutzer-Merge abgezweigt
+wurden und `git pull` danach vergessen wurde — für PR #52/#53 deshalb
+diesmal bewusst *nicht* als gestapelte PRs angelegt (jeweils frisch von
+`main` abgezweigt), auch wenn sie funktional von vorherigen PRs abhängen.
+Bei lokalen End-to-End-Tests, die eine noch nicht gemergte Abhängigkeit
+brauchen (hier: PR #51 für den vollen Registrierungs-Kreis bei PR #52),
+wurde die betroffene Datei nur *temporär* für den Testlauf überschrieben
+(`git show <branch>:<datei> > <datei>`, danach `git checkout HEAD --
+<datei>`), nie in den eigentlichen PR-Commit übernommen.
 
 ## Geplante Aufgaben
 

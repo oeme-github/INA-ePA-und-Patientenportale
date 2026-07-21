@@ -216,10 +216,12 @@ umschalten. Erfordert wie die Dimensionen-Verwaltung die Rolle `admin`
 (`"Admins verwalten Mitgliedschaften"`-Policy) — mit `editor`/`viewer` zeigt
 der Tab nur einen Hinweistext, keine Liste.
 
-**Kein echtes Invite-System:** eine Person muss sich zuerst selbst
-registrieren (Login-Screen → Magic-Link oder Passwort), erst danach kann ein
-admin sie im Editor per E-Mail-Adresse finden und ihr eine Rolle zuweisen.
-Dahinter stecken zwei neue `security definer`-RPCs (Migration
+**Hinweis (Stand T12, vor T14 unten):** Existiert bereits ein Konto unter der
+eingegebenen E-Mail-Adresse, wird sofort eine echte Mitgliedschaft angelegt.
+Existiert noch keins, legt der Editor seit T14 (siehe unten) automatisch eine
+Einladung an, statt nur eine Fehlermeldung zu zeigen — die Person kann sich
+danach selbst per Magic-Link registrieren. Dahinter stecken zwei
+`security definer`-RPCs (Migration
 `20260719100000_add_member_lookup_functions.sql`), weil `auth.users` selbst
 über PostgREST nicht erreichbar ist (`PGRST_DB_SCHEMA=public`):
 
@@ -240,6 +242,49 @@ Getestet per Playwright: Admin sieht/verwaltet die Mitgliederliste, Mitglied
 per E-Mail hinzufügen (inkl. Negativfälle unbekannte E-Mail / bereits
 Mitglied), Rolle ändern, Mitglied entfernen, RLS-Grenzfall mit `editor`-Rolle,
 Selbstschutz bei letztem Admin (Herabstufen und Entfernen beide blockiert).
+
+## Einladungs-gesteuerte Selbstregistrierung (T14)
+
+Bis einschließlich T12 gab es **keinen** Weg, wie sich ein neues
+AG-Mitglied selbst ein Konto anlegen konnte: `shared/auth.js` rief `/otp`
+mit `create_user:false` auf (Magic-Link funktionierte nur für bestehende
+Accounts), die drei Test-Zugänge wurden ausschließlich manuell per
+`curl POST /signup` erzeugt (siehe oben). Seit T14 ist `create_user:true`
+gesetzt — abgesichert durch eine Einladungsliste, nicht unkontrolliert
+offen für beliebige E-Mail-Adressen.
+
+**Ablauf:**
+1. Ein `admin` trägt in der Mitglieder-Verwaltung eine E-Mail-Adresse +
+   Rolle ein. Existiert noch kein Konto, entsteht eine Zeile in
+   `pending_invites` (Badge „eingeladen" in der Liste) — es wird **keine**
+   Mail verschickt, der admin muss die Person selbst informieren.
+2. Die Person registriert sich eigenständig über den Login-Bildschirm
+   (Magic-Link). GoTrue prüft beim Anlegen der `auth.users`-Zeile per
+   Trigger `gate_new_user_signup` (Migration
+   `20260719120000_add_invite_gated_signup.sql`), ob eine passende
+   Einladung existiert — sonst schlägt die Registrierung fehl (HTTP 500
+   „Database error saving new user"; GoTrue reicht den eigenen
+   Trigger-Fehlertext nicht durch, `shared/auth.js` zeigt stattdessen eine
+   eigene, verständliche Meldung).
+3. Nach erfolgreicher Registrierung legt der Trigger
+   `provision_membership_from_invite` automatisch die vorgesehene
+   `memberships`-Zeile an und löscht die verbrauchte Einladung — der admin
+   muss nichts weiter tun. Die App refresht Listen nicht automatisch (wie
+   auch sonst nirgends in `viewer-db`/`editor-db`) — die Mitgliederliste
+   zeigt den aktuellen Stand erst nach erneutem Laden.
+
+**Bekannter GoTrue-Stolperstein:** Bei `create_user:true` erzeugt GoTrue für
+eine noch unbekannte E-Mail-Adresse einen `signup`-Token, für eine bereits
+bestehende Adresse dagegen einen `magiclink`-Token — welcher Fall vorliegt,
+weiß das Frontend vorher nicht (`/otp` antwortet bewusst immer `{}`,
+Anti-Enumeration). `verifyMagicLinkCode()` versucht deshalb zuerst
+`type:'magiclink'`, bei Fehlschlag automatisch `type:'signup'`.
+
+Getestet per Playwright (zwei Browser-Tabs, Admin + neue Person, kompletter
+Kreis): Einladung anlegen → Registrierung mit Mailpit-Code → Login mit der
+vorgesehenen Rolle erfolgreich → Mitgliedschaft nach Neuladen sichtbar,
+Einladung verschwunden. Negativfall (Registrierung ohne Einladung) →
+verständliche Fehlermeldung statt rohem GoTrue-500er.
 
 ## Änderungsprotokoll (Cutover-Checkliste: Audit-/Versionsprotokoll)
 
