@@ -337,6 +337,13 @@
         </div>
         <div class="form-message error" id="form-error"></div>
         <div class="form-message success" id="form-success"></div>
+        <!-- T13: Änderungsprotokoll für genau diesen Prozessschritt, nur bei
+             bestehenden Schritten sichtbar (siehe renderForm). Kein eigenes
+             Singleton-Formular-Element, erbt die Box-Optik von #step-form. -->
+        <div id="audit-section" style="display:none; margin-top:20px; padding-top:16px; border-top:1px solid var(--c-border-1);">
+          <h3 style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--c-text-4); margin-bottom:10px;">Verlauf</h3>
+          <div id="audit-list" class="step-list"></div>
+        </div>
       </form>
 
       <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
@@ -447,6 +454,16 @@
   let dims = [];
   let steps = [];         // [{ id, nr, titel }]
   let currentStepId = null;
+  // T13: Werte aus dem Ladezustand des aktuell offenen Formulars, um beim
+  // Speichern nur tatsächlich geänderte Felder zu schreiben (siehe
+  // onSaveStep) statt wie bisher jede Dimension bedingungslos zu löschen und
+  // neu einzufügen — Letzteres erzeugte bei JEDEM Speichern für JEDE
+  // Dimension eine delete+insert-Zeile im Änderungsprotokoll, auch ohne
+  // inhaltliche Änderung.
+  let originalNr = null;
+  let originalTitel = null;
+  let originalStepValues = {}; // { [dimKey]: string (Text, getrimmt) | string[] sortierte value-keys (Auswahl) }
+  let auditActorsCache = null; // Map<user_id, email> — T13, einmalig geladen
   let activeView = 'steps';  // 'steps' | 'dimensions' (T09) | 'members' (T12)
   let currentDimId = null;
   let members = [];       // [{ id, user_id, email, rolle, created_at }] — nur für myRole==='admin' geladen (T12)
@@ -491,6 +508,19 @@
     return res;
   }
 
+  // T13: Akteurs-E-Mails für das Änderungsprotokoll, einmalig pro Sitzung
+  // geladen (nicht pro geöffnetem Verlauf) — analog zu dims/steps.
+  async function loadAuditActors() {
+    auditActorsCache = new Map();
+    try {
+      const res = await apiFetch('/rpc/list_audit_actors', {
+        method: 'POST',
+        body: JSON.stringify({ p_workgroup_id: workgroup.id }),
+      });
+      if (res.ok) for (const r of await res.json()) auditActorsCache.set(r.user_id, r.email);
+    } catch (e) { /* Cache bleibt leer, Anzeige fällt auf "Unbekannt" zurück */ }
+  }
+
   // ── Start ────────────────────────────────────────────────────────
   async function startApp() {
     document.getElementById('login-screen').style.display = 'none';
@@ -531,6 +561,7 @@
 
     await reloadDimensions();
     await reloadSteps();
+    await loadAuditActors();
     if (myRole === 'admin') await reloadMembers();
     updateEmptyHint();
   }
@@ -1178,6 +1209,9 @@
   function newStep() {
     currentStepId = null;
     creatingNewStep = true;
+    originalNr = null;
+    originalTitel = null;
+    originalStepValues = {};
     renderStepList();
     document.getElementById('new-step-slot').appendChild(stepFormEl);
     const nextNr = steps.length ? Math.max(...steps.map(s => s.nr)) + 1 : 1;
@@ -1191,6 +1225,7 @@
     document.getElementById('form-error').style.display = 'none';
     document.getElementById('form-success').style.display = 'none';
     document.getElementById('delete-btn').style.display = stepId ? 'inline-block' : 'none';
+    document.getElementById('audit-section').style.display = stepId ? 'block' : 'none';
 
     let stepValues = {};
     let nr = draft?.nr ?? '';
@@ -1209,12 +1244,108 @@
         if (dim.typ === 'text') stepValues[key] = row.text_value;
         else (stepValues[key] ||= []).push(row.dimension_values);
       }
+
+      // T13: Baseline für den Diff-vor-dem-Schreiben-Vergleich in onSaveStep.
+      originalNr = nr;
+      originalTitel = titel;
+      originalStepValues = {};
+      for (const dim of dims) {
+        originalStepValues[dim.key] = dim.typ === 'text'
+          ? (stepValues[dim.key] ?? '').trim()
+          : (stepValues[dim.key] ?? []).map(v => v.key).sort();
+      }
+      renderAuditSection(stepId);
+    } else {
+      originalNr = null;
+      originalTitel = null;
+      originalStepValues = {};
     }
 
     document.getElementById('field-nr').value = nr;
     document.getElementById('field-titel').value = titel;
     document.getElementById('dynamic-fields').innerHTML =
       dims.map(dim => fieldHtml(dim, stepValues)).join('');
+  }
+
+  // ── Verlauf (T13) ────────────────────────────────────────────────
+  async function renderAuditSection(stepId) {
+    const listEl = document.getElementById('audit-list');
+    listEl.innerHTML = '';
+    try {
+      const res = await apiFetch(
+        `/process_step_audit?process_step_id=eq.${stepId}&workgroup_id=eq.${workgroup.id}&order=changed_at.desc`
+      );
+      if (currentStepId !== stepId) return; // Nutzer hat inzwischen eine andere Zeile geöffnet
+      if (!res.ok) throw new Error(`Verlauf konnte nicht geladen werden (HTTP ${res.status}). ${httpErrorHint(res.status, 'viewer')}`);
+      const rows = await res.json();
+      if (!rows.length) {
+        listEl.innerHTML = '<div class="empty-hint">Noch keine Änderungen protokolliert.</div>';
+        return;
+      }
+      if (!auditActorsCache) await loadAuditActors();
+      listEl.innerHTML = rows.map(renderAuditRow).join('');
+    } catch (err) {
+      if (currentStepId !== stepId) return;
+      listEl.innerHTML = `<div class="form-message error" style="display:block;">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function formatAuditTimestamp(iso) {
+    return new Date(iso).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  function auditActorLabel(changedBy) {
+    if (!changedBy) return 'Unbekannt';
+    return auditActorsCache?.get(changedBy) || 'Unbekannt';
+  }
+
+  function auditValueLabel(dim, data) {
+    if (!dim) return '?';
+    if (dim.typ === 'text') return data.text_value ?? '';
+    const dv = dim.values.find(v => v.id === data.dimension_value_id);
+    return dv ? dv.label : '(gelöschter Wert)';
+  }
+
+  function auditRowDescription(row) {
+    const { change_type, old_data, new_data } = row;
+    const data = new_data || old_data;
+    if ('titel' in data) {
+      // process_steps-Zeile (to_jsonb der ganzen Zeile enthält u.a. titel/nr) —
+      // process_step_values-Zeilen haben dieses Feld nie.
+      if (change_type === 'insert') return 'Prozessschritt angelegt';
+      if (change_type === 'delete') return 'Prozessschritt gelöscht';
+      const parts = [];
+      if (old_data.nr !== new_data.nr) parts.push(`Nr. geändert: ${old_data.nr} → ${new_data.nr}`);
+      if (old_data.titel !== new_data.titel) parts.push(`Titel geändert: '${old_data.titel}' → '${new_data.titel}'`);
+      return parts.length ? parts.join('; ') : 'Prozessschritt gespeichert';
+    }
+    const dim = dims.find(d => d.id === data.dimension_id);
+    const dimLabel = dim ? dim.label : 'Unbekanntes Feld';
+    if (change_type === 'insert') return `${dimLabel}: '${auditValueLabel(dim, new_data)}' hinzugefügt`;
+    if (change_type === 'delete') return `${dimLabel}: '${auditValueLabel(dim, old_data)}' entfernt`;
+    // update kommt laut onSaveStep nur bei Text-Dimensionen vor (Auswahl-
+    // Dimensionen werden dort immer per delete+insert geschrieben, nie per PATCH).
+    return `${dimLabel}: Text geändert: '${old_data.text_value ?? ''}' → '${new_data.text_value ?? ''}'`;
+  }
+
+  function renderAuditRow(row) {
+    return `
+      <div class="step-item" style="cursor:default;">
+        <div style="flex:1;">
+          <div class="titel">${escapeHtml(auditRowDescription(row))}</div>
+          <div style="font-size:11px; color:var(--c-text-3); margin-top:2px;">
+            ${escapeHtml(formatAuditTimestamp(row.changed_at))} · ${escapeHtml(auditActorLabel(row.changed_by))}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // T13: Vergleich zweier value-key-Mengen unabhängig von der Reihenfolge —
+  // für den Diff-vor-dem-Schreiben-Vergleich bei Auswahl-Dimensionen.
+  function sameKeySet(a, b) {
+    const sa = [...a].sort();
+    const sb = [...b].sort();
+    return sa.length === sb.length && sa.every((v, i) => v === sb[i]);
   }
 
   function readFormValues() {
@@ -1250,14 +1381,19 @@
 
       let stepId = currentStepId;
       if (stepId) {
-        const res = await apiFetch(`/process_steps?id=eq.${stepId}`, {
-          method: 'PATCH',
-          headers: { Prefer: 'return=representation' },
-          body: JSON.stringify({ nr, titel, updated_at: new Date().toISOString(), updated_by: userId }),
-        });
-        if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
-        const rows = await res.json();
-        if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die editor-/admin-Rolle (Row-Level-Security).');
+        // T13: PATCH nur, wenn sich nr/titel tatsächlich geändert haben —
+        // sonst entsteht eine "update"-Protokollzeile ohne inhaltliche
+        // Änderung (siehe onSaveStep-Kommentar unten zu den Dimensionen).
+        if (nr !== originalNr || titel !== originalTitel) {
+          const res = await apiFetch(`/process_steps?id=eq.${stepId}`, {
+            method: 'PATCH',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify({ nr, titel, updated_at: new Date().toISOString(), updated_by: userId }),
+          });
+          if (!res.ok) throw new Error(`Speichern fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);
+          const rows = await res.json();
+          if (!rows.length) throw new Error('Keine Zeile aktualisiert — vermutlich fehlt die editor-/admin-Rolle (Row-Level-Security).');
+        }
       } else {
         const res = await apiFetch('/process_steps', {
           method: 'POST',
@@ -1273,15 +1409,23 @@
 
       const formValues = readFormValues();
       for (const dim of dims) {
+        // T13: unveränderte Dimensionen überspringen, statt bedingungslos zu
+        // löschen und neu einzufügen — sonst erzeugt jedes Speichern für
+        // JEDE Dimension eine delete+insert-Zeile im Änderungsprotokoll,
+        // auch ohne inhaltliche Änderung.
+        const newValue = formValues[dim.key];
+        const oldValue = originalStepValues[dim.key] ?? (dim.typ === 'text' ? '' : []);
+        const unchanged = dim.typ === 'text' ? newValue === oldValue : sameKeySet(newValue, oldValue);
+        if (unchanged) continue;
+
         await apiFetch(`/process_step_values?process_step_id=eq.${stepId}&dimension_id=eq.${dim.id}`, { method: 'DELETE' });
-        const value = formValues[dim.key];
         if (dim.typ === 'text') {
-          if (value) await apiFetch('/process_step_values', {
+          if (newValue) await apiFetch('/process_step_values', {
             method: 'POST',
-            body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, text_value: value }),
+            body: JSON.stringify({ process_step_id: stepId, dimension_id: dim.id, text_value: newValue }),
           });
         } else {
-          for (const valueKey of value) {
+          for (const valueKey of newValue) {
             const dv = dim.values.find(v => v.key === valueKey);
             if (!dv) continue;
             await apiFetch('/process_step_values', {
@@ -1292,9 +1436,21 @@
         }
       }
 
+      // T13: Baseline auf den gerade geschriebenen Stand aktualisieren, damit
+      // ein zweites Speichern im selben Akkordeon-Zustand korrekt dagegen
+      // diffed statt gegen den Stand vor diesem Speichern.
+      originalNr = nr;
+      originalTitel = titel;
+      originalStepValues = {};
+      for (const dim of dims) {
+        originalStepValues[dim.key] = dim.typ === 'text' ? (formValues[dim.key] || '') : [...formValues[dim.key]].sort();
+      }
+
       successBox.textContent = 'Gespeichert.';
       successBox.style.display = 'block';
       await reloadSteps();
+      document.getElementById('audit-section').style.display = 'block';
+      await renderAuditSection(stepId);
       updateEmptyHint();
     } catch (err) {
       errorBox.textContent = err.message;
