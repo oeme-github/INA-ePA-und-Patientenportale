@@ -301,10 +301,13 @@
 <script src="../shared/auth.js"></script>
 <script>
   // ── Konfiguration ────────────────────────────────────────────────
-  // Lokaler Dev-Stack aus ../supabase/docker-compose.yml (siehe dort für
-  // DB_PORT/REST_PORT o.ä.). Für einen anderen Host/andere Ports anpassen.
-  const GOTRUE_URL = 'http://localhost:9999';
-  const REST_URL   = 'http://localhost:8001';
+  // Stack aus ../supabase/docker-compose.yml (siehe dort für DB_PORT/
+  // REST_PORT o.ä.). Host wird aus der aktuellen Seiten-URL abgeleitet
+  // (nicht fest "localhost"), damit derselbe Build sowohl lokal als auch
+  // von anderen Geräten gegen einen entfernten Host (z.B. im Heimnetz)
+  // funktioniert. Ports bei Bedarf anpassen.
+  const GOTRUE_URL = `http://${location.hostname}:9999`;
+  const REST_URL   = `http://${location.hostname}:8001`;
 
   // ── Farben ───────────────────────────────────────────────────────
   // dimension_values.farbe ist ein einzelner Akzent-Hex-Wert; Hintergrund/

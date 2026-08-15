@@ -157,7 +157,7 @@ function initLoginScreen({ title, hint, onSuccess, ssoAzureEnabled = false }) {
         <input type="email" id="ml-email" autocomplete="username" required>
         <button id="ml-send-btn">Magic-Link senden</button>
         <p class="login-small-hint">Ein Bestätigungscode wird per E-Mail verschickt
-          (lokal: <a href="http://localhost:8026" target="_blank" rel="noopener">Mailpit</a>).</p>
+          (lokal: <a href="http://${location.hostname}:8026" target="_blank" rel="noopener">Mailpit</a>).</p>
       </div>
 
       <div id="ml-verify-section" style="display:none;">
