@@ -52,6 +52,20 @@ Alle Ausgaben, Commit-Messages, Kommentare und Dokumente auf Deutsch.
 - Was liegt auf GitHub (PR, Branch)?
 - Was ist noch offen für die nächste Session?
 
+### 5. Hub-Übergabe
+
+Zusätzlich zu obigen Schritten gilt `dev-notes/STANDARDS.md` Abschnitt 4
+(Projekt-End-Routine):
+1. `~/git_repos/dev-notes/projects/INA-ePA-und-Patientenportale.md`
+   schreiben (Datum, zuletzt erledigt, nächster Schritt, offene Fragen —
+   Format: `dev-notes/templates/SESSION.md`)
+2. `~/git_repos/dev-notes/PROJECTS.md` — Eintrag
+   „INA-ePA-und-Patientenportale" mit demselben nächsten Schritt
+   aktualisieren
+3. Danach im Hub-Chat (dev-notes-Session) kurz Bescheid geben: was erledigt
+   wurde, nächster Schritt — die Hub-Session hat sonst keinen Einblick in
+   diese Konsole
+
 ---
 
 ## Git-Workflow
