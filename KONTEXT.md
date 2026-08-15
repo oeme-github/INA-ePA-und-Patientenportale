@@ -20,14 +20,14 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
 | `agenda_positionspapier.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kapitelstruktur) |
 | `forderungen_ag.md` | – | 2026-06-03 | Neu: AG-Dokument konvertiert (Grundlage Kap. 5) |
-| `KONTEXT.md` | – | 2026-08-15 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt), T13/T14 (PR #48–#53), Verlauf-Ansicht + Rauschreduktion (T13, PR #55), Heimnetz-Deployment inabox.lan (`feature/inabox-heimnetz-deployment`, drei Bugfixes, noch nicht gemergt) |
+| `KONTEXT.md` | – | 2026-08-15 | T02–T12, PR #27, Viewer-/Editor-Abgleich (V01–V09, E01–E10) inkl. Live-Testing-Runde, PRs #28–#35 geprüft und gemergt, E08 (Drag&Drop Reihenfolge), Cutover-Checkliste: Datenabgleich + zwei Bugfixes (PR #38/#39/#40, gemergt), Rollenkonzept final + Mitglieder-UI (T12, PR #41/#42/#43, gemergt), T13/T14 (PR #48–#53), Verlauf-Ansicht + Rauschreduktion (T13, PR #55), Heimnetz-Deployment inabox.lan (PR #56, drei Bugfixes, gemergt) |
 | `supabase/docker-compose.yml`, `supabase/init-db/`, `supabase/README.md` | v1 | 2026-07-11 | Neu: lokaler Stack (T02), Start-/Stop-Skripte |
 | `supabase/migrations/` | v7 | 2026-07-21 | `20260719080000_add_dimension_value_gruppe.sql` (V02/V03); `20260719090000_deferrable_process_steps_nr.sql`: `unique(workgroup_id, nr)` deferrable für atomaren Bulk-Reorder (E08); `20260719100000_add_member_lookup_functions.sql`: `lookup_user_by_email`/`list_workgroup_members` als security-definer-RPCs (T12, PR #41 gemergt); `20260719110000_enable_process_step_audit.sql`: Trigger auf `process_steps`/`process_step_values`, Audit-Protokoll aktiv befüllt (Cutover-Checkliste, PR #46 gemergt); `20260719120000_add_invite_gated_signup.sql`: Einladungsliste `pending_invites` + zwei Trigger auf `auth.users` (T14, PR #50 gemergt); `20260721090000_add_list_audit_actors.sql`: `list_audit_actors` (viewer-gated) löst `changed_by` zu E-Mail auf (T13, PR #55) |
 | `supabase/seed/` | v4 | 2026-07-19 | Seed-Migration patientenpfad_data.js → generisches Datenmodell (T03), Datenabgleich (T11); `gruppe`-Befüllung für Gesetz/Standard (V02/V03); Bugfix `upsert_process_step()` — `ON CONFLICT` funktionierte nicht mehr mit dem seit E08 deferrable Constraint (PR #39, gemergt); `set local app.skip_audit='on'` gegen Protokoll-Rauschen bei erneuten Läufen (PR #46 gemergt) |
-| `supabase/start.sh`, `supabase/stop.sh` | v3 | 2026-08-15 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte im Git-Index (PR #38, gemergt); Heimnetz-Deployment (inabox, `feature/inabox-heimnetz-deployment`, noch nicht gemergt): Erststart spielt jetzt alle Dateien in `migrations/` ein statt nur der ersten; `ensure_test_user()` trägt vor `/signup` eine `pending_invites`-Zeile ein (sonst seit T14 blockiert) |
-| `viewer-db/index.html` | v8 | 2026-08-15 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar; Heimnetz-Deployment: `GOTRUE_URL`/`REST_URL` aus `location.hostname` statt fest `localhost` (`feature/inabox-heimnetz-deployment`, noch nicht gemergt) |
-| `editor-db/index.html` | v13 | 2026-08-15 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt — ursprünglich fälschlich nur in Zwischenbranch gemergt, per PR #49 nachträglich nach main gebracht); T14: Einladungen direkt in der Mitglieder-Verwaltung (PR #52, gemergt); CSS-Fix: `#member-form` fehlte in der Box-Styling-Selektorliste (PR #53, gemergt); T13: „Verlauf"-Abschnitt pro Prozessschritt im Formular + Diff-vor-dem-Schreiben in `onSaveStep()` gegen Protokoll-Rauschen (PR #55, gemergt); Heimnetz-Deployment: `GOTRUE_URL`/`REST_URL` aus `location.hostname` (`feature/inabox-heimnetz-deployment`, noch nicht gemergt) |
-| `shared/auth.js` | v4 | 2026-08-15 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID); `create_user:true` + magiclink→signup-Verify-Fallback für Erstregistrierung (T14, PR #51 gemergt); Heimnetz-Deployment: Mailpit-Hinweislink aus `location.hostname` (`feature/inabox-heimnetz-deployment`, noch nicht gemergt) |
+| `supabase/start.sh`, `supabase/stop.sh` | v3 | 2026-08-15 | Kompletter Stack mit einem Aufruf startbar/stoppbar; Ausführungsrechte im Git-Index (PR #38, gemergt); Heimnetz-Deployment (inabox, PR #56, gemergt): Erststart spielt jetzt alle Dateien in `migrations/` ein statt nur der ersten; `ensure_test_user()` trägt vor `/signup` eine `pending_invites`-Zeile ein (sonst seit T14 blockiert) |
+| `viewer-db/index.html` | v8 | 2026-08-15 | Viewer-Prototyp (T04), dynamisch aus dimensions (T05), gemeinsamer Login (T08), Breadcrumb + Operation-Badge (V05/V08); Viewer-Abgleich komplett: Struktur-/Gruppen-Toggle-Filter, Export-Toolbar, Matrix-Chips, Suchumfang (V01–V04, V06, V07); Live-Testing-Runde: Suchumfang nachgebessert, Matrix Cross-Highlighting (V09), Toolbar-Zeilenabstand; E08-Nachtest: Zeilenabstand `#toolbar-nav-rows` + zusätzliche navSingle-Dimension jetzt als Karten-Badge sichtbar; Heimnetz-Deployment: `GOTRUE_URL`/`REST_URL` aus `location.hostname` statt fest `localhost` (PR #56, gemergt) |
+| `editor-db/index.html` | v13 | 2026-08-15 | Editor-Prototyp (T06+T07), gemeinsamer Login (T08), Dimensionen-Verwaltung (T09), CSS-Bugfix + scrollbare Listen + Sidebar-Fix (E01/E02/E04/E06); Editor-Abgleich komplett: Checkbox-Filter, Sticky-Save, Akkordeon-Layout (E07/E03/E05); Live-Testing-Runde: "+ Neu"-Button-Rollen-Check, Dimension-Werte-Eingabe-Timing + Erfolgsmeldung + Fehlermeldungen (E09/E10); E08: Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst); Layout-Feedback: eigene Box je Listeneintrag statt durchlaufender Liste; T12: dritte Sidebar-Ansicht „Mitglieder" (PR #42, gemergt — ursprünglich fälschlich nur in Zwischenbranch gemergt, per PR #49 nachträglich nach main gebracht); T14: Einladungen direkt in der Mitglieder-Verwaltung (PR #52, gemergt); CSS-Fix: `#member-form` fehlte in der Box-Styling-Selektorliste (PR #53, gemergt); T13: „Verlauf"-Abschnitt pro Prozessschritt im Formular + Diff-vor-dem-Schreiben in `onSaveStep()` gegen Protokoll-Rauschen (PR #55, gemergt); Heimnetz-Deployment: `GOTRUE_URL`/`REST_URL` aus `location.hostname` (PR #56, gemergt) |
+| `shared/auth.js` | v4 | 2026-08-15 | Gemeinsamer Login (T08: Magic-Link + Passwort-Fallback; T10: SSO-Scaffolding Entra ID); `create_user:true` + magiclink→signup-Verify-Fallback für Erstregistrierung (T14, PR #51 gemergt); Heimnetz-Deployment: Mailpit-Hinweislink aus `location.hostname` (PR #56, gemergt) |
 | `supabase/seed/reconcile_with_data_js.py` | v1 | 2026-07-11 | Neu: Datenabgleich DB ↔ patientenpfad_data.js, reiner Lesevergleich (T11) |
 | `README.md` | – | 2026-04-29 | GitHub-Pages-Link ergänzt |
 
@@ -1407,8 +1407,8 @@ technische Grundlage dafür, echten Parallelbetrieb zu erproben.
 
 **Zugang:** SSH als `deploy@inabox.lan` (Key `~/.ssh/id_ed25519_prozesslandkarte_host`
 auf devbox, Alias `ssh inabox`), passwortloses `sudo`. Repo liegt unter
-`~/app` auf `inabox`, Branch `feature/inabox-heimnetz-deployment` (noch
-nicht nach `main` gemergt).
+`~/app` auf `inabox`, ursprünglich auf Branch `feature/inabox-heimnetz-deployment`
+eingerichtet — dieser ist seit 2026-08-15 per PR #56 in `main` gemergt.
 
 **Einrichtung, der Reihe nach:**
 - Debian-Guided-Partitionierung hatte `/var` auf nur 2,3 GB begrenzt (zu
@@ -1493,13 +1493,15 @@ gesondert negativ getestet in dieser Session, aber aus früheren Sessions
 bekannt funktionsfähig). Screenshots nur lokal im Scratchpad, nicht Teil
 des Repos.
 
-**Offen für eine Folgesession:** `feature/inabox-heimnetz-deployment` noch
-nicht nach `main` gemergt (drei Commits: `location.hostname`-Fix,
-Testnutzer-Gate-Fix, Alle-Migrationen-Fix). `supabase/README.md` noch nicht
-um Node.js-Voraussetzung und den neuen Abschnitt zum
-Heimnetz-/Produktions-Deployment (systemd-Unit-Muster) ergänzt. Kein
-HTTPS/Reverse-Proxy vor den vier Diensten (aktuell alles Klartext-HTTP im
-Heimnetz) — für reinen Heimnetz-Zugriff akzeptabel, spätestens bei
+**Update (2026-08-15, Fortsetzung):** `feature/inabox-heimnetz-deployment`
+per PR #56 nach `main` gemergt (vier Commits: `location.hostname`-Fix,
+Testnutzer-Gate-Fix, Alle-Migrationen-Fix, Doku). `supabase/README.md`
+wurde im selben PR bereits um die Node.js-Voraussetzung und den Abschnitt
+zum Heimnetz-/Produktions-Deployment (systemd-Unit-Muster) ergänzt.
+
+**Weiterhin offen für eine Folgesession:** Kein HTTPS/Reverse-Proxy vor den
+vier Diensten (aktuell alles Klartext-HTTP im Heimnetz) — für reinen
+Heimnetz-Zugriff akzeptabel, spätestens bei
 Fernzugriff/AG-Freigabe (Cutover-Checkliste) zu klären. Kein automatisiertes
 Backup der Postgres-Daten auf `inabox` eingerichtet.
 
