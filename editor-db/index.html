@@ -273,7 +273,7 @@
 
     <div class="layout">
       <div class="sidebar-tabs">
-        <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Prozessschritte</button>
+        <button class="tab-btn active" data-view="steps" onclick="setView('steps')">Einträge</button>
         <button class="tab-btn" data-view="dimensions" onclick="setView('dimensions')">Dimensionen</button>
         <button class="tab-btn" data-view="members" onclick="setView('members')">Mitglieder</button>
       </div>
@@ -284,7 +284,7 @@
            werden (siehe renderStepList()/renderDimensionList()). -->
       <div id="steps-view">
         <div class="sidebar-header">
-          <h2 id="step-count">Prozessschritte</h2>
+          <h2 id="step-count">Einträge</h2>
           <button class="btn btn-primary" onclick="newStep()">+ Neu</button>
         </div>
         <div id="new-step-slot"></div>
@@ -316,7 +316,7 @@
         <div class="step-list" id="member-list"></div>
       </div>
 
-      <div id="editor-empty" class="empty-hint" style="display:none;">Schritt in der Liste auswählen oder „+ Neu" klicken.</div>
+      <div id="editor-empty" class="empty-hint" style="display:none;">Eintrag in der Liste auswählen oder „+ Neu" klicken.</div>
 
       <form id="step-form" style="display:none;" onsubmit="return onSaveStep(event)">
         <div class="form-row">
@@ -348,7 +348,7 @@
       <form id="dimension-form" style="display:none;" onsubmit="return onSaveDimension(event)">
         <p class="field-hint" style="margin-bottom:16px;">Neue Dimensionen anlegen/bearbeiten erfordert die Rolle
           <code>admin</code> (Row-Level-Security) — mit <code>editor</code> kann man nur Werte innerhalb
-          bestehender Dimensionen pflegen (siehe Prozessschritt-Formular).</p>
+          bestehender Dimensionen pflegen (siehe Eintrags-Formular).</p>
         <div class="form-row">
           <div class="field" style="max-width:200px;">
             <label for="dim-field-key">Key</label>
@@ -578,7 +578,7 @@
   }
 
   function renderStepList() {
-    document.getElementById('step-count').textContent = `Prozessschritte (${steps.length})`;
+    document.getElementById('step-count').textContent = `Einträge (${steps.length})`;
     document.getElementById('step-list').innerHTML = steps.map((s, i) => `
       <div class="step-item ${s.id === currentStepId ? 'active' : ''}" id="step-item-${s.id}" onclick="selectStep('${s.id}')"
         draggable="true" ondragstart="onStepDragStart(event, ${i})" ondragover="onStepDragOver(event, ${i})"
@@ -586,7 +586,7 @@
         <span class="drag-handle" title="Ziehen zum Umsortieren">⠿</span>
         <span class="nr">#${String(s.nr).padStart(2, '0')}</span>
         <span class="titel">${escapeHtml(s.titel)}</span>
-      </div>`).join('') || '<div class="empty-hint">Noch keine Prozessschritte.</div>';
+      </div>`).join('') || '<div class="empty-hint">Noch keine Einträge.</div>';
 
     // E05: das (weiterhin einzige) #step-form-Element direkt hinter die
     // aufgeklappte Zeile hängen – innerHTML oben hat es aus dem Dokument
@@ -920,7 +920,7 @@
         ? (!currentDimId && !creatingNewDimension)
         : (!currentMemberId && !creatingNewMember);
     emptyHintEl.textContent = activeView === 'steps'
-      ? 'Schritt in der Liste auswählen oder „+ Neu" klicken.'
+      ? 'Eintrag in der Liste auswählen oder „+ Neu" klicken.'
       : activeView === 'dimensions'
         ? 'Dimension in der Liste auswählen oder „+ Neu" klicken.'
         : 'Mitglied in der Liste auswählen oder „+ Neu" klicken.';
@@ -1119,7 +1119,7 @@
 
   async function onDeleteDimension() {
     if (!currentDimId) return;
-    if (!confirm('Diese Dimension wirklich löschen? Alle zugehörigen Werte UND alle Zuordnungen zu Prozessschritten gehen dabei verloren.')) return;
+    if (!confirm('Diese Dimension wirklich löschen? Alle zugehörigen Werte UND alle Zuordnungen zu Einträgen gehen dabei verloren.')) return;
     const res = await apiFetch(`/dimensions?id=eq.${currentDimId}`, { method: 'DELETE' });
     if (!res.ok) {
       alert(`Löschen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'admin')}`);
@@ -1183,7 +1183,7 @@
   }
 
   async function deleteDimensionValueRow(valueId) {
-    if (!confirm('Diesen Wert wirklich löschen? Er wird auch aus allen Prozessschritten entfernt, die ihn verwenden.')) return;
+    if (!confirm('Diesen Wert wirklich löschen? Er wird auch aus allen Einträgen entfernt, die ihn verwenden.')) return;
     const res = await apiFetch(`/dimension_values?id=eq.${valueId}`, { method: 'DELETE' });
     if (!res.ok) {
       alert(`Löschen fehlgeschlagen (HTTP ${res.status}). Fehlende editor-/admin-Rolle?`);
@@ -1317,12 +1317,12 @@
     if ('titel' in data) {
       // process_steps-Zeile (to_jsonb der ganzen Zeile enthält u.a. titel/nr) —
       // process_step_values-Zeilen haben dieses Feld nie.
-      if (change_type === 'insert') return 'Prozessschritt angelegt';
-      if (change_type === 'delete') return 'Prozessschritt gelöscht';
+      if (change_type === 'insert') return 'Eintrag angelegt';
+      if (change_type === 'delete') return 'Eintrag gelöscht';
       const parts = [];
       if (old_data.nr !== new_data.nr) parts.push(`Nr. geändert: ${old_data.nr} → ${new_data.nr}`);
       if (old_data.titel !== new_data.titel) parts.push(`Titel geändert: '${old_data.titel}' → '${new_data.titel}'`);
-      return parts.length ? parts.join('; ') : 'Prozessschritt gespeichert';
+      return parts.length ? parts.join('; ') : 'Eintrag gespeichert';
     }
     const dim = dims.find(d => d.id === data.dimension_id);
     const dimLabel = dim ? dim.label : 'Unbekanntes Feld';
@@ -1468,7 +1468,7 @@
 
   async function onDeleteStep() {
     if (!currentStepId) return;
-    if (!confirm('Diesen Prozessschritt wirklich löschen?')) return;
+    if (!confirm('Diesen Eintrag wirklich löschen?')) return;
     const res = await apiFetch(`/process_steps?id=eq.${currentStepId}`, { method: 'DELETE' });
     if (!res.ok) {
       alert(`Löschen fehlgeschlagen (HTTP ${res.status}). ${httpErrorHint(res.status, 'editor')}`);

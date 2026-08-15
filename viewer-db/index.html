@@ -291,8 +291,8 @@
         <div class="counter" id="counter">lädt …</div>
         <button class="btn-export" id="btn-expand" onclick="toggleExpandAll()">⊞ Alle aufklappen</button>
         <button class="btn-export" onclick="exportPDF()" title="Kachelansicht drucken">↓ PDF</button>
-        <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
-        <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
+        <button class="btn-export" onclick="exportCSV()" title="Sichtbare Einträge als CSV">↓ CSV</button>
+        <button class="btn-export" onclick="exportJSON()" title="Sichtbare Einträge als JSON">↓ JSON</button>
       </div>
       <div id="karten"></div>
     </div>
@@ -477,10 +477,9 @@
     const axisParts = [...navSingle, ...navMulti].map(dim =>
       `${dim.values.length} ${AXIS_LABEL_PLURAL[dim.key] || dim.label}`
     );
-    const parts = [`${data.length} Schritte`, ...axisParts];
+    const parts = [`${data.length} Einträge`, ...axisParts];
     if (workgroupName) parts.push(workgroupName);
-    document.getElementById('breadcrumb').textContent =
-      `Akteur × Prozess → Datenobjekt · ${parts.join(' · ')}`;
+    document.getElementById('breadcrumb').textContent = parts.join(' · ');
   }
 
   async function startApp() {
@@ -815,7 +814,7 @@
     if (!data.length) {
       document.getElementById('counter').textContent = '';
       document.getElementById('karten').innerHTML =
-        `<div class="empty-hint">Keine Prozessschritte sichtbar. Das kann heißen: die Arbeitsgruppe hat noch keine
+        `<div class="empty-hint">Keine Einträge sichtbar. Das kann heißen: die Arbeitsgruppe hat noch keine
          Mitgliedschaft für diesen Nutzer (Row-Level-Security), oder es wurden noch keine Daten eingespielt
          (siehe supabase/seed/).</div>`;
       return;
@@ -823,7 +822,7 @@
 
     if (view === 'matrix') {
       document.getElementById('counter').innerHTML =
-        `<strong>${data.filter(matchesSearch).length} von ${data.length}</strong> Prozessschritten in der Matrix`;
+        `<strong>${data.filter(matchesSearch).length} von ${data.length}</strong> Einträgen in der Matrix`;
       document.getElementById('karten').innerHTML = renderMatrix();
       return;
     }
@@ -841,8 +840,8 @@
       totalVisible += visibleCount;
 
       const countLabel = visibleCount === sectionSteps.length
-        ? `${sectionSteps.length} Schritte`
-        : `${visibleCount} von ${sectionSteps.length} Schritten sichtbar`;
+        ? `${sectionSteps.length} Einträge`
+        : `${visibleCount} von ${sectionSteps.length} Einträgen sichtbar`;
 
       const headerStyle = sectionValue ? chipStyle(colorOf(sectionValue)) : '';
       const header = sectionValue
@@ -860,7 +859,7 @@
     }).join('');
 
     document.getElementById('counter').innerHTML =
-      `<strong>${totalVisible} von ${data.length}</strong> Prozessschritten sichtbar`;
+      `<strong>${totalVisible} von ${data.length}</strong> Einträgen sichtbar`;
     document.getElementById('karten').innerHTML = sectionsHtml;
   }
 
@@ -893,7 +892,7 @@
   // bleibt der Button bewusst ausgeblendet statt kaputt anklickbar zu sein.
   initLoginScreen({
     title: `${APP_TITLE} – Viewer`,
-    hint: 'Zugriff auf Prozessschritte hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
+    hint: 'Zugriff auf Einträge hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
     onSuccess: startApp,
     ssoAzureEnabled: false,
   });
