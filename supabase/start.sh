@@ -56,10 +56,18 @@ echo "==> PostgREST starten ..."
 docker compose up -d rest
 
 # ── Schema-Migration + Seed nur beim allerersten Start ──────────────
+# Alle Dateien in migrations/ (sortiert) einspielen, nicht nur die initiale -
+# frühere Fassung spielte ausschließlich 20260710120000_init_schema.sql ein
+# und ließ jeden späteren Erststart mit fehlenden Spalten/Funktionen/Triggern
+# zurück (aufgefallen beim ersten echten Erststart außerhalb der bisherigen
+# Dev-Umgebung, wo die Migrationen bereits einzeln manuell nachgezogen waren).
 FRESH="$(docker compose exec -T db psql -U postgres -d postgres -tAc "select to_regclass('public.workgroups')" | tr -d '[:space:]')"
 if [ -z "$FRESH" ]; then
-  echo "==> Erststart erkannt: Schema-Migration einspielen ..."
-  docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < migrations/20260710120000_init_schema.sql
+  echo "==> Erststart erkannt: Schema-Migrationen einspielen ..."
+  for f in $(ls migrations/*.sql | sort); do
+    echo "  -- $f"
+    docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$f"
+  done
   docker compose exec -T db psql -U postgres -d postgres -c "NOTIFY pgrst, 'reload schema';" > /dev/null
 
   echo "==> Seed-Daten aus patientenpfad_data.js einspielen ..."
@@ -79,6 +87,16 @@ ensure_test_user() {
   fi
 
   echo "  Lege Test-Nutzer ${email} (Rolle ${rolle}) an ..."
+  # Seit T14 (Migration 20260719120000) blockt gate_new_user_signup() jede
+  # Registrierung ohne passende pending_invites-Zeile - auch über /signup,
+  # nicht nur über den Magic-Link-Weg in shared/auth.js. Ohne diesen Insert
+  # schlägt die Testnutzer-Anlage auf einer frischen DB seit T14 fehl
+  # ("Database error saving new user").
+  docker compose exec -T db psql -U postgres -d postgres -c "
+    insert into pending_invites (workgroup_id, email, rolle)
+    select (select id from workgroups where key='ak-patientenportale'), '${email}', '${rolle}'
+    on conflict (workgroup_id, email) do nothing;
+  " > /dev/null
   curl -s -X POST http://localhost:9999/signup -H "Content-Type: application/json" \
     -d "{\"email\":\"${email}\",\"password\":\"${password}\"}" > /dev/null
   sleep 1

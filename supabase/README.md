@@ -5,6 +5,14 @@ Multi-User-Web-Tool"): nur die drei tatsächlich benötigten Bausteine, selbst
 gehostet per Docker Compose. Kein Supabase Studio, kein Kong, keine Realtime/
 Storage-Dienste.
 
+## Voraussetzungen auf dem Host
+
+- Docker + Docker Compose Plugin (`docker compose ...`, nicht das alte
+  eigenständige `docker-compose`-Binary)
+- Node.js (für `seed/extract_data_js.mjs`, liest `patientenpfad_data.js` live
+  per Node-`vm`-Modul ein — kein npm-Paket, reines Node)
+- Python 3 mit `venv` (für `seed/seed_ak_patientenportale.py`, siehe unten)
+
 ## TL;DR: alles mit einem Aufruf starten
 
 ```bash
@@ -427,6 +435,54 @@ und wurde am 2026-07-11 auf `DB_PORT`/`REST_PORT` (Default 5435/8001) umgestellt
   im selben Signup/Verify-Ablauf, mit einem in Go noch leeren Rollen-Feld —
   ein reiner Insert-Trigger sieht diese spätere Update nicht. Endgültiger
   Fix: Trigger auf `before insert or update` erweitert.
+
+## Dauerhaftes Deployment (z.B. eigene VM/Container statt Laptop)
+
+Docker-Compose-Services haben `restart: unless-stopped` und starten damit
+nach einem Reboot automatisch wieder, sofern der Docker-Dienst selbst beim
+Boot startet (`systemctl enable docker`, bei einer frischen Docker-CE-
+Installation über das offizielle APT-Repo bereits der Fall). Der statische
+Webserver für `viewer-db`/`editor-db` (`python3 -m http.server` in
+`start.sh`) ist dagegen ein reiner Vordergrund-Prozess und übersteht ohne
+Weiteres **keinen** Neustart. Für einen dauerhaften Host stattdessen eine
+systemd-Unit einrichten, z.B.:
+
+```ini
+# /etc/systemd/system/prozesslandkarte-static.service
+[Unit]
+Description=Statischer Webserver fuer Prozesslandkarte viewer-db/editor-db
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=<dein-deploy-user>
+WorkingDirectory=/pfad/zum/repo
+ExecStart=/usr/bin/python3 -m http.server 8095
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now prozesslandkarte-static.service
+```
+
+`viewer-db/index.html`, `editor-db/index.html` und `shared/auth.js` leiten
+`GOTRUE_URL`/`REST_URL`/den Mailpit-Hinweislink zur Laufzeit aus
+`location.hostname` ab (nicht fest `localhost`) — funktioniert dadurch
+unverändert, ob der Stack lokal auf `localhost` oder auf einem entfernten
+Host im Netz läuft, ohne Codeänderung.
+
+**Kein HTTPS/Reverse-Proxy vor den Diensten** — Ports 8001 (PostgREST), 9999
+(GoTrue), 8026 (Mailpit) und 8095 (statischer Webserver) laufen als
+Klartext-HTTP. Für reinen Zugriff im vertrauenswürdigen Heimnetz akzeptabel,
+für Fernzugriff oder produktiven AG-Betrieb vor dem Cutover nachzuziehen
+(z.B. Caddy/nginx als TLS-Terminierung davor).
+
+Praxisbeispiel eines solchen Deployments (Heimnetz-VM `inabox.lan`) siehe
+KONTEXT.md, Abschnitt „Heimnetz-Deployment: inabox.lan".
 
 ## Smoke-Test (durchgeführt, nicht dauerhaft im Stack)
 

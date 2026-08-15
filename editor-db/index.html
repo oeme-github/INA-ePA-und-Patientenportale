@@ -434,8 +434,10 @@
 <script src="../shared/auth.js"></script>
 <script>
   // ── Konfiguration ────────────────────────────────────────────────
-  const GOTRUE_URL = 'http://localhost:9999';
-  const REST_URL   = 'http://localhost:8001';
+  // Host wird aus der aktuellen Seiten-URL abgeleitet (nicht fest
+  // "localhost"), siehe viewer-db/index.html für die Begründung.
+  const GOTRUE_URL = `http://${location.hostname}:9999`;
+  const REST_URL   = `http://${location.hostname}:8001`;
 
   // ── Farben (identisch zu viewer-db, siehe shared/auth.js für Auth) ──
   const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
