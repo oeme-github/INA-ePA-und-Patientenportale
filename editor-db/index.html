@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patientenpfad – Editor-Prototyp (Datenbank)</title>
+  <title>StarCore – Editor-Prototyp (Datenbank)</title>
   <style>
     :root {
       --c-text-1:   #111827;
@@ -261,10 +261,9 @@
   <div id="app" style="display:none;">
     <div class="page-header">
       <div>
-        <h1>Patientenpfad – Editor <span class="badge-proto">DB-Prototyp</span></h1>
-        <p>T06+T07: Formularfelder werden dynamisch aus <code>dimensions</code> generiert. Schreibt per PostgREST,
-          abgesichert durch Row-Level-Security statt GitHub-Personal-Access-Token. Der bestehende
-          <code>patientenpfad_editor.html</code> bleibt unverändert parallel nutzbar.</p>
+        <h1><span id="app-title-text"></span> <span class="badge-proto">DB-Prototyp</span></h1>
+        <p>Formularfelder werden dynamisch aus <code>dimensions</code> generiert. Schreibt per PostgREST,
+          abgesichert durch Row-Level-Security.</p>
       </div>
       <div class="session-box">
         <div>Angemeldet als <span class="email" id="session-email"></span><span class="badge-role" id="session-role"></span></div>
@@ -438,6 +437,10 @@
   // "localhost"), siehe viewer-db/index.html für die Begründung.
   const GOTRUE_URL = `http://${location.hostname}:9999`;
   const REST_URL   = `http://${location.hostname}:8001`;
+  // Produktname dieser Instanz — pro Deployment anpassen (siehe viewer-db/index.html).
+  const APP_TITLE = 'StarCore';
+  document.title = `${APP_TITLE} – Editor-Prototyp (Datenbank)`;
+  document.getElementById('app-title-text').textContent = `${APP_TITLE} – Editor`;
 
   // ── Farben (identisch zu viewer-db, siehe shared/auth.js für Auth) ──
   const FALLBACK_PALETTE = ['#2563EB', '#059669', '#CA8A04', '#7C3AED', '#DC2626', '#0891B2', '#EA580C', '#DB2777', '#4B5563', '#65A30D'];
@@ -1714,7 +1717,7 @@
   // ssoAzureEnabled: siehe Kommentar in viewer-db/index.html — auf true
   // stellen, sobald eine echte Entra-ID-App-Registrierung existiert.
   initLoginScreen({
-    title: 'Patientenpfad – Editor',
+    title: `${APP_TITLE} – Editor`,
     hint: 'Schreiben erfordert die Rolle <code>editor</code> oder <code>admin</code> in der Arbeitsgruppe ' +
           '(Row-Level-Security) — mit <code>viewer</code> kann man sich anmelden und lesen, aber Speichern schlägt fehl.',
     onSuccess: startApp,

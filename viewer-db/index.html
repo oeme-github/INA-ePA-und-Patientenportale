@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patientenpfad – Viewer-Prototyp (Datenbank)</title>
+  <title>StarCore – Viewer-Prototyp (Datenbank)</title>
   <style>
     :root {
       --c-text-1:   #111827;
@@ -261,7 +261,7 @@
   <div id="app" style="display:none;">
     <div class="page-header">
       <div>
-        <h1>Patientenpfad – Interaktive Prozesskarte <span class="badge-proto">DB-Prototyp</span></h1>
+        <h1><span id="app-title-text"></span> <span class="badge-proto">DB-Prototyp</span></h1>
         <p id="breadcrumb">lädt …</p>
       </div>
       <div class="session-box">
@@ -308,6 +308,12 @@
   // funktioniert. Ports bei Bedarf anpassen.
   const GOTRUE_URL = `http://${location.hostname}:9999`;
   const REST_URL   = `http://${location.hostname}:8001`;
+  // Produktname dieser Instanz — pro Deployment anpassen (z.B. "Patientenpfad"
+  // für die AK-Patientenportale-Workgroup). Wirkt auf Browser-Tab-Titel,
+  // Seiten-Überschrift und Login-Bildschirm.
+  const APP_TITLE = 'StarCore';
+  document.title = `${APP_TITLE} – Viewer-Prototyp (Datenbank)`;
+  document.getElementById('app-title-text').textContent = `${APP_TITLE} – Viewer`;
 
   // ── Farben ───────────────────────────────────────────────────────
   // dimension_values.farbe ist ein einzelner Akzent-Hex-Wert; Hintergrund/
@@ -886,7 +892,7 @@
   // gesetzt sind (siehe supabase/README.md, Abschnitt SSO/T10). Ohne das
   // bleibt der Button bewusst ausgeblendet statt kaputt anklickbar zu sein.
   initLoginScreen({
-    title: 'Patientenpfad – Viewer',
+    title: `${APP_TITLE} – Viewer`,
     hint: 'Zugriff auf Prozessschritte hängt von der eigenen Mitgliedschaft in einer Arbeitsgruppe ab (Row-Level-Security).',
     onSuccess: startApp,
     ssoAzureEnabled: false,

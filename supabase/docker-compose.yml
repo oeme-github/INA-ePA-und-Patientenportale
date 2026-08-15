@@ -23,7 +23,7 @@ services:
     image: axllent/mailpit:latest
     restart: unless-stopped
     ports:
-      - "8026:8025"   # Web-UI zum Nachsehen versendeter Mails (Magic-Link, Bestätigung)
+      - "${MAILPIT_PORT:-8026}:8025"   # Web-UI zum Nachsehen versendeter Mails (Magic-Link, Bestätigung)
 
   auth:
     image: supabase/gotrue:v2.167.0
@@ -67,7 +67,7 @@ services:
       GOTRUE_EXTERNAL_AZURE_REDIRECT_URI: ${SSO_AZURE_REDIRECT_URI:-}
       GOTRUE_EXTERNAL_AZURE_URL: ${SSO_AZURE_TENANT_URL:-}
     ports:
-      - "9999:9999"
+      - "${AUTH_PORT:-9999}:9999"
 
   rest:
     image: postgrest/postgrest:v12.2.3
