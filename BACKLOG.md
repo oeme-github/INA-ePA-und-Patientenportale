@@ -15,6 +15,7 @@
 **T14: Einladungs-gesteuerte Selbstregistrierung, PR #50/#51/#52/#53 gemergt (2026-07-19, Fortsetzung):** Magic-Link erlaubte bisher nie eine Erstregistrierung (`create_user:false`) — jetzt `create_user:true`, abgesichert durch eine neue Einladungsliste (`pending_invites`, nur `admin` kann einladen), automatische Mitgliedschafts-Vergabe bei erfolgreicher Registrierung, Einladen direkt in der Mitglieder-UI. Zwei GoTrue-Bugs unterwegs gefunden und behoben (blockierter Signup ohne verständliche Fehlermeldung; `magiclink`- vs. `signup`-Token-Typ bei der Verifizierung). Kompletter Kreis per Playwright end-to-end verifiziert. PR #53: CSS-Nachbesserung (Mitglieder-Formular fehlte die Box-Optik). Details siehe KONTEXT.md.
 **T13: Verlauf-Ansicht + Rauschreduktion beim Speichern, PR #55 gemergt (2026-07-21):** Neue „Verlauf"-Anzeige pro Prozessschritt im Editor (`process_step_audit`, ab Rolle `viewer` lesbar, neue RPC `list_audit_actors` löst Akteurs-E-Mails auf). Dabei Root-Cause-Bug gefunden und behoben: `onSaveStep()` schrieb bisher bei jedem Speichern alle Dimensionen eines Prozessschritts blind neu (delete+insert), auch unverändert — das Auditlog protokollierte dadurch massives Rauschen statt echter Änderungen. Jetzt Diff vor dem Schreiben: nur tatsächlich geänderte Felder/Dimensionen erzeugen noch Protokollzeilen. Per Playwright end-to-end verifiziert (editor + viewer). Details siehe KONTEXT.md.
 **Cutover-Checkliste, Hosting/Betrieb geklärt — Heimnetz-Deployment inabox.lan, PR #56 gemergt (2026-08-15):** Neue VM `inabox.lan` im Heimnetz des Nutzers (Proxmox, Debian 13) als erster dauerhafter Host des Multi-User-Tools eingerichtet — kompletter Stack (Docker Compose + statischer Webserver als systemd-Unit) läuft dort, Reboot-Persistenz per echtem `sudo reboot` verifiziert. Dabei drei echte Bugs gefunden, die nur bei einem *echten* Erststart außerhalb der gewachsenen Dev-Umgebung auffielen: `start.sh` spielte bei einem Erststart nur die erste von sieben Migrationen ein; `ensure_test_user()` scheiterte seit T14 an der Einladungs-Gate ohne vorherige `pending_invites`-Zeile; `viewer-db`/`editor-db`/`shared/auth.js` hatten `GOTRUE_URL`/`REST_URL`/Mailpit-Link fest auf `localhost` verdrahtet statt aus `location.hostname` abgeleitet (brach den Zugriff von anderen Geräten im Heimnetz). Alle drei behoben, in `main`. Details siehe KONTEXT.md, Abschnitt „Heimnetz-Deployment: inabox.lan".
+**Multi-User-Tool ausgegliedert nach open-starcore, PR #57 im INA-Repo (2026-08-15, Fortsetzung):** Neuer Anwendungsfall (Ausfallszenarien-Dokumentation, Projekt `euviaio`) machte deutlich, dass das Tool kein „Prozesslandkarte"-spezifisches Werkzeug ist, sondern ein generisches Dimensionen-Datenmodell. `supabase/`, `viewer-db/`, `editor-db/`, `shared/` per `git filter-repo` (Historie erhalten) in ein neues, eigenständiges Repo ausgegliedert: [github.com/oeme-github/open-starcore](https://github.com/oeme-github/open-starcore). Branding generisch gemacht (`APP_TITLE`-Konstante statt „Patientenpfad"), UI-Text von „Prozessschritte" auf „Einträge" umgestellt (interne Bezeichner wie die DB-Tabelle `process_steps` bewusst unverändert). Datenabgleich-Tooling (`extract_data_js.mjs`/`seed_ak_patientenportale.py`/`reconcile_with_data_js.py`) bleibt INA-spezifisch hier im Repo, verschoben nach `tools/prozesslandkarte-sync/`. Details siehe KONTEXT.md, Abschnitt „Ausgliederung in eigenes Projekt (open-starcore)".
 
 ---
 
@@ -33,6 +34,16 @@
 ---
 
 ## Multi-User-Web-Tool – nächste Schritte (ab Session 2026-07-10)
+
+**Update 2026-08-15: Der Tool-Code selbst ist ausgegliedert** nach
+[open-starcore](https://github.com/oeme-github/open-starcore) (eigenes Repo,
+eigenes Backlog) — siehe KONTEXT.md, Abschnitt „Ausgliederung in eigenes
+Projekt (open-starcore)". Die folgende Tabelle bleibt als historisches
+Protokoll stehen (T01–T14, alle hier erreicht); künftige T-Punkte am
+Tool selbst gehören ins neue Repo. Was hier im INA-Repo bleibt: die
+Cutover-Checkliste unten (betrifft weiterhin `patientenpfad_interaktiv.html`
+vs. der ausgegliederten Engine, unabhängig vom Code-Ort) und
+`tools/prozesslandkarte-sync/` (Datenabgleich).
 
 Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: selbst gehostet Postgres + PostgREST + GoTrue (entbündelt statt voller Supabase-Stack — gleiche Bausteine, geringerer Betriebsaufwand, kein SaaS-Vendor-Lock-in), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
 

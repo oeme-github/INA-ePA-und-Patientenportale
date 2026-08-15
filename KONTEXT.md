@@ -1505,6 +1505,84 @@ Heimnetz-Zugriff akzeptabel, spätestens bei
 Fernzugriff/AG-Freigabe (Cutover-Checkliste) zu klären. Kein automatisiertes
 Backup der Postgres-Daten auf `inabox` eingerichtet.
 
+### Ausgliederung in eigenes Projekt (open-starcore, Session 2026-08-15)
+
+Direkte Fortsetzung der Heimnetz-Deployment-Session: der Nutzer hat einen
+konkreten neuen Anwendungsfall (Dokumentation von Ausfallszenarien für ein
+anderes Projekt, `euviaio`) — mit der INA/AK Patientenportale inhaltlich
+nicht verwandt, aber strukturell identisch zum bestehenden generischen
+Dimensionen-Datenmodell (Einträge, klassifiziert entlang frei definierbarer
+Dimensionen). Anlass, den Tool-Code (`supabase/`, `viewer-db/`, `editor-db/`,
+`shared/`) in ein eigenständiges Projekt auszugliedern, statt ihn weiter als
+Unterordner dieses INA-spezifischen Repos zu führen.
+
+**Neues Repo:** [github.com/oeme-github/open-starcore](https://github.com/oeme-github/open-starcore)
+(public, EUPL 1.2 wie dieses Repo). Name: Anspielung auf „Star Schema", den
+Fachbegriff für das zugrundeliegende Muster (zentrale Fakten-Tabelle +
+Dimensions-Tabellen) — bewusst nicht mehr „Prozesslandkarte" im Namen, weil
+der Anwendungsfall das nicht mehr trifft.
+
+**Vorbereitung im INA-Repo, PR #57 (`feature/open-starcore-split`):**
+- `docker-compose.yml`: GoTrue-/Mailpit-Ports über `AUTH_PORT`/`MAILPIT_PORT`
+  parametrisiert (vorher hart codiert 9999/8026) — Voraussetzung für
+  Mehrfachbetrieb mehrerer Instanzen auf einem Host.
+- Branding generisch gemacht: `APP_TITLE`-Konstante (Default `StarCore`)
+  ersetzt die bisher hart codierten „Patientenpfad"-Strings in
+  `viewer-db`/`editor-db` (Tab-Titel, Überschrift, Login-Bildschirm,
+  Export-Dateinamen), analog zum bestehenden `GOTRUE_URL`/`REST_URL`-Muster.
+- **UI-Text von „Prozessschritte" auf „Einträge" umgestellt** (~15 Stellen in
+  `viewer-db`/`editor-db`: Tab-Label, Überschriften, Lösch-Dialoge,
+  Leer-Zustands-Hinweise, Audit-Meldungen) — ursprünglich im Plan als „nicht
+  nötig" eingeschätzt (nur die DB-Tabelle `process_steps` schien betroffen),
+  bei der Umsetzung aber festgestellt, dass der Begriff durchgängig auch im
+  sichtbaren UI-Text steckte. Interne Bezeichner (DB-Tabelle `process_steps`,
+  HTML-IDs, JS-Variablennamen) bewusst unverändert gelassen — bewusste
+  Nutzerentscheidung, kein SQL-Rename (beträfe alle Migrationen/RLS-Policies/
+  RPCs/Embed-Queries, ohne dass es je sichtbar würde). Die hart codierte
+  Breadcrumb-Formel „Akteur × Prozess → Datenobjekt" (INA-Leitformel)
+  ebenfalls entfernt.
+- `git filter-repo --path supabase --path viewer-db --path editor-db --path
+  shared` auf einem frischen Klon (Historie: 71 Commits, die genau diese vier
+  Pfade betreffen) — neues Repo erhält die volle Entstehungsgeschichte, nicht
+  nur einen Snapshot.
+- Im neuen Repo zusätzlich: `supabase/seed/` (INA-spezifisch, siehe unten)
+  entfernt, `start.sh` entsprechend vereinfacht (kein Seed-Aufruf mehr, keine
+  `ak-patientenportale`-Testnutzer), `supabase/README.md` grundlegend
+  überarbeitet (kein Bezug mehr auf dieses Repo/T0X-Aufgaben-IDs, neuer
+  Abschnitt „Erste Workgroup anlegen" für den manuellen Erststart-Schritt),
+  neues Top-Level-`README.md`/`CLAUDE.md`/`LICENSE`.
+- **Verifiziert vor dem Anfassen produktiver Systeme:** frischer Klon von
+  `open-starcore` lokal auf devbox komplett neu durchgestartet
+  (`./supabase/start.sh` von Null) — alle sieben Migrationen laufen sauber
+  durch (inkl. `dimension_values.gruppe`, `lookup_user_by_email`,
+  `list_audit_actors`), Viewer/Editor/GoTrue/PostgREST erreichbar, danach
+  wieder abgebaut (Container + Docker-Volume entfernt, keine Spuren auf
+  devbox zurückgelassen).
+
+**Im INA-Repo verblieben, nach `tools/prozesslandkarte-sync/` verschoben**
+(vorher `supabase/seed/`): `extract_data_js.mjs`,
+`seed_ak_patientenportale.py`, `reconcile_with_data_js.py`,
+`requirements.txt` — inhaltlich INA-spezifisch (lesen `patientenpfad_data.js`
+direkt, kennen den festen Workgroup-Key `ak-patientenportale`), gehören
+funktional zu diesem Repo, nicht zur generischen Engine. Verbindungsaufbau
+entkoppelt: bisher wurde `../.env` (also `supabase/.env`, existiert nach dem
+Split nicht mehr neben den Skripten) gelesen, jetzt eine eigene
+`tools/prozesslandkarte-sync/.env` mit `DB_HOST`/`DB_PORT`/
+`POSTGRES_PASSWORD` (Default-Host weiterhin `localhost`, für die aktuelle
+Instanz `inabox.lan` einzutragen) — die Skripte laufen dadurch ortsunabhängig
+(z.B. von devbox aus) gegen den exponierten Postgres-Port der Ziel-Instanz.
+
+**Offen für eine Folgesession:** PR #57 im INA-Repo noch nicht gemergt.
+`inabox.lan`s laufende AK-Patientenportale-Instanz noch nicht auf das neue
+Repo umgezogen (Docker-Volume-Wiederverwendung über denselben
+`supabase/`-Ordnernamen vorbereitet, siehe `open-starcore`s
+`supabase/README.md`, Abschnitt „Mehrfachbetrieb"). Zweite, separate Instanz
+für den `euviaio`-Ausfallszenarien-Anwendungsfall auf `inabox` noch nicht
+aufgesetzt — Dimensionen-Schema dafür (Komponente, Status A–I, vier
+Text-Dimensionen Erkennung/Sofortverhalten/Sichtbarkeit/Recovery) aus
+`euviaio/concepts/platform-concept.md`, Abschnitt „Muster: Komponentenausfall"
+abgeleitet, aber noch nicht in eine Workgroup übertragen.
+
 ---
 
 ## Technische Hinweise (für Claude Code)
