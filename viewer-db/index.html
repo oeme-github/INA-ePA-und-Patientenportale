@@ -623,7 +623,7 @@
     const esc = v => `"${String(v).replace(/"/g, '""')}"`;
     const rows = visible.map(d => rowFor(d).map(esc).join(';'));
     const csv = '﻿' + [cols.map(esc).join(';'), ...rows].join('\r\n');
-    download('patientenpfad_export.csv', csv, 'text/csv;charset=utf-8');
+    download(`${APP_TITLE.toLowerCase()}_export.csv`, csv, 'text/csv;charset=utf-8');
   }
 
   function exportJSON() {
@@ -635,7 +635,7 @@
         return [dim.key, Array.isArray(v) ? v.map(x => x.label) : (v || '')];
       })),
     }));
-    download('patientenpfad_export.json', JSON.stringify(visible, null, 2), 'application/json');
+    download(`${APP_TITLE.toLowerCase()}_export.json`, JSON.stringify(visible, null, 2), 'application/json');
   }
 
   function download(filename, content, type) {
