@@ -15,9 +15,11 @@ hält also keine eigene Kopie der Inhalte.
 
 Verwendung:
     python3 seed_ak_patientenportale.py
-Erwartet den laufenden Stack aus ../docker-compose.yml (db auf localhost, Port
-via DB_PORT/../.env oder Default 5435, siehe dev-notes/PORTS.md) und liest das
-DB-Passwort aus ../.env.
+Verbindungsdaten kommen aus einer lokalen .env in diesem Verzeichnis (siehe
+README.md hier) — DB_HOST (Default localhost, z.B. inabox.lan für eine
+entfernte Instanz), DB_PORT (Default 5435) und POSTGRES_PASSWORD. Das
+Postgres-Backend läuft im open-starcore-Repo (siehe dortige
+supabase/docker-compose.yml), nicht mehr in diesem Repo.
 """
 import json
 import os
@@ -29,7 +31,7 @@ from pathlib import Path
 import psycopg
 
 HERE = Path(__file__).parent
-ENV_PATH = HERE.parent / ".env"
+ENV_PATH = HERE / ".env"
 EXTRACT_SCRIPT = HERE / "extract_data_js.mjs"
 
 WORKGROUP_KEY = "ak-patientenportale"
@@ -308,8 +310,9 @@ def main():
     source = load_source_data()
     meta, data = source["meta"], source["data"]
 
+    db_host = env.get("DB_HOST", "localhost")
     db_port = env.get("DB_PORT", "5435")
-    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@localhost:{db_port}/postgres"
+    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@{db_host}:{db_port}/postgres"
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             # Das Skript schreibt process_step_values bei jedem (auch
