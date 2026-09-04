@@ -1650,9 +1650,47 @@ Zugangsdaten zum entbündelten Stack) danach entfernt.
 
 **Weiterhin offen:** Kein HTTPS/Reverse-Proxy vor beiden Instanzen.
 `dev-notes/PORTS.md` auf dem Nutzer-Laptop noch um die neuen Ports zu
-ergänzen (liegt außerhalb der hier zugänglichen Repos). Verbleibende
-Cutover-Punkte (AG-Freigabe, Parallelbetriebs-Zeitraum, Rückfallplan,
-Kommunikation an die AG) — siehe BACKLOG.md.
+ergänzen (liegt außerhalb der hier zugänglichen Repos).
+
+### Cutover-Checkliste vollständig abgeschlossen (Session 2026-09-04)
+
+Die letzten vier offenen Punkte der Cutover-Checkliste (AG-Freigabe,
+Parallelbetriebs-Zeitraum, Rückfallplan, Kommunikation an die AG, siehe
+BACKLOG.md) wurden in dieser Session mit dem Nutzer durchgegangen und
+entschieden — **ohne dass ein tatsächlicher technischer Cutover geplant
+oder ausgeführt wurde.**
+
+Kernargument des Nutzers: Das Positionspapier als inhaltliches
+Arbeitsergebnis der AG ist bereits auf der offiziellen [gematik-AK-Seite]
+(https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1)
+veröffentlicht (siehe auch `project_positionspapier_submitted`-Memory: AG
+hat es 2026-07-10 final bearbeitet und eingereicht). Die aktive
+inhaltliche Arbeitsphase der AG ist damit abgeschlossen — es findet keine
+laufende, gemeinsame Datenpflege mehr statt, für die ein Tool-Wechsel
+tatsächlich vollzogen werden müsste.
+
+Daraus abgeleitete Entscheidungen:
+- **AG-Freigabe / Kommunikation:** Die Veröffentlichung selbst zählt als
+  faktische Freigabe und zugleich als Kommunikation des Arbeitsergebnisses
+  an die AG — eine gesonderte formale Abstimmungsrunde oder ein separater
+  Informations-Rundruf wären an dieser Stelle nur noch Formalität ohne
+  praktischen Zweck.
+- **Parallelbetriebs-Zeitraum:** Kein fester Zeitraum nötig, da kein
+  aktiver Nutzerkreis mehr zwischen altem und neuem Tool wechseln muss. Ein
+  echter Cutover bliebe dadurch ein risikoarmer, jederzeit möglicher
+  technischer Schritt statt eines terminierten Umschalt-Ereignisses.
+- **Rückfallplan:** Prinzip festgelegt, aber bewusst nicht proaktiv
+  ausgebaut — Export aus dem Multi-User-Tool (CSV/JSON, siehe V04) +
+  Re-Import bei Bedarf; der Quellcode des Tools liegt ohnehin dauerhaft in
+  GitHub (`open-starcore`), ein Verlust des laufenden Betriebs auf
+  `inabox.lan` wäre also kein Quellcode-Verlust. Konkrete Umsetzung
+  (Skript/Runbook) wird erst bei tatsächlichem Bedarf gebaut.
+
+Damit ist die Cutover-Checkliste in BACKLOG.md vollständig abgehakt. Die
+harte Randbedingung aus dieser Datei (`patientenpfad_interaktiv.html`,
+`patientenpfad_editor.html`, `patientenpfad_data.js` bleiben unangetastet)
+bleibt unverändert gültig — es gab in dieser Session keinen Anlass, sie
+aufzuheben, da kein aktiver Cutover ansteht.
 
 ---
 
