@@ -1641,10 +1641,18 @@ Instanz `inabox.lan` einzutragen) — die Skripte laufen dadurch ortsunabhängig
   beide systemd-Units kamen automatisch wieder hoch, beide APIs sofort
   wieder erreichbar.
 
-**Weiterhin offen:** PR #57 im INA-Repo noch nicht gemergt. Kein
-HTTPS/Reverse-Proxy vor beiden Instanzen. `dev-notes/PORTS.md` auf dem
-Nutzer-Laptop noch um die neuen Ports zu ergänzen (liegt außerhalb der hier
-zugänglichen Repos).
+**Update (2026-09-04): PR #57 gemergt** (Merge-Commit `c0568a7`, per
+`git merge-base --is-ancestor` gegen `origin/main` verifiziert). Damit sind
+`supabase/`, `viewer-db/`, `editor-db/`, `shared/` jetzt aus diesem Repo
+entfernt — der Tool-Code lebt ausschließlich in `open-starcore`. Lokaler
+Alt-Ordner `supabase/` (nur noch die alte, nicht mehr benötigte `.env` mit
+Zugangsdaten zum entbündelten Stack) danach entfernt.
+
+**Weiterhin offen:** Kein HTTPS/Reverse-Proxy vor beiden Instanzen.
+`dev-notes/PORTS.md` auf dem Nutzer-Laptop noch um die neuen Ports zu
+ergänzen (liegt außerhalb der hier zugänglichen Repos). Verbleibende
+Cutover-Punkte (AG-Freigabe, Parallelbetriebs-Zeitraum, Rückfallplan,
+Kommunikation an die AG) — siehe BACKLOG.md.
 
 ---
 
