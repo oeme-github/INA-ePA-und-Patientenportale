@@ -115,8 +115,9 @@ def main():
     source = load_source_data()
     data = source["data"]
 
+    db_host = env.get("DB_HOST", "localhost")
     db_port = env.get("DB_PORT", "5435")
-    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@localhost:{db_port}/postgres"
+    dsn = f"postgresql://postgres:{env['POSTGRES_PASSWORD']}@{db_host}:{db_port}/postgres"
 
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:

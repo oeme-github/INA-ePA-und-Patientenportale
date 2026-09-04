@@ -25,9 +25,10 @@ Thumbs.db
 *_export.csv
 *_export.json
 
-# Multi-User-Web-Tool: lokale Secrets für den selbst gehosteten Stack
-supabase/.env
+# Datenabgleich-Tooling (tools/prozesslandkarte-sync/): lokale
+# Verbindungsdaten zur externen open-starcore-Instanz
+tools/prozesslandkarte-sync/.env
 
-# Python-Cache (Seed-/Abgleich-Skripte in supabase/seed/)
+# Python-Cache
 __pycache__/
 *.pyc

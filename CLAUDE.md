@@ -119,27 +119,33 @@ Die vier Grundprinzipien (siehe README.md) gelten auch für technische Entscheid
 
 ---
 
-## Multi-User-Web-Tool (supabase/, viewer-db/, editor-db/, shared/)
+## Multi-User-Web-Tool — ausgegliedert (Session 2026-08-15)
 
-Paralleler, additiver Tooling-Track (siehe KONTEXT.md „Architekturentscheidung
-Multi-User-Web-Tool" und BACKLOG.md für Stand/nächste Schritte):
+Der frühere parallele Tooling-Track (`supabase/`, `viewer-db/`, `editor-db/`,
+`shared/`) lebt seit dieser Session als eigenständiges, generisches Projekt
+in **[open-starcore](https://github.com/oeme-github/open-starcore)** (eigenes
+Repo, eigenes `CLAUDE.md`). Grund: das Datenmodell war von Anfang an bewusst
+generisch gebaut (mandantenfähig, frei definierbare Dimensionen) und wird
+inzwischen auch für Anwendungsfälle außerhalb der INA/AK Patientenportale
+genutzt. Details zur Ausgliederung siehe KONTEXT.md, Abschnitt „Ausgliederung
+in eigenes Projekt (open-starcore)".
 
-**Harte Randbedingung:** `patientenpfad_interaktiv.html`, `patientenpfad_editor.html`
-und `patientenpfad_data.js` bleiben unangetastet, solange das neue Tool nicht
-nachweislich gleichwertig ist und die AG einem Cutover zugestimmt hat (T11 in
-BACKLOG.md). Vor jedem Commit in diesem Bereich `git status` auf diese drei
-Dateien prüfen — sie dürfen nicht auftauchen.
+**Harte Randbedingung weiterhin gültig:** `patientenpfad_interaktiv.html`,
+`patientenpfad_editor.html` und `patientenpfad_data.js` bleiben unangetastet,
+solange das ausgegliederte Tool nicht nachweislich gleichwertig ist und die
+AG einem Cutover zugestimmt hat (siehe Cutover-Checkliste in BACKLOG.md) —
+das gilt unabhängig davon, in welchem Repo der Tool-Code liegt.
 
-**Dateien:**
-- `supabase/` — Postgres + PostgREST + GoTrue (Docker Compose), Schema-Migration, Seed-Skript (`seed/`), Datenabgleich (`seed/reconcile_with_data_js.py`)
-- `viewer-db/`, `editor-db/` — DB-gestützte Prototypen, rendern/generieren Felder dynamisch aus `dimensions`/`dimension_values`, nicht hart codiert
-- `shared/auth.js` — gemeinsamer Login (Magic-Link zuerst, Passwort-Fallback, SSO-Scaffolding), von beiden Prototypen per `<script src="../shared/auth.js">` eingebunden
+**Was noch hier im INA-Repo lebt:** `tools/prozesslandkarte-sync/` — das
+Datenabgleich-Tooling zwischen `patientenpfad_data.js` (bleibt hier, AG
+pflegt weiter über den bestehenden Editor) und der Workgroup
+`ak-patientenportale` in der open-starcore-Instanz. Gehört inhaltlich hierher
+(kennt `patientenpfad_data.js` und den festen Workgroup-Key), nicht zur
+generischen Engine. Details: `tools/prozesslandkarte-sync/README.md`.
 
-**Alles starten:** `./supabase/start.sh` (idempotent, ein Aufruf für den kompletten Stack inkl. Test-Zugänge). **Stoppen:** `./supabase/stop.sh` (Daten bleiben erhalten; `--wipe-data` für kompletten Reset). Details/Troubleshooting in `supabase/README.md`.
-
-**Wichtig für lokale Tests:** Viewer/Editor müssen aus dem Projekt-Wurzelverzeichnis
-heraus per Webserver bereitgestellt werden (nicht aus ihrem eigenen Unterordner),
-da beide `../shared/auth.js` referenzieren.
+Die produktiv laufende AK-Patientenportale-Instanz (aktuell `inabox.lan`,
+siehe KONTEXT.md „Heimnetz-Deployment: inabox.lan") bezieht ihren Code jetzt
+aus `open-starcore`, nicht mehr aus diesem Repo.
 
 ---
 
