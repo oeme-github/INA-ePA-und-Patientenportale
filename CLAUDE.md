@@ -1,92 +1,50 @@
-# CLAUDE.md – Arbeitsanweisungen für Claude Code
+# CLAUDE.md – INA-ePA-und-Patientenportale
+
+## Verbindlicher Arbeitsablauf
+
+Der vollständige Arbeitsablauf (Startup-Routine, Arbeit im Projekt — Commits, Branch-Strategie,
+Absturzsicherung, Sicherheitsbeobachtungen —, Session-End-Routine) steht **ausschließlich** in
+`dev-notes/STANDARDS.md` §1–§4 — automatisch per `@`-Import geladen (siehe „Automatisch geladene
+Dateien" unten), hier nicht redundant wiederholen. Die Abschnitte unten enthalten nur
+**projektspezifische Ergänzungen und Fakten**, die es nur für dieses eine Projekt gibt.
+
+**Abweichung vom Hub-Standard (bewusst, historisch gewachsen — dieses Repo ist älter als die
+projektübergreifende Sprachregel):** `dev-notes/STANDARDS.md` verlangt global englische
+Commit-Messages/Code-Kommentare — dieses Repo committet bewusst auf Deutsch, siehe „Sprache"
+unten. **[open-starcore](https://github.com/oeme-github/open-starcore)** (aus diesem Repo
+ausgegliedert, 2026-08-15) hat dieselbe Ausnahme geerbt. Nicht ohne Rücksprache angleichen.
 
 ## Sprache
 Alle Ausgaben, Commit-Messages, Kommentare und Dokumente auf Deutsch.
 
 ---
 
-## Session-Start
+## Entwicklungsumgebung
 
-1. `git status` und `git log --oneline -5` ausführen — was liegt offen?
-2. `git pull` — aktuellen Stand holen
-3. `KONTEXT.md` lesen — aktuellen Arbeitsstand verstehen
-4. `gh issue list --state open` ausführen — offene Issues anzeigen
-5. User fragen: Was ist heute das Ziel?
+Gemeinsame Devbox-Umgebung (OS/Hardware/Migrationsgeschichte): siehe `dev-notes/REPOS.md`
+(„Speicherorte") — autoritative Quelle, hier bewusst nicht dupliziert (siehe
+`dev-notes/STANDARDS.md` §3, „Single Source of Truth für Infra-Fakten").
 
----
+- **Projektpfad (Devbox):** `~/git_repos/INA-ePA-und-Patientenportale`
+- **Versionskontrolle:** Git, Remote auf GitHub
+  (`github.com/oeme-github/INA-ePA-und-Patientenportale`)
 
-## Session-Ende
-
-### 1. Dokumente prüfen und aktualisieren
-
-**`KONTEXT.md`**
-- Neue Entscheidungen, Architekturentscheidungen und Begründungen eintragen
-- Offene Punkte aktualisieren (erledigte abhaken, neue ergänzen)
-- Dateiversionen-Tabelle aktualisieren (Stand und Datum prüfen)
-- Requirements-Tabelle: Status der bearbeiteten Punkte auf „Erledigt" setzen
-
-**`patientenpfad_arbeitsdokument.md`**
-- Prüfen ob inhaltliche Änderungen aus der Session eingeflossen sind
-- Falls ja: Versionsnummer erhöhen (v3 → v4 etc.) und Datum aktualisieren
-
-**`patientenpfad_data.js`**
-- Prüfen ob die Datei durch einen Editor-Export verändert wurde (`git status`)
-- Falls ja: committen mit Hinweis auf den Export
-
-**`CLAUDE.md`**
-- Prüfen ob neue Arbeitsanweisungen oder Konventionen ergänzt werden müssen
-- Technische Hinweise zum Widget bei strukturellen Änderungen aktualisieren
-
-### 2. Alles committen und pushen
-
-- Alle offenen Änderungen committen (Deutsch, Format: `Bereich: Was und warum`)
-- Branch pushen
-
-### 3. Pull Request
-
-- PR erstellen, falls noch nicht vorhanden
-- PR-Beschreibung: Was wurde geändert, was ist noch offen?
-
-### 4. User informieren
-
-- Was liegt auf GitHub (PR, Branch)?
-- Was ist noch offen für die nächste Session?
-
-### 5. Hub-Übergabe
-
-Zusätzlich zu obigen Schritten gilt `dev-notes/STANDARDS.md` Abschnitt 4
-(Projekt-End-Routine):
-1. `~/git_repos/dev-notes/projects/INA-ePA-und-Patientenportale.md`
-   schreiben (Datum, zuletzt erledigt, nächster Schritt, offene Fragen —
-   Format: `dev-notes/templates/SESSION.md`)
-2. `~/git_repos/dev-notes/PROJECTS.md` — Eintrag
-   „INA-ePA-und-Patientenportale" mit demselben nächsten Schritt
-   aktualisieren
-3. Danach im Hub-Chat (dev-notes-Session) kurz Bescheid geben: was erledigt
-   wurde, nächster Schritt — die Hub-Session hat sonst keinen Einblick in
-   diese Konsole
+### Startup-Routine — projektspezifische Ergänzungen
+Generischer Kern: siehe `dev-notes/STANDARDS.md` §2. Zusätzlich für dieses Projekt:
+- `KONTEXT.md` ist die **primäre** Informationsquelle zu Beginn jeder Session — vor `BACKLOG.md`
+  gegenlesen
+- `gh issue list --state open` — dieses Projekt nutzt GitHub Issues aktiv
 
 ---
 
-## Git-Workflow
-
-- Nie direkt in `main` pushen
-- Feature-Branches: `feature/thema`, `fix/thema`
-- Ein Commit pro sinnvoller Arbeitseinheit
-- Commit-Format: `Bereich: Was und warum`
-
-**Häufig committen — nicht erst am Session-Ende:**
-Nach jeder abgeschlossenen Teilaufgabe direkt committen und pushen, nicht auf das Session-Ende warten.
-
-**WIP-Commits bei unfertigem Stand:**
-Wenn eine Aufgabe am Session-Ende noch nicht abgeschlossen ist, trotzdem committen:
-`WIP: Bereich – kurze Beschreibung was fehlt`
-So geht kein Stand verloren. WIP-Commits beim nächsten Start fertigstellen und squashen.
-
-**Vor jedem Branch-Wechsel: `git status` prüfen.**
-Nie `git checkout` oder `git switch` ausführen, bevor sichergestellt ist, dass keine uncommitted Changes vorhanden sind. Falls doch: erst committen oder stashen.
-
-Siehe README.md für vollständige Team-Konventionen.
+## Git-Workflow — projektspezifische Ergänzungen
+Generischer Kern (Branch-Strategie, PR-Merge-Freigabepflicht) siehe `dev-notes/STANDARDS.md` §3.
+Zusätzlich für dieses Projekt:
+- **Commit-Format:** `Bereich: Was und warum`
+- **WIP-Commits bei unfertigem Stand:** Ist eine Aufgabe am Session-Ende noch nicht abgeschlossen,
+  trotzdem committen: `WIP: Bereich – kurze Beschreibung was fehlt` — so geht kein Stand verloren.
+  WIP-Commits beim nächsten Start fertigstellen und squashen (bleiben nie dauerhafter Endzustand,
+  vereinbar mit `STANDARDS.md`s „kein WIP als Endzustand"-Regel).
 
 ---
 
@@ -151,6 +109,51 @@ aus `open-starcore`, nicht mehr aus diesem Repo.
 
 ## Allgemeine Regeln
 
-- `KONTEXT.md` ist die primäre Informationsquelle zu Beginn jeder Session
 - Keine neuen Dateien ohne expliziten Auftrag
 - Änderungen am Arbeitsdokument immer mit dem User abstimmen, bevor umgesetzt wird
+
+---
+
+## Session-End-Routine — projektspezifische Ergänzungen
+Generischer Kern: siehe `dev-notes/STANDARDS.md` §4. Zusätzlich für dieses Projekt:
+- **`KONTEXT.md`:** neue Entscheidungen/Architekturentscheidungen + Begründungen eintragen;
+  offene Punkte aktualisieren (erledigte abhaken, neue ergänzen); Dateiversionen-Tabelle (Stand +
+  Datum) aktualisieren; Requirements-Tabelle-Status auf „Erledigt" setzen wo zutreffend
+- **`patientenpfad_arbeitsdokument.md`:** bei inhaltlichen Änderungen Versionsnummer erhöhen
+  (v3 → v4 etc.) und Datum aktualisieren
+- **`patientenpfad_data.js`:** prüfen ob durch einen Editor-Export verändert (`git status`) — falls
+  ja, mit Hinweis auf den Export committen
+- PR erstellen (falls noch nicht vorhanden), Beschreibung: was geändert, was noch offen
+
+---
+
+## Automatisch geladene Dateien (via `@`-Import)
+- @KONTEXT.md — **zuerst lesen**: primäre Informationsquelle, aktueller Arbeitsstand
+- @BACKLOG.md — offene Aufgaben, Cutover-Checkliste
+- @README.md — Projektübersicht, vollständige Team-Konventionen
+- @~/git_repos/dev-notes/STANDARDS.md — verbindlicher, projektübergreifender Arbeitsablauf
+  (Hub-Regelwerk; externer Import außerhalb dieses Projekts — Claude Code zeigt beim allerersten
+  Laden einen einmaligen Genehmigungsdialog, danach automatisch)
+
+---
+
+## Doku-Check (alle 4 Wochen)
+Dedizierte Session zur Synchronisierung der Dokumentation mit dem tatsächlichen Projektstand:
+- `CLAUDE.md` — nur noch projektspezifische Fakten hier; deckt sich der Rest noch mit
+  `dev-notes/STANDARDS.md`, oder ist hier wieder generischer Inhalt reingerutscht?
+- `README.md`/`KONTEXT.md` — Features, Konfiguration, Team-Konventionen
+- `BACKLOG.md` — erledigte Einträge bereinigen, neue Erkenntnisse ergänzen; IDs auf
+  `<repo>_<ID>`-Konvention prüfen und ggf. nachziehen (siehe `dev-notes/STANDARDS.md`) — inkl.
+  Querverweise in `dev-notes/PROJECTS.md`/`dev-notes/projects/INA-ePA-und-Patientenportale.md`
+  und `open-starcore`
+
+Nächster Doku-Check: **2026-10-03**
+
+---
+
+## Verwandte Repositories
+
+| Repo | Zweck |
+|------|-------|
+| `oeme-github/dev-notes` | PM-Hub, Projektübersicht |
+| `oeme-github/open-starcore` | Ausgegliederte generische Multi-User-Engine (2026-08-15) — teilt sich die Deutsch-Sprachregel-Ausnahme |
