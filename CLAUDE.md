@@ -29,7 +29,7 @@ Gemeinsame Devbox-Umgebung (OS/Hardware/Migrationsgeschichte): siehe `dev-notes/
 - **Versionskontrolle:** Git, Remote auf GitHub
   (`github.com/oeme-github/INA-ePA-und-Patientenportale`)
 
-### Startup-Routine — projektspezifische Ergänzungen
+## Startup-Routine — projektspezifische Ergänzungen
 Generischer Kern: siehe `dev-notes/STANDARDS.md` §2. Zusätzlich für dieses Projekt:
 - `KONTEXT.md` ist die **primäre** Informationsquelle zu Beginn jeder Session — vor `BACKLOG.md`
   gegenlesen
