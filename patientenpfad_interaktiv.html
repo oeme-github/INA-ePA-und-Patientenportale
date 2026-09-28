@@ -317,6 +317,18 @@
       margin-left: 4px;
       vertical-align: middle;
     }
+    .card-op[title] { cursor: help; }
+
+    .op-legende {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin: -6px 0 14px;
+      font-size: 12px;
+      color: var(--c-text-3);
+    }
+    .op-legende .card-op { margin-left: 0; margin-right: 4px; }
 
     .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
 
@@ -748,6 +760,12 @@
       <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
       <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
     </div>
+    <div class="op-legende" id="op-legende">
+      <span class="matrix-legende-label">Operation</span>
+      <span title="Das Datenobjekt liegt in diesem Prozessschritt erstmalig vor – unabhängig davon, ob es an anderer Stelle bereits existiert."><span class="card-op">E</span>Erzeugt</span>
+      <span title="Ein bestehendes Datenobjekt wird in diesem Prozessschritt aktualisiert oder ergänzt."><span class="card-op">V</span>Verändert</span>
+      <span title="Das Datenobjekt wird in diesem Prozessschritt entfernt."><span class="card-op">G</span>Gelöscht</span>
+    </div>
     <div id="karten"></div>
     <div id="matrix-view" style="display:none;"></div>
   </div>
@@ -765,6 +783,16 @@
     const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
     const drLabel      = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
     const phaseLabel   = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
+    const opLabel      = {
+      E: 'Erzeugt – liegt in diesem Prozessschritt erstmalig vor',
+      V: 'Verändert – bestehendes Datenobjekt wird aktualisiert oder ergänzt',
+      G: 'Gelöscht – Datenobjekt wird entfernt'
+    };
+    // Tooltip-Text für das Operations-Badge, z.B. "E, V" → zwei Zeilen
+    function opTitle(op) {
+      return String(op || '').split(/\s*,\s*/).filter(Boolean)
+        .map(k => opLabel[k] || k).join('\n');
+    }
     const phaseBorder  = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
 
     // ── Gesetzesgruppe aus einem Eintrag extrahieren ─────────────────
@@ -973,7 +1001,7 @@
           <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
           ${d.akteur && d.akteur.length ? `<div class="card-akteur">${d.akteur.map(a => `<span class="akteur-tag">${highlight(a, searchTerm)}</span>`).join('')}</div>` : ''}
           <div class="card-objekt">
-            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${d.op}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
+            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op" title="${opTitle(d.op)}">${d.op}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
           </div>
           <div class="card-badges">${drBadges}</div>
           ${detailHtml}
@@ -1054,6 +1082,7 @@
       const isKarten = view === 'karten';
       document.querySelector('.toolbar').style.display    = isKarten ? '' : 'none';
       document.querySelector('.export-bar').style.display = isKarten ? '' : 'none';
+      document.getElementById('op-legende').style.display = isKarten ? '' : 'none';
       document.getElementById('karten').style.display     = isKarten ? '' : 'none';
       document.getElementById('matrix-view').style.display = isKarten ? 'none' : '';
       if (!isKarten) renderMatrix();
@@ -1128,7 +1157,7 @@
         <div class="modal-nr">#${String(d.nr).padStart(2,'0')} · ${phaseLabel[d.phase]}</div>
         <div class="modal-titel">${d.titel}</div>
         <div class="modal-meta">${d.akteur.join(', ')}</div>
-        <div class="modal-meta">${d.objekt.join(' · ')} <span class="card-op">${d.op}</span> ${strukturBadge}</div>
+        <div class="modal-meta">${d.objekt.join(' · ')} <span class="card-op" title="${opTitle(d.op)}">${d.op}</span> ${strukturBadge}</div>
         <div class="modal-badges">${drBadges}</div>
         <hr class="modal-divider">
         <div style="font-size:13px;color:var(--c-text-2);line-height:1.65;">${d.detail}</div>

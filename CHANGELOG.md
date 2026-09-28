@@ -18,6 +18,8 @@ hier unverändert übernommen; neue IDs folgen der Konvention `INA-ePA-und-Patie
   Prozessdesign/-management und kein Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO) ist.
   Anlass waren die Rückmeldungen vom IOP Summit Berlin. Im Druck bleibt nur der Einzeiler
   sichtbar.
+- Legende „Operation: E Erzeugt · V Verändert · G Gelöscht" über den Karten (auch im Druck) und
+  Mouse-over-Text mit der Definition am E/V-Badge von Karte und Detail-Modal.
 
 ---
 

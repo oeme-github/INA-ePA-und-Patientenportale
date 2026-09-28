@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v6 | 2026-05-28 | Kap. 9.3: Differenzierung Patientenportal vs. Zuweiserportal ergänzt |
-| `patientenpfad_interaktiv.html` | v14 | 2026-09-28 | Einordnungshinweis im Header: kein Prozessmanagement-Tool, kein VVT (Rückmeldungen IOP Summit) |
+| `patientenpfad_interaktiv.html` | v14 | 2026-09-28 | Einordnungshinweis im Header (kein Prozessmanagement-Tool, kein VVT) + Legende/Mouse-over für Operation E/V/G (Rückmeldungen IOP Summit) |
 | `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
 | `patientenpfad_data.js` | v7 | 2026-05-28 | ist/luecke/forderungen Schritte 7, 8, 13 befüllt (UAG Klinische Prozesse) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
