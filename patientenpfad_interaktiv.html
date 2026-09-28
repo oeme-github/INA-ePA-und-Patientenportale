@@ -49,6 +49,38 @@
       color: var(--c-text-3);
       margin-top: 3px;
     }
+    .page-header p.scope-note {
+      color: var(--c-text-2);
+      margin-top: 8px;
+      max-width: 900px;
+      line-height: 1.45;
+    }
+    .scope-details {
+      margin-top: 6px;
+      max-width: 900px;
+    }
+    .scope-details summary {
+      font-size: 12px;
+      color: var(--c-text-3);
+      cursor: pointer;
+      user-select: none;
+    }
+    .scope-details summary:hover { color: var(--c-text-1); }
+    .scope-details-body {
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border-1);
+      border-radius: var(--r-md);
+    }
+    .page-header .scope-details-body p {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--c-text-2);
+      margin-top: 0;
+    }
+    .page-header .scope-details-body p + p { margin-top: 8px; }
+    .scope-details-body strong { color: var(--c-text-1); }
 
     /* ── Toolbar ── */
     .toolbar {
@@ -285,6 +317,18 @@
       margin-left: 4px;
       vertical-align: middle;
     }
+    .card-op[title] { cursor: help; }
+
+    .op-legende {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin: -6px 0 14px;
+      font-size: 12px;
+      color: var(--c-text-3);
+    }
+    .op-legende .card-op { margin-left: 0; margin-right: 4px; }
 
     .card-badges { display: flex; flex-wrap: wrap; gap: 4px; }
 
@@ -632,7 +676,7 @@
     @media print {
       body { background: white; min-height: 0; }
       .page-header { position: static; box-shadow: none; border-bottom: 1px solid #ccc; padding: 8px 16px; }
-      .toolbar, .export-bar { display: none !important; }
+      .toolbar, .export-bar, .scope-details { display: none !important; }
       .main { padding: 12px 0 0; }
       .phase-section { break-inside: auto; }
       .phase-section-header { box-shadow: none; break-after: avoid; }
@@ -648,6 +692,15 @@
   <div class="page-header">
     <h1>Patientenpfad – Interaktive Prozesskarte</h1>
     <p>Akteur &times; Prozess &rarr; Datenobjekt &nbsp;&middot;&nbsp; 25 Schritte &nbsp;&middot;&nbsp; 3 Phasen &nbsp;&middot;&nbsp; 4 Datenräume &nbsp;&middot;&nbsp; <a href="https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1" target="_blank" style="color:inherit;opacity:0.6;text-decoration:none;">AK Patientenportale ↗</a></p>
+    <p class="scope-note">Referenzmodell des AK Patientenportale: Welche Datenobjekte entstehen in welchem Prozessschritt, durch wen und in welchem Datenraum? Die Karte ist kein Werkzeug zur Prozessmodellierung und kein Verzeichnis von Verarbeitungstätigkeiten.</p>
+    <details class="scope-details">
+      <summary>Was diese Karte ist – und was nicht</summary>
+      <div class="scope-details-body">
+        <p><strong>Was sie ist:</strong> Ein bewusst abstraktes, einrichtungsunabhängiges Referenzmodell des Patientenpfads (25 Schritte, 3 Phasen). Es macht sichtbar, welche Datenobjekte Akteure im Verlauf der Versorgung erzeugen, verändern oder löschen und in welchen Datenräumen sie vorliegen sollten. Daraus leitet der AK Anforderungen an Interoperabilität und Standardisierung zwischen Patientenportalen, Primärsystemen und ePA ab.</p>
+        <p><strong>Kein Prozessdesign- oder Prozessmanagement-Werkzeug:</strong> Die Schritte beschreiben keine konkreten Abläufe einer Einrichtung und lassen sich deshalb auch nicht weiter „hineinzoomen“. Die Flughöhe ist absichtlich einheitlich gewählt: fein genug, um Datenobjekte zu benennen, grob genug, um für alle Einrichtungen zu gelten. Eine detaillierte Prozessmodellierung bleibt Aufgabe der einzelnen Einrichtung.</p>
+        <p><strong>Kein Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO):</strong> Ein solches Verzeichnis führt jeder Verantwortliche für seine eigenen Verarbeitungen, mit Zwecken, Empfängern, Löschfristen und technisch-organisatorischen Maßnahmen. Die hier genannten Rechtsgrundlagen dienen nur der fachlichen Orientierung. Sie sind keine rechtliche Bewertung und ersetzen kein Verzeichnis nach Art. 30 DSGVO.</p>
+      </div>
+    </details>
   </div>
 
   <div class="view-tabs">
@@ -707,6 +760,12 @@
       <button class="btn-export" onclick="exportCSV()" title="Sichtbare Schritte als CSV">↓ CSV</button>
       <button class="btn-export" onclick="exportJSON()" title="Sichtbare Schritte als JSON">↓ JSON</button>
     </div>
+    <div class="op-legende" id="op-legende">
+      <span class="matrix-legende-label">Operation</span>
+      <span title="Das Datenobjekt liegt in diesem Prozessschritt erstmalig vor – unabhängig davon, ob es an anderer Stelle bereits existiert."><span class="card-op">E</span>Erzeugt</span>
+      <span title="Ein bestehendes Datenobjekt wird in diesem Prozessschritt aktualisiert oder ergänzt."><span class="card-op">V</span>Verändert</span>
+      <span title="Das Datenobjekt wird in diesem Prozessschritt entfernt."><span class="card-op">G</span>Gelöscht</span>
+    </div>
     <div id="karten"></div>
     <div id="matrix-view" style="display:none;"></div>
   </div>
@@ -724,6 +783,16 @@
     const drBadgeClass = { portal:'dr-portal', versorgung:'dr-versorgung', epa:'dr-epa', ehds:'dr-ehds' };
     const drLabel      = { portal:'Portal', versorgung:'Versorgung', epa:'ePA', ehds:'EHDS' };
     const phaseLabel   = { vor:'Vor dem Krankenhaus', im:'Im Krankenhaus', nach:'Nach dem Krankenhaus' };
+    const opLabel      = {
+      E: 'Erzeugt – liegt in diesem Prozessschritt erstmalig vor',
+      V: 'Verändert – bestehendes Datenobjekt wird aktualisiert oder ergänzt',
+      G: 'Gelöscht – Datenobjekt wird entfernt'
+    };
+    // Tooltip-Text für das Operations-Badge, z.B. "E, V" → zwei Zeilen
+    function opTitle(op) {
+      return String(op || '').split(/\s*,\s*/).filter(Boolean)
+        .map(k => opLabel[k] || k).join('\n');
+    }
     const phaseBorder  = { vor:'phase-vor', im:'phase-im', nach:'phase-nach' };
 
     // ── Gesetzesgruppe aus einem Eintrag extrahieren ─────────────────
@@ -932,7 +1001,7 @@
           <div class="card-titel">${highlight(d.titel, searchTerm)}</div>
           ${d.akteur && d.akteur.length ? `<div class="card-akteur">${d.akteur.map(a => `<span class="akteur-tag">${highlight(a, searchTerm)}</span>`).join('')}</div>` : ''}
           <div class="card-objekt">
-            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op">${d.op}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
+            ${highlight(d.objekt.join(' · '), searchTerm)}<span class="card-op" title="${opTitle(d.op)}">${d.op}</span>${d.struktur ? `<span class="struktur-badge struktur-${d.struktur}">${d.struktur}</span>` : ''}
           </div>
           <div class="card-badges">${drBadges}</div>
           ${detailHtml}
@@ -1013,6 +1082,7 @@
       const isKarten = view === 'karten';
       document.querySelector('.toolbar').style.display    = isKarten ? '' : 'none';
       document.querySelector('.export-bar').style.display = isKarten ? '' : 'none';
+      document.getElementById('op-legende').style.display = isKarten ? '' : 'none';
       document.getElementById('karten').style.display     = isKarten ? '' : 'none';
       document.getElementById('matrix-view').style.display = isKarten ? 'none' : '';
       if (!isKarten) renderMatrix();
@@ -1087,7 +1157,7 @@
         <div class="modal-nr">#${String(d.nr).padStart(2,'0')} · ${phaseLabel[d.phase]}</div>
         <div class="modal-titel">${d.titel}</div>
         <div class="modal-meta">${d.akteur.join(', ')}</div>
-        <div class="modal-meta">${d.objekt.join(' · ')} <span class="card-op">${d.op}</span> ${strukturBadge}</div>
+        <div class="modal-meta">${d.objekt.join(' · ')} <span class="card-op" title="${opTitle(d.op)}">${d.op}</span> ${strukturBadge}</div>
         <div class="modal-badges">${drBadges}</div>
         <hr class="modal-divider">
         <div style="font-size:13px;color:var(--c-text-2);line-height:1.65;">${d.detail}</div>

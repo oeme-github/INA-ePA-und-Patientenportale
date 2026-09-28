@@ -10,6 +10,19 @@ hier unverändert übernommen; neue IDs folgen der Konvention `INA-ePA-und-Patie
 
 ---
 
+## [2026-09-28] — Viewer-Einordnung
+
+### Added
+- Einordnungshinweis im Header von `patientenpfad_interaktiv.html` (v14): Einzeiler + aufklappbarer
+  Kasten „Was diese Karte ist – und was nicht". Er stellt klar, dass die Karte kein Werkzeug für
+  Prozessdesign/-management und kein Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO) ist.
+  Anlass waren die Rückmeldungen vom IOP Summit Berlin. Im Druck bleibt nur der Einzeiler
+  sichtbar.
+- Legende „Operation: E Erzeugt · V Verändert · G Gelöscht" über den Karten (auch im Druck) und
+  Mouse-over-Text mit der Definition am E/V-Badge von Karte und Detail-Modal.
+
+---
+
 ## [2026-09-28] — Doku-Check
 
 ### Changed
