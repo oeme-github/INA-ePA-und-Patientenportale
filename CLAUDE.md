@@ -91,7 +91,7 @@ in eigenes Projekt (open-starcore)".
 **Harte Randbedingung weiterhin gültig:** `patientenpfad_interaktiv.html`,
 `patientenpfad_editor.html` und `patientenpfad_data.js` bleiben unangetastet,
 solange das ausgegliederte Tool nicht nachweislich gleichwertig ist und die
-AG einem Cutover zugestimmt hat (siehe Cutover-Checkliste in BACKLOG.md) —
+AG einem Cutover zugestimmt hat (siehe Cutover-Checkliste, abgeschlossen 2026-09-04, in CHANGELOG.md) —
 das gilt unabhängig davon, in welchem Repo der Tool-Code liegt.
 
 **Was noch hier im INA-Repo lebt:** `tools/prozesslandkarte-sync/` — das
@@ -129,7 +129,7 @@ Generischer Kern: siehe `dev-notes/STANDARDS.md` §4. Zusätzlich für dieses Pr
 
 ## Automatisch geladene Dateien (via `@`-Import)
 - @KONTEXT.md — **zuerst lesen**: primäre Informationsquelle, aktueller Arbeitsstand
-- @BACKLOG.md — offene Aufgaben, Cutover-Checkliste
+- @BACKLOG.md — nur offene Aufgaben (erledigte Historie inkl. Cutover-Checkliste: `CHANGELOG.md`, bewusst nicht importiert)
 - @README.md — Projektübersicht, vollständige Team-Konventionen
 - @~/git_repos/dev-notes/STANDARDS.md — verbindlicher, projektübergreifender Arbeitsablauf
   (Hub-Regelwerk; externer Import außerhalb dieses Projekts — Claude Code zeigt beim allerersten
@@ -147,7 +147,7 @@ Dedizierte Session zur Synchronisierung der Dokumentation mit dem tatsächlichen
   Querverweise in `dev-notes/PROJECTS.md`/`dev-notes/projects/INA-ePA-und-Patientenportale.md`
   und `open-starcore`
 
-Nächster Doku-Check: **2026-10-03**
+Nächster Doku-Check: **2026-10-26**
 
 ---
 

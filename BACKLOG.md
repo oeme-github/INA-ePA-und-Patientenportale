@@ -1,157 +1,37 @@
 # Backlog – INA-ePA-und-Patientenportale
 
+Enthält nur offene Punkte. Erledigte/verworfene Punkte stehen in `CHANGELOG.md`, ausführliche
+Entscheidungen in `KONTEXT.md`.
+
 ## Letzter Stand
 
-**Positionspapier:** Abgeschlossen und eingereicht (2026-07-10, manuell durch die AG außerhalb dieses Repos)
-**Projektfokus jetzt:** Tooling — Prozesslandkarte als Multi-User-Web-Tool für weitere Arbeitsgruppen (siehe unten)
-**PR #27 gemergt (2026-07-19):** Bündelte Positionspapier-Abschluss + Multi-User-Web-Tool-Prototyp (T01–T09 erledigt, T10/T11 vorbereitet) sowie den vollständigen Viewer-/Editor-Abgleich (V01–V08, E01–E07) — direkt auf `main` per GitHub-UI gemergt (2197dfb)
-**Viewer-/Editor-Abgleich (2026-07-19):** Alle 15 Punkte aus dem Abgleich (V01–V08, E01–E07) sind erledigt — `viewer-db`/`editor-db` funktional auf Stand der Bestandstools, inkl. der beiden größeren Punkte E05 (Akkordeon-Layout) und V02/V03 (neue generische Gruppierungs-Ebene `dimension_values.gruppe`). Direkt im Anschluss gemeinsames Live-Testing mit dem Nutzer: V09 (Matrix Cross-Highlighting) und E09/E10 (Dimension-Formular-Bugs) gefunden und behoben, E08 (Drag&Drop für Reihenfolge) als offener Punkt aufgenommen. Details siehe KONTEXT.md.
-**PRs #28–#35 gemergt (2026-07-19):** Alle acht aus der Live-Testing-Runde entstandenen PRs geprüft und nach `main` gemergt (Details/Konfliktauflösung siehe KONTEXT.md). Keine offenen PRs mehr.
-**E08 abgeschlossen, PR #37 gemergt (2026-07-19):** Drag&Drop für Reihenfolge (Prozessschritte, Dimension-Werte, Dimensionen-Liste selbst) im Editor umgesetzt, inkl. Nachbesserungen aus Nutzer-Review (Boxen-Layout je Listeneintrag, Viewer-Toolbar-Zeilenabstand, zusätzliche Nav-Dimension jetzt als Karten-Badge sichtbar). Details siehe KONTEXT.md. Damit ist der komplette Viewer-/Editor-Abgleich (V01–V09, E01–E10, E08) abgeschlossen — keine offenen PRs mehr. Migration `20260719090000_deferrable_process_steps_nr.sql` ist auf `main`, aber nur im lokalen Dev-Stack eingespielt (siehe KONTEXT.md T02-Hinweis: `start.sh` spielt neue Migrationsdateien nicht automatisch nach, nur beim Erststart) — bei einer weiteren Umgebung (Staging o.ä.) manuell nachziehen.
-**Cutover-Checkliste, Datenabgleich + zwei Bugfixes, PR #38/#39/#40 gemergt (2026-07-19):** Erster Punkt „Datenabgleich grün" geprüft, dabei zwei eigenständige Bugs gefunden und behoben — fehlende Ausführungsrechte für `start.sh`/`stop.sh` im Git-Index (PR #38) und ein seit E08 kaputtes Seed-Skript (`ON CONFLICT` gegen den jetzt deferrable `nr`-Constraint, PR #39). Nach dem Fix läuft `reconcile_with_data_js.py` wieder grün (25/25).
-**Cutover-Checkliste, Rollenkonzept final, PR #41/#42/#43 gemergt (2026-07-19, Fortsetzung):** Rollenmuster entschieden (mehrere Editoren, Admin auf 1–2 Personen) und die dafür nötige Mitglieder-Verwaltungs-UI gebaut (T12) — admin kann `memberships` jetzt per E-Mail-Adresse pflegen statt manuellem `psql`-Insert. Details siehe KONTEXT.md.
-**Cutover-Checkliste, SSO-Entscheidung + Audit-Protokoll, PR #45/#46 gemergt (2026-07-19, Fortsetzung):** SSO-Entscheidung getroffen (Magic-Link reicht zum Start, PR #45). Audit-/Versionsprotokoll als harte Anforderung entschieden und umgesetzt — `process_step_audit` wird jetzt per Trigger aktiv befüllt statt nur angelegt (PR #46). Details siehe KONTEXT.md.
-**T13-Backlog-Eintrag + T12-Bugfix, PR #48/#49 gemergt (2026-07-19, Fortsetzung):** Neuer Backlog-Punkt T13 (Audit-Protokoll-UI). Echter Bug gefunden: PR #42 (T12, Mitglieder-UI) war fälschlich nur in einen Zwischenbranch statt nach `main` gemergt worden (Ursache: gestapelter PR ohne automatisches Retargeting) — per `cherry-pick` nachträglich korrekt nach `main` gebracht. Details siehe KONTEXT.md.
-**T14: Einladungs-gesteuerte Selbstregistrierung, PR #50/#51/#52/#53 gemergt (2026-07-19, Fortsetzung):** Magic-Link erlaubte bisher nie eine Erstregistrierung (`create_user:false`) — jetzt `create_user:true`, abgesichert durch eine neue Einladungsliste (`pending_invites`, nur `admin` kann einladen), automatische Mitgliedschafts-Vergabe bei erfolgreicher Registrierung, Einladen direkt in der Mitglieder-UI. Zwei GoTrue-Bugs unterwegs gefunden und behoben (blockierter Signup ohne verständliche Fehlermeldung; `magiclink`- vs. `signup`-Token-Typ bei der Verifizierung). Kompletter Kreis per Playwright end-to-end verifiziert. PR #53: CSS-Nachbesserung (Mitglieder-Formular fehlte die Box-Optik). Details siehe KONTEXT.md.
-**T13: Verlauf-Ansicht + Rauschreduktion beim Speichern, PR #55 gemergt (2026-07-21):** Neue „Verlauf"-Anzeige pro Prozessschritt im Editor (`process_step_audit`, ab Rolle `viewer` lesbar, neue RPC `list_audit_actors` löst Akteurs-E-Mails auf). Dabei Root-Cause-Bug gefunden und behoben: `onSaveStep()` schrieb bisher bei jedem Speichern alle Dimensionen eines Prozessschritts blind neu (delete+insert), auch unverändert — das Auditlog protokollierte dadurch massives Rauschen statt echter Änderungen. Jetzt Diff vor dem Schreiben: nur tatsächlich geänderte Felder/Dimensionen erzeugen noch Protokollzeilen. Per Playwright end-to-end verifiziert (editor + viewer). Details siehe KONTEXT.md.
-**Cutover-Checkliste, Hosting/Betrieb geklärt — Heimnetz-Deployment inabox.lan, PR #56 gemergt (2026-08-15):** Neue VM `inabox.lan` im Heimnetz des Nutzers (Proxmox, Debian 13) als erster dauerhafter Host des Multi-User-Tools eingerichtet — kompletter Stack (Docker Compose + statischer Webserver als systemd-Unit) läuft dort, Reboot-Persistenz per echtem `sudo reboot` verifiziert. Dabei drei echte Bugs gefunden, die nur bei einem *echten* Erststart außerhalb der gewachsenen Dev-Umgebung auffielen: `start.sh` spielte bei einem Erststart nur die erste von sieben Migrationen ein; `ensure_test_user()` scheiterte seit T14 an der Einladungs-Gate ohne vorherige `pending_invites`-Zeile; `viewer-db`/`editor-db`/`shared/auth.js` hatten `GOTRUE_URL`/`REST_URL`/Mailpit-Link fest auf `localhost` verdrahtet statt aus `location.hostname` abgeleitet (brach den Zugriff von anderen Geräten im Heimnetz). Alle drei behoben, in `main`. Details siehe KONTEXT.md, Abschnitt „Heimnetz-Deployment: inabox.lan".
-**Multi-User-Tool ausgegliedert nach open-starcore, PR #57 gemergt (2026-08-15, Merge 2026-09-04):** Neuer Anwendungsfall (Ausfallszenarien-Dokumentation, Projekt `euviaio`) machte deutlich, dass das Tool kein „Prozesslandkarte"-spezifisches Werkzeug ist, sondern ein generisches Dimensionen-Datenmodell. `supabase/`, `viewer-db/`, `editor-db/`, `shared/` per `git filter-repo` (Historie erhalten) in ein neues, eigenständiges Repo ausgegliedert: [github.com/oeme-github/open-starcore](https://github.com/oeme-github/open-starcore). Branding generisch gemacht (`APP_TITLE`-Konstante statt „Patientenpfad"), UI-Text von „Prozessschritte" auf „Einträge" umgestellt (interne Bezeichner wie die DB-Tabelle `process_steps` bewusst unverändert). Datenabgleich-Tooling (`extract_data_js.mjs`/`seed_ak_patientenportale.py`/`reconcile_with_data_js.py`) bleibt INA-spezifisch hier im Repo, verschoben nach `tools/prozesslandkarte-sync/`. Details siehe KONTEXT.md, Abschnitt „Ausgliederung in eigenes Projekt (open-starcore)".
-**Cutover-Checkliste komplett abgeschlossen (2026-09-04):** Die letzten vier Punkte (AG-Freigabe, Parallelbetriebs-Zeitraum, Rückfallplan, Kommunikation) sind entschieden — Kernargument des Nutzers: Das Positionspapier als Arbeitsergebnis der AG ist bereits auf der offiziellen gematik-Seite veröffentlicht, die aktive AG-Arbeitsphase ist damit abgeschlossen. Das macht eine formale Freigabe-/Kommunikationsrunde und einen terminierten Parallelbetrieb überflüssig; ein Rückfallplan (Export/Import + Quellcode aus GitHub) ist im Prinzip festgelegt, wird aber bewusst erst bei tatsächlichem Bedarf konkret ausgebaut. Damit ist die Cutover-Checkliste vollständig abgehakt, ohne dass ein tatsächlicher technischer Cutover stattgefunden hat oder geplant ist.
+**Positionspapier:** abgeschlossen, eingereicht (2026-07-10) und auf der gematik-Seite
+veröffentlicht — die aktive AG-Arbeitsphase ist beendet.
+**Multi-User-Web-Tool:** Prototyp T01–T14 erledigt, Code seit PR #57 (2026-09-04 gemergt) in
+[open-starcore](https://github.com/oeme-github/open-starcore) — Tool-Aufgaben gehören dorthin.
+Hier verbleibt nur `tools/prozesslandkarte-sync/` (Datenabgleich).
+**Cutover-Checkliste:** vollständig abgehakt (2026-09-04), kein tatsächlicher Cutover geplant —
+`patientenpfad_interaktiv.html`/`patientenpfad_editor.html`/`patientenpfad_data.js` bleiben
+unverändert im Betrieb (GitHub Pages). Vor einem etwaigen späteren Cutover:
+`reconcile_with_data_js.py` erneut laufen lassen.
+
+**Status-Legende:** 📋 Offen · 🔄 In Bearbeitung · ⏭ Wartet auf Bedingung
 
 ---
 
-## Positionspapier – abgeschlossen (2026-07-10)
+## Inhaltliche Punkte – zurückgestellt (seit 2026-07-10)
 
-| ID | Aufgabe | Priorität | Status |
-|----|---------|-----------|--------|
-| P01 | PR #26 mergen (sobald Review abgeschlossen) | Hoch | ✅ Erledigt (2026-06-19) |
-| P02 | Kapitel 1, 2, 4.1, 4.2 vom Plenum einarbeiten (Platzhalter) | Hoch | ⏹ Obsolet — AG hat außerhalb des Repos fertiggestellt |
-| P03 | Plenumsentscheidung: Querschnittsthema Patientenberatung als eigenständiger Prozessschritt? | Hoch | ⏹ Obsolet — liegt jetzt beim Plenum, nicht mehr Teil dieses Repos |
-| P04 | Bei P03 = Ja: Schritt in `patientenpfad_data.js` ergänzen + Renummerierung | Mittel | ⏹ Obsolet (siehe P03) |
-| P05 | Weiteres Feedback-Runden einarbeiten (nächste Reviewer) | Mittel | ⏹ Obsolet — Dokument-Track geschlossen |
+Die AG arbeitet inhaltlich nicht weiter. Die Punkte werden nicht aktiv verfolgt, bleiben aber
+festgehalten, falls die Arbeit wieder aufgenommen wird.
 
-**Status-Legende:** 📋 Offen · 🔄 In Bearbeitung · ✅ Erledigt · ⏭ Wartet auf Bedingung · ⏹ Obsolet
-
----
-
-## Multi-User-Web-Tool – nächste Schritte (ab Session 2026-07-10)
-
-**Update 2026-08-15: Der Tool-Code selbst ist ausgegliedert** nach
-[open-starcore](https://github.com/oeme-github/open-starcore) (eigenes Repo,
-eigenes Backlog) — siehe KONTEXT.md, Abschnitt „Ausgliederung in eigenes
-Projekt (open-starcore)". Die folgende Tabelle bleibt als historisches
-Protokoll stehen (T01–T14, alle hier erreicht); künftige T-Punkte am
-Tool selbst gehören ins neue Repo. Was hier im INA-Repo bleibt: die
-Cutover-Checkliste unten (betrifft weiterhin `patientenpfad_interaktiv.html`
-vs. der ausgegliederten Engine, unabhängig vom Code-Ort) und
-`tools/prozesslandkarte-sync/` (Datenabgleich).
-
-Ziel: Prozesslandkarte (Viewer/Editor/Daten) für weitere Arbeitsgruppen als echtes mehrbenutzerfähiges Web-Tool nutzbar machen, statt GitHub-Pages + PAT-basiertem Editor. Architekturrichtung: selbst gehostet Postgres + PostgREST + GoTrue (entbündelt statt voller Supabase-Stack — gleiche Bausteine, geringerer Betriebsaufwand, kein SaaS-Vendor-Lock-in), generisches Dimensionen-Datenmodell (Phasen/Datenräume/Domänen etc. sind alle Instanzen desselben Mechanismus, keine hart codierten Sonderfälle). Details siehe KONTEXT.md, Abschnitt „Architekturentscheidung: Multi-User-Web-Tool".
-
-**⚠ Harte Randbedingung:** Das bestehende Tool (`patientenpfad_interaktiv.html`, `patientenpfad_editor.html`, `patientenpfad_data.js`) ist im Wirkbetrieb der AG und darf durch die folgenden Aufgaben nicht beeinträchtigt werden. Entwicklung erfolgt additiv (neue Dateien/Verzeichnisse), keine Änderung der produktiven Dateien "in place". Umschaltung erst nach Parallelbetrieb/Validierung (siehe T11).
-
-| ID | Aufgabe | Priorität | Status |
-|----|---------|-----------|--------|
-| T01 | SQL-Schema-Migration für generisches Datenmodell (workgroups/dimensions/dimension_values/process_steps/memberships) skizzieren | Hoch | ✅ Erledigt — `supabase/migrations/20260710120000_init_schema.sql`, seit T02 produktiv im Einsatz und in T03–T11 mehrfach erweitert/getestet |
-| T02 | Postgres + PostgREST + GoTrue selbst hosten (lokal/Docker zum Start; Migration `20260710120000_init_schema.sql` einspielen) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/docker-compose.yml` + `supabase/README.md`, Smoke-Test erfolgreich (Signup/Verify/JWT/RLS über PostgREST) |
-| T03 | Heutige `patientenpfad_data.js`/`meta` als Seed-Daten der ersten Workgroup migrieren (Stand zum Migrationszeitpunkt, nicht nur heutiger Commit — AG pflegt in der Zwischenzeit über den bestehenden Editor weiter) | Hoch | ✅ Erledigt (2026-07-11) — `supabase/seed/`, idempotent, liest `patientenpfad_data.js` live ein (erneut lauffähig nach weiterer AG-Pflege) |
-| T04 | Neuer, separater Viewer-Prototyp gegen Datenbank statt gegen `patientenpfad_data.js` (eigene Datei/Pfad, `patientenpfad_interaktiv.html` bleibt unangetastet) | Hoch | ✅ Erledigt (2026-07-11) — `viewer-db/index.html`, Login (GoTrue) + Datenabruf (PostgREST) + Kartenlogik, per Headless-Chrome-Screenshots verifiziert |
-| T05 | Viewer: Tabs/Filter/Matrix-Achsen dynamisch aus `dimensions` statt hart codiert rendern | Hoch | ✅ Erledigt (2026-07-11) — `viewer-db/index.html`, inkl. generischer Matrix-Ansicht (frei wählbare Achsen), Farben aus `dimension_values.farbe` mit Hash-Fallback |
-| T06 | Neuer, separater Editor-Prototyp mit Datenbank-Write + Row-Level-Security (bestehender GitHub-PUT-Editor bleibt parallel nutzbar) | Hoch | ✅ Erledigt (2026-07-11) — `editor-db/index.html` |
-| T07 | Editor: Formularfelder dynamisch aus `dimensions` generieren | Mittel | ✅ Erledigt (2026-07-11) — zusammen mit T06 umgesetzt, da neuer Editor von Anfang an dynamisch gebaut wurde |
-| T08 | Login-Bildschirm (E-Mail/Magic-Link zuerst) | Hoch | ✅ Erledigt (2026-07-11) — `shared/auth.js`, von viewer-db und editor-db gemeinsam genutzt, Passwort als Fallback |
-| T09 | Editor: Verwaltungsoberfläche für neue Dimensionen (statt nur Werte) | Mittel | ✅ Erledigt (2026-07-11) — neue Ansicht in `editor-db/index.html`: Dimensionen anlegen/bearbeiten/löschen (Rolle `admin`), Werte pro Dimension bearbeiten/löschen (Rolle `editor`+) |
-| T10 | Institutionelles SSO (Kandidat: Microsoft Entra ID) ergänzen | Niedrig | 🔄 Scaffolding erledigt (2026-07-11) — GoTrue-Konfiguration + Redirect-Flow in `shared/auth.js` fertig verdrahtet, aber deaktiviert (`ssoAzureEnabled: false`); echte Aktivierung braucht eine App-Registrierung im Entra-ID-Tenant der Organisation (externe Abhängigkeit, siehe supabase/README.md) |
-| T11 | Cutover: Bestandstool erst ablösen/umleiten, nachdem neues Tool im Parallelbetrieb validiert ist (Datenabgleich, AG-Freigabe) | Hoch | 🔄 Vorbereitung erledigt (2026-07-11) — `supabase/seed/reconcile_with_data_js.py` (Datenabgleich, getestet) + Cutover-Checkliste (siehe unten); tatsächlicher Cutover erfordert AG-Freigabe, keine technische Einzelentscheidung |
-| T12 | Editor: Mitglieder-Verwaltungs-UI (Rollenkonzept-Checklistenpunkt) — admin kann `memberships` per E-Mail-Adresse pflegen statt manuellem `psql`-Insert | Mittel | ✅ Erledigt (2026-07-19) — neue RPCs `lookup_user_by_email`/`list_workgroup_members` (PR #41) + dritte Sidebar-Ansicht „Mitglieder" im Editor (PR #42, analog T09); PR #42 zielte ursprünglich auf einen Zwischenbranch statt `main` und landete dadurch nicht in `main` — per PR #49 (`cherry-pick`) nachgezogen |
-| T13 | Viewer-/Editor-UI für das Änderungsprotokoll (`process_step_audit`, seit T-Audit/PR #46 aktiv befüllt) — bisher nur über `GET /process_step_audit` abrufbar, keine Oberfläche zum Durchsuchen/Anzeigen | Niedrig | ✅ Erledigt (2026-07-21) — „Verlauf"-Abschnitt pro Prozessschritt im Editor (PR #55), inkl. Root-Cause-Fix gegen Protokoll-Rauschen beim Speichern |
-| T14 | Einladungs-gesteuerte Selbstregistrierung — Magic-Link erlaubte bisher nie eine Erstregistrierung; jetzt `create_user:true` + Einladungsliste `pending_invites`, Einladen direkt in der Mitglieder-UI | Hoch | ✅ Erledigt (2026-07-19) — Migration `20260719120000` (PR #50), `shared/auth.js` (PR #51), Editor-UI (PR #52), CSS-Nachbesserung (PR #53), alle gemergt |
-
-**Cutover-Checkliste vollständig abgeschlossen (Stand 2026-09-04)**, siehe unten und KONTEXT.md. Kein technischer Cutover geplant/nötig, da die aktive AG-Arbeitsphase mit der Veröffentlichung des Positionspapiers abgeschlossen ist.
-
-**Hinweis aus T02:** `workgroups` hat bewusst keine Schreib-Policy — neue Arbeitsgruppen anlegen geht aktuell nur per `service_role`/direktem DB-Zugriff, nicht über PostgREST mit einer Nutzerrolle. Bei T09 (Verwaltungsoberfläche) berücksichtigen (z.B. eigene Admin-Policy oder separater privilegierter Endpunkt).
-
-### Cutover-Checkliste (Vorbereitung für T11 — bewusst noch keine Ausführung)
-
-**Wichtig:** Die folgende Checkliste ist Vorbereitung, keine Ausführung. Ein
-tatsächlicher Cutover (Bestandstool ablösen/umleiten) ist an die harte
-Randbedingung aus KONTEXT.md gebunden ("Diese drei Dateien bleiben
-unverändert nutzbar … bis das neue System nachweislich gleichwertig ist")
-und erfordert eine Entscheidung/Freigabe der AG, keine technische
-Einzelperson-Entscheidung. Diese Liste hilft, wann diese Freigabe sinnvoll
-eingeholt werden kann — sie ersetzt sie nicht.
-
-- [x] **Datenabgleich grün** (Stand 2026-07-19, PR #38/#39 gemergt): `reconcile_with_data_js.py` läuft ohne Abweichungen (Exit-Code 0) — Snapshot, vor dem tatsächlichen Cutover erneut zu prüfen, falls die AG zwischenzeitlich weiter über den bestehenden Editor gepflegt hat. Tool liegt seit dem Umzug nach `open-starcore` (2026-08-15) unter `tools/prozesslandkarte-sync/`, nicht mehr unter dem damaligen `supabase/seed/`.
-- [x] **Rollenkonzept final** (Stand 2026-07-19, PR #41/#42/#43 gemergt): Muster entschieden — mehrere Editoren aus der AG (dezentrale Datenpflege), Admin auf 1–2 Personen beschränkt. Pflege künftig per neuer Mitglieder-Verwaltungs-UI im Editor (T12) statt manuellem `psql`-Insert. Tatsächliche Namen/Zuweisung für die produktive Workgroup steht noch aus (kein technischer Punkt mehr, sondern nur noch Ausführung).
-- [x] **Hosting/Betrieb geklärt** (Stand 2026-08-15, PR #56 gemergt): Nutzer hostet vorerst selbst — neue VM `inabox.lan` im Heimnetz (Debian 13, Proxmox), kompletter Stack (Docker-Compose + statischer Webserver als systemd-Unit) läuft dort und übersteht nachweislich einen Reboot. Damit ist die technische Frage "wer betreibt" beantwortet; eine etwaige spätere Übergabe an gematik bleibt trotzdem möglich, ist aber keine offene Voraussetzung mehr für den Rest der Checkliste. Details siehe KONTEXT.md, Abschnitt „Heimnetz-Deployment: inabox.lan".
-- [x] **SSO-Entscheidung** (Stand 2026-07-19, PR #45 gemergt): Magic-Link (+ Passwort-Fallback) reicht zum Start — kein hartes Cutover-Kriterium. Institutionelles SSO (T10, Entra ID) bleibt optionaler späterer Ausbau, T10-Scaffolding bleibt deaktiviert, bis jemand mit Azure-AD-Admin-Rechten (gematik/Krankenhaus) die App-Registrierung anstößt.
-- [x] **Audit-/Versionsprotokoll geklärt** (Stand 2026-07-19, PR #46 gemergt): Nutzerentscheidung — harte Anforderung. `process_step_audit` ist jetzt über Trigger auf `process_steps`/`process_step_values` aktiv befüllt (nicht mehr nur angelegt), inkl. Rauschunterdrückung fürs Seed-Skript. Details siehe KONTEXT.md. Noch keine Viewer-/Editor-UI zum Durchsuchen — bisher nur über die API abrufbar, bei Bedarf eigener späterer Task.
-- [x] **AG-Freigabe eingeholt** (Stand 2026-09-04): Das Positionspapier als Ergebnis der Arbeitsgruppe ist auf der offiziellen [gematik-Seite](https://www.ina.gematik.de/mitwirken/arbeitskreise/rolle-von-patientenportalen-im-zusammenspiel-mit-primaersystemen-und-epa-1) veröffentlicht — die aktive inhaltliche Arbeitsphase der AG ist damit abgeschlossen. Nutzerentscheidung: Das zählt als faktische Freigabe, eine gesonderte formale Abstimmung über den Tool-Wechsel ist damit hinfällig.
-- [x] **Parallelbetriebs-Zeitraum definiert** (Stand 2026-09-04): Nutzerentscheidung — kein fester Zeitraum nötig, da keine aktive, laufende Datenpflege mehr stattfindet (Positionspapier abgeschlossen, siehe oben). Ein etwaiger echter Cutover bleibt damit ein risikoarmer, jederzeit möglicher technischer Schritt statt eines terminierten Umschalt-Ereignisses.
-- [x] **Rückfallplan dokumentiert** (Stand 2026-09-04): Prinzip festgelegt — Export aus dem Multi-User-Tool (CSV/JSON, siehe V04) + Re-Import bei Bedarf; Quellcode des Tools liegt ohnehin dauerhaft in GitHub (`open-starcore`). Nutzerentscheidung: bewusst *nicht* proaktiv als fertiges Skript/Runbook ausgebaut — wird erst bei tatsächlichem Bedarf konkret umgesetzt.
-- [x] **Kommunikation an die AG** (Stand 2026-09-04): Hat sich mit der Veröffentlichung des Positionspapiers auf der gematik-Seite erledigt — das ist zugleich die Kommunikation des Arbeitsergebnisses an die AG/Öffentlichkeit.
-
-### Viewer-Abgleich: viewer-db vs. patientenpfad_interaktiv.html (Session 2026-07-11)
-
-Optischer/funktionaler Abgleich zwischen dem Bestands-Viewer und `viewer-db`
-(Screenshots nebeneinander, Original vs. dynamisches Rendering aus T05).
-Nebenbefund dabei behoben: eine übrig gebliebene Test-Dimension ("Test") und
-ein Test-Phasenwert ("test") aus einer früheren Browser-Testsession haben
-den Viewer auf 0/25 sichtbare Schritte gebracht — aus der DB gelöscht,
-Datenabgleich (`reconcile_with_data_js.py`) läuft wieder grün.
-
-| ID | Aufgabe | Priorität | Status |
-|----|---------|-----------|--------|
-| V01 | Struktur-Filter ergänzen (klickbare Chips strukturiert/teilstrukturiert/unstrukturiert) | Mittel | ✅ Erledigt (2026-07-19) — reiner Datenfix im Seed-Skript (`struktur`: `single_select`/nicht-navigierend → `multi_select`/`ist_navigationsachse=true`), generischer Toggle-Filter-Mechanismus greift automatisch |
-| V02 | Rechtsgrundlage-Filter ergänzen — Original gruppiert 37 Einzelgesetze automatisch in ~13 Kategorien (Regex auf `§`/`Art.`/`Abs.`); Design-Frage, ob generisch nachbaubar oder eigene "Übergruppe"-Dimension nötig | Mittel | ✅ Erledigt (2026-07-19) — neue generische Gruppierungs-Ebene: `dimension_values.gruppe` (Migration), Seed-Skript befüllt Gesetz/Standard einmalig mit den bewährten Original-Regeln, Editor bekommt ein "Gruppe"-Pflegefeld, Viewer einen eigenen Gruppen-Toggle-Filter |
-| V03 | Standard-Filter ergänzen — analog zu V02, Original gruppiert per hart codierten `startsWith`-Regeln ("HL7 FHIR", "IHE", "gematik", "Terminologien", "Sonstige") | Mittel | ✅ Erledigt (2026-07-19) — siehe V02, gleicher generischer Mechanismus |
-| V04 | Export-Toolbar ergänzen: "Alle aufklappen", PDF/CSV/JSON | Niedrig | ✅ Erledigt (2026-07-19) — CSV/JSON generisch aus `dims` abgeleitet (keine hart codierte Spaltenliste wie im Original), PDF via `window.print()` + neue `@media print`-Regel |
-| V05 | Kopfzeile/Breadcrumb ergänzen ("Akteur × Prozess → Datenobjekt · 25 Schritte · 3 Phasen · 4 Datenräume · AK Patientenportale ↗") | Niedrig | ✅ Erledigt (2026-07-11) — dynamisch berechnet (Schritte-/Achsen-Anzahl aus `dims`, Workgroup-Name aus DB), ohne externen Link |
-| V06 | Matrix: Zellen sollen Schritt-Titel zeigen (anklickbar, farbcodiert nach Phase) statt nur Zahlen | Mittel | ✅ Erledigt (2026-07-19) — Zelle berechnete das gefilterte Array schon vorher, reduzierte es nur auf `.length`; jetzt klickbare, phasenfarbige Chips (Klick wechselt zur Kartenansicht und öffnet den Schritt) |
-| V07 | Suchumfang klären: aktuell durchsucht `viewer-db` alle Felder (auch Ist/Lücke/Forderungen), Original nur Titel/Akteur/Objekt/Detail — gewollt oder angleichen? | Niedrig | ✅ Erledigt (2026-07-19) — erst an Original angeglichen (nur Titel/Akteur/Objekt/Detail), nach Nutzer-Feedback ("DSGVO" fand keinen Treffer) bewusst wieder breiter als das Original: Rechtsgrundlage/Standard zusätzlich durchsucht, Ist/Lücke/Forderungen bleiben ausgeschlossen (PR #29) |
-| V08 | Operation-Badge ("E"/"E,V") zusätzlich auf der geschlossenen Karte anzeigen, nicht nur im aufgeklappten Detail | Niedrig | ✅ Erledigt (2026-07-11) — generisch als dritte Multi-Select-Dimension (reihenfolge-basiert) neben Vorschau-Zeile 2 |
-| V09 | Matrix: Cross-Highlighting beim Hover fehlt — ein Schritt kann mehrfach in der Matrix auftauchen (mehrere Werte auf X- oder Y-Achse), Original hebt beim Hover alle Vorkommen hervor und dimmt den Rest | Mittel | ✅ Erledigt (2026-07-19) — Event-Delegation auf `#karten` (analog zum Original auf `#matrix-view`), `data-nr`-Attribut pro Chip, `.highlighted`/`.dimmed-by-hover`-Klassen (PR #34) |
-
-### Editor-Abgleich: editor-db vs. patientenpfad_editor.html (Session 2026-07-11)
-
-Usability-Durchgang durch `editor-db` (User-Feedback: "im Moment noch
-unübersichtlich"), verglichen mit dem Layout-Prinzip von
-`patientenpfad_editor.html`.
-
-| ID | Aufgabe | Priorität | Status |
-|----|---------|-----------|--------|
-| E01 | **CSS-Bug:** Selektor `.field label` trifft versehentlich auch jedes Checkbox-Label (technisch ebenfalls ein `<label>`) — dadurch stehen aktuell alle Checkbox-Texte in Großbuchstaben (z.B. "DSGVO ART. 6 ABS. 1" statt "DSGVO Art. 6 Abs. 1"), nicht nur die Feld-Überschrift wie beabsichtigt | Hoch | ✅ Erledigt (2026-07-11) — `.field label` → `.field > label` (direkter Kind-Selektor); zusätzlich dieselbe Ausnahme für das "Navigationsachse"-Checkbox-Label in der Dimensionen-Ansicht ergänzt |
-| E02 | Große Checkbox-Listen (Datenobjekt: 25, Rechtsgrundlage: 37, Standard: 36 Einträge) laufen flach und unbegrenzt durch — ein Schritt-Formular kommt so auf ~2200px Scrollhöhe. Original steckt diese Listen in feste, scrollbare Boxen (~150px, eigener Scrollbalken). Vermutlich Hauptursache für "unübersichtlich" | Hoch | ✅ Erledigt (2026-07-11) — Schwellwert generisch über Werteanzahl (>10), nicht über Dimension-Key; Formular jetzt ~1985px statt ~2200px, Rechtsgrundlage/Standard scrollen sichtbar in eigener Box |
-| E03 | Kein sichtbarer Speichern-Button ohne komplett nach unten zu scrollen (Folge von E02) — sticky/fixierter Speichern-Bereich sinnvoll | Hoch | ✅ Erledigt (2026-07-19) — `.form-actions` ist jetzt eine per `position:sticky` an den Browser-Viewport geklebte Fußzeile (nach E05 überarbeitet, siehe dort) |
-| E04 | Sidebar (Schritt-/Dimensionsliste) mit 280px schmal, lange Titel werden abgeschnitten ("Durchführung diagnostischer Maßna…") | Mittel | ✅ Erledigt (2026-07-11) — Sidebar auf 320px verbreitert, Titel brechen jetzt auf bis zu 2 Zeilen um statt abzuschneiden (durch E05 inzwischen ohnehin volle Breite statt fester Sidebar) |
-| E05 | Layoutprinzip überdenken: Original nutzt ein Akkordeon (Zeile anklicken → Formular klappt direkt darunter auf, kompaktes 2-spaltiges Grid für kurze Felder), aktuell Liste links + immer sichtbares Formular rechts, einspaltig | Mittel | ✅ Erledigt (2026-07-19) — Sidebar+Panel durch Akkordeon ersetzt (einheitlich für Prozessschritte und Dimensionen); Speichern/Formular-Logik unverändert, nur das Formular-Element wird per JS hinter die aufgeklappte Zeile verschoben |
-| E06 | "+ Hinzufügen"-Zeile für neue Werte erscheint bei jedem Feld, auch bei selten erweiterten wie Phase/Struktur — unnötiges visuelles Rauschen | Niedrig | ✅ Erledigt (2026-07-11) — bei Navigations-Dimensionen (Phase, Datenraum) durch Hinweistext auf die Dimensionen-Ansicht ersetzt, Werte-Pflege bleibt dort möglich |
-| E07 | Keine Such-/Filterfunktion innerhalb der langen Checkbox-Listen (z.B. 37 Rechtsgrundlagen durchsuchen) | Niedrig | ✅ Erledigt (2026-07-19) — Filtertext-Input für dieselben Felder wie E02 (>10 Werte), blendet nicht passende Checkbox-Zeilen aus |
-| E09 | "+ Neu"-Button bei Dimensionen war für Nicht-Admins anklickbar, obwohl neue Dimensionen laut RLS-Policy nur mit der Rolle `admin` angelegt werden können — lief korrekt gegen HTTP 403, aber unnötig | Niedrig | ✅ Erledigt (2026-07-19) — Button wird nach dem Rollen-Check in `startApp()` deaktiviert (`myRole !== 'admin'`), mit Tooltip zur Begründung |
-| E10 | Beim Anlegen einer neuen Dimension war die "+ Hinzufügen"-Zeile für Werte schon vor dem Speichern sichtbar/bedienbar, tat aber nichts (kein `currentDimId` vorhanden). Nebenbefunde beim Beheben: die "Gespeichert."-Erfolgsmeldung im Dimension-Formular war faktisch nie sichtbar (wurde vom nachfolgenden Rerender sofort wieder versteckt); Fehlermeldungen fragten immer "Fehlt die Rolle?", auch bei reinen Konflikten (HTTP 409, z.B. doppelte `nr`/doppelter Key) statt Rechteproblemen (HTTP 403) | Mittel | ✅ Erledigt (2026-07-19) — Werte-Eingabe erst nach dem ersten Speichern sichtbar, Erfolgsmeldung wird erst nach dem Rerender gesetzt, neue `httpErrorHint()`-Hilfsfunktion unterscheidet 403/409 |
-| E08 | Drag&Drop für Reihenfolge — sowohl Prozessschritte (`nr`) als auch Dimension-Werte (`reihenfolge`) werden aktuell über ein Zahlenfeld sortiert; manuelles Eintippen ist fehleranfällig (Nutzer-Feedback: `nr` doppelt vergeben löst korrekt einen Konflikt aus — `process_steps` hat `unique(workgroup_id, nr)` — aber die Fehlermeldung war ursprünglich irreführend, siehe Fix in PR #31). Design-Frage: Drag&Drop muss beim Umsortieren mehrere Zeilen atomar neu nummerieren (sonst kollidiert die Zwischenzustands-Nummer mit dem Unique-Constraint) — für Dimension-Werte gibt es keinen Unique-Constraint auf `reihenfolge`, dort einfacher. Umfang laut Nutzer: beide Listen (Prozessschritte + Dimension-Werte) | Mittel | ✅ Erledigt (2026-07-19) — Migration macht `unique(workgroup_id, nr)` `deferrable`, Editor sendet die neue Reihenfolge als ein einziges Bulk-Upsert-Statement (PostgREST `on_conflict`+`resolution=merge-duplicates`), dadurch atomar; native HTML5-Drag&Drop ohne externe Bibliothek für beide Listen, per Playwright end-to-end verifiziert (Reorder + Reload-Persistenz, keine Console-Fehler) |
-
----
-
-## Inhaltliche Punkte – zurückgestellt (2026-07-10)
-
-Die AG macht inhaltlich nicht weiter (Positionspapier ist eingereicht). Die folgenden Punkte betrafen den Dokument-/Datenpflege-Track und werden nicht mehr aktiv verfolgt, solange der Fokus auf dem Tooling liegt:
-
-| ID | Aufgabe |
-|----|---------|
-| D01 | Schritte 9–12 (Präklinisch) mit `ist`/`luecke`/`forderungen` befüllen |
-| D02 | Schritte 14–25 (Klinisch + Post) mit `ist`/`luecke`/`forderungen` befüllen |
-| D03 | `ANLEITUNG_EDITOR.md` weitergeben — wird durch neuen Login-Flow (T08) ohnehin obsolet |
-| I01 | Standards prüfen: FHIR, IHE, HL7 – welche erfüllen Anforderungen A1–A3? |
-| I02 | Impulse aus dem Ausland: Dänemark, Estland, Niederlande |
-| I03 | Pilotprozesse für Proof of Concept definieren |
-| I04 | Matrix (Kap. 7 Arbeitsdokument) in Gruppe weiter diskutieren und verfeinern |
-| F01 | Soll „Patient beraten und aufklären" als eigenständiger Prozessschritt ins Modell? (Plenum) |
-
----
-
-## Zurückgestellt
-
-- **Systemebene Kap. 8**: Weitere Ist-Analyse-Beispiele möglich — wartet auf AG-Input
-- **Lebenszyklus von Datenobjekten**: Bewusst ausgeklammert — kann später ergänzt werden
-- **Migration zu Webserver + JSON**: durch Multi-User-Web-Tool-Vorhaben (siehe oben) ersetzt/überholt
+| ID | Aufgabe | Status |
+|----|---------|--------|
+| INA-ePA-und-Patientenportale_D01 | Schritte 9–12 (Präklinisch) mit `ist`/`luecke`/`forderungen` befüllen | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_D02 | Schritte 14–25 (Klinisch + Post) mit `ist`/`luecke`/`forderungen` befüllen | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_I01 | Standards prüfen: FHIR, IHE, HL7 — welche erfüllen die Anforderungen A1–A3? | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_I02 | Impulse aus dem Ausland: Dänemark, Estland, Niederlande | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_I03 | Pilotprozesse für Proof of Concept definieren | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_I04 | Matrix (Kap. 7 Arbeitsdokument) in der Gruppe weiter diskutieren und verfeinern | ⏭ Wartet auf AG |
+| INA-ePA-und-Patientenportale_F01 | Soll „Patient beraten und aufklären" ein eigenständiger Prozessschritt im Modell werden? (Plenum) | ⏭ Wartet auf Plenum |
+| INA-ePA-und-Patientenportale_D04 | Systemebene (Kap. 8): weitere Ist-Analyse-Beispiele | ⏭ Wartet auf AG-Input |
+| INA-ePA-und-Patientenportale_D05 | Lebenszyklus von Datenobjekten — bewusst ausgeklammert, kann später ergänzt werden | ⏭ Zurückgestellt |

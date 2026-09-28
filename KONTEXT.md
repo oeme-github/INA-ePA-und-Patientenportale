@@ -14,7 +14,8 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | `patientenpfad_data.js` | v7 | 2026-05-28 | ist/luecke/forderungen Schritte 7, 8, 13 befüllt (UAG Klinische Prozesse) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
 | `.github/CODEOWNERS` | – | 2026-04-25 | oeme-github + msusky |
-| `CLAUDE.md` | – | 2026-08-15 | Abschnitt „Multi-User-Web-Tool — ausgegliedert" (open-starcore-Split) + Hub-Übergabe-Schritt in Session-Ende ergänzt |
+| `CLAUDE.md` | – | 2026-09-28 | Doku-Check: Cutover-Checkliste-Verweis auf CHANGELOG.md, nächster Doku-Check 2026-10-26 |
+| `CHANGELOG.md` | – | 2026-09-28 | Neu (Doku-Check): erledigte Backlog-Historie aus BACKLOG.md übernommen, BACKLOG.md enthält nur noch offene Punkte |
 | `index.html` | v2 | 2026-04-29 | Startseite mit Viewer- und Editor-Karten |
 | `forderungen_praeklinisch.md` | v1 | 2026-05-21 | Neu: Forderungen Präklinisch in drei Varianten |
 | `positionspapier.md` | v0.5 | 2026-06-09 | LSR-Feedback (20 Kommentare) + Kap. 4.1/4.2 aus Parallelversion v0.4.1 eingearbeitet |
