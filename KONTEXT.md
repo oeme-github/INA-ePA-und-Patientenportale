@@ -9,7 +9,7 @@ Dieses Dokument ist das lebende Gedächtnis des Projekts. Es wird zu Beginn jede
 | Datei | Version | Stand | Letzte Änderung |
 |---|---|---|---|
 | `patientenpfad_arbeitsdokument.md` | v6 | 2026-05-28 | Kap. 9.3: Differenzierung Patientenportal vs. Zuweiserportal ergänzt |
-| `patientenpfad_interaktiv.html` | v13 | 2026-05-28 | Akteure als Tags in Prozess-Kacheln (Issue #22) |
+| `patientenpfad_interaktiv.html` | v14 | 2026-09-28 | Einordnungshinweis im Header: kein Prozessmanagement-Tool, kein VVT (Rückmeldungen IOP Summit) |
 | `patientenpfad_editor.html` | v3 | 2026-05-11 | GitHub-API-Integration, neue Felder ist/luecke/forderungen |
 | `patientenpfad_data.js` | v7 | 2026-05-28 | ist/luecke/forderungen Schritte 7, 8, 13 befüllt (UAG Klinische Prozesse) |
 | `ANLEITUNG_EDITOR.md` | – | 2026-05-11 | Neu: Token-Setup und Nutzung der GitHub-Speicherung |
@@ -95,6 +95,10 @@ Originaldokumente (Präsentationen, Zusammenfassungen, UAG-Ergebnisse) liegen im
 ---
 
 ## Wichtige inhaltliche Entscheidungen
+
+### Zur Einordnung der Prozesslandkarte (Session 2026-09-28)
+
+Auf dem IOP Summit in Berlin wurde der öffentliche Viewer in zwei Richtungen missverstanden: als Werkzeug für Prozessdesign/-management (mit dem Wunsch nach einer „Scroll-In"-/Drill-down-Funktion) und als Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO). Beides trifft nicht zu. Die Karte ist ein abstraktes, einrichtungsunabhängiges Referenzmodell. Ihre Flughöhe ist bewusst einheitlich, und die Rechtsgrundlagen dienen nur der fachlichen Orientierung. Klarstellung per Einzeiler + aufklappbarem Kasten „Was diese Karte ist – und was nicht" im Header von `patientenpfad_interaktiv.html`. Die Änderung an der geschützten Bestandsdatei hat der Nutzer ausdrücklich beauftragt, sie ist rein inhaltlich und berührt keine Logik.
 
 ### Zum Begriff „Datenobjekt"
 Bewusste Abkehr vom Begriff „Datenaustausch zwischen Systemen". Stattdessen: Datenobjekte werden von Akteuren im Kontext von Prozessen erzeugt, verändert oder gelöscht. Systeme sind nur der Darstellungslayer.
