@@ -32,7 +32,8 @@ hier unverändert übernommen; neue IDs folgen der Konvention `INA-ePA-und-Patie
 - T11 (Cutover) als abgeschlossen ohne tatsächlichen Cutover vermerkt (siehe 2026-09-04).
 
 ### Removed
-- T10 (institutionelles SSO, Entra ID) aus diesem Repo entfernt und als `open-starcore_F02` nach
+- T10 (institutionelles SSO, Entra ID) aus diesem Repo entfernt und als `open-starcore_D05`
+  (zunächst als `open-starcore_F02` vergeben) nach
   `open-starcore/BACKLOG.md` verschoben — der Scaffolding-Code liegt seit dem Split (PR #57)
   ausschließlich dort (`shared/auth.js`, `supabase/docker-compose.yml`).
 - D03 (`ANLEITUNG_EDITOR.md` weitergeben) — obsolet, aktive AG-Datenpflege ist abgeschlossen
@@ -149,7 +150,7 @@ hier unverändert übernommen; neue IDs folgen der Konvention `INA-ePA-und-Patie
 - **T08** Gemeinsamer Login-Bildschirm (`shared/auth.js`), Magic-Link zuerst.
 - **T09** Dimensionen-Verwaltung im Editor (Rolle `admin`).
 - **T10** SSO-Scaffolding für Microsoft Entra ID (deaktiviert, braucht App-Registrierung im
-  Tenant) — Weiterführung als `open-starcore_F02`.
+  Tenant) — Weiterführung als `open-starcore_D05`.
 - **T11** Datenabgleich-Skript `reconcile_with_data_js.py` + Cutover-Checkliste.
 - **V05** Breadcrumb-Kopfzeile (dynamisch), **V08** Operation-Badge auf geschlossener Karte.
 - **E02** Scrollbare Boxen für lange Checkbox-Listen (>10 Werte), **E04** breitere Sidebar,
